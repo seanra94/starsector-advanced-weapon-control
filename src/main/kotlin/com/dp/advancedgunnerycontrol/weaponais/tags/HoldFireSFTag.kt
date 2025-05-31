@@ -4,8 +4,22 @@ import com.dp.advancedgunnerycontrol.weaponais.FiringSolution
 import com.fs.starfarer.api.combat.CombatEntityAPI
 import com.fs.starfarer.api.combat.WeaponAPI
 
-class FluxTag(weapon: WeaponAPI, private val threshold: Float) : WeaponAITagBase(weapon) {
+class HoldFireSFTag(weapon: WeaponAPI, private val threshold: Float) : WeaponAITagBase(weapon) {
     override fun isValidTarget(entity: CombatEntityAPI): Boolean = true
+
+
+    //     FluxTrackerAPI getFluxTracker();
+    //     float getHardFluxLevel();
+    //float getFluxLevel();
+
+    //float getCurrFlux();
+
+    //float getMaxFlux();
+
+    //float getMinFluxLevel();
+
+    //float getMinFlux();
+
 
     override fun isBaseAiValid(entity: CombatEntityAPI): Boolean {
         return (weapon.ship?.fluxLevel ?: 0f) <= threshold

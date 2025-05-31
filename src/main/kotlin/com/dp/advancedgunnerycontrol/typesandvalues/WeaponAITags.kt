@@ -19,12 +19,15 @@ import org.lwjgl.input.Keyboard
 val pdTags = listOf("PD", "NoPD", "PD(Flx>N%)", "NoMissiles")
 val ammoTags = listOf("ConserveAmmo", "CnsrvPDAmmo")
 
-val holdRegex = Regex("Hold\\(Fl?u?x?>(\\d+)%\\)")
+val holdFireHFRegex = Regex("HoldHF\\(Fl?u?x?>(\\d+)%\\)")
+val holdFireSFRegex = Regex("HoldSF\\(Fl?u?x?>(\\d+)%\\)")
+val forceFireHFRegex = Regex("ForceHF\\(Fl?u?x?<(\\d+)%\\)")
+val forceFireSFRegex = Regex("ForceSF\\(Fl?u?x?<(\\d+)%\\)")
+
 val pdFluxRegex = Regex("PD\\(Fl?u?x?>(\\d+)%\\)")
 val avoidArmorRegex = Regex("AvdArmor\\((\\d+)%\\)")
 val panicFireRegex = Regex("Panic\\(H<(\\d+)%\\)")
 val rangeRegex = Regex("Range<(\\d+)%")
-val forceFireRegex = Regex("ForceF\\(Fl?u?x?<(\\d+)%\\)")
 val rofRegex = Regex("LowRoF\\((\\d+)%\\)")
 
 //val prioPdRegex = Regex("PrioP[dD]\\((\\d+)\\)")
@@ -149,12 +152,33 @@ fun getTagTooltip(tag: String): String {
         return tagTooltips[tag] ?: "No description available."
     }
     return when {
-        holdRegex.matches(tag) -> "Weapon will stop firing if ship flux exceeds ${
+        holdFireHFRegex.matches(tag) -> "HoldFire: Weapon will stop firing if ship's hard flux exceeds ${
             extractRegexThresholdAsPercentageString(
-                holdRegex,
+                holdFireHFRegex,
                 tag
             )
-        }."
+        } of total flux capacity."
+
+        holdFireSFRegex.matches(tag) -> "HoldFire: Weapon will stop firing if ship's soft flux exceeds ${
+            extractRegexThresholdAsPercentageString(
+                holdFireSFRegex,
+                tag
+            )
+        } of remaining flux capacity."
+
+        forceFireHFRegex.matches(tag) -> "ForceFire: Weapon will ignore firing restrictions of other tags while hard flux < ${
+            extractRegexThresholdAsPercentageString(
+                forceFireHFRegex, tag
+            )
+        } of total flux capacity." +
+                "\nNote: This will not circumvent targeting restrictions, only firing restrictions."
+
+        forceFireSFRegex.matches(tag) -> "ForceFire: Weapon will ignore firing restrictions of other tags while soft flux < ${
+            extractRegexThresholdAsPercentageString(
+                forceFireSFRegex, tag
+            )
+        } of remaining flux capacity." +
+                "\nNote: This will not circumvent targeting restrictions, only firing restrictions."
 
         pdFluxRegex.matches(tag) -> "Weapon will act as PD mode while ship flux > ${
             extractRegexThresholdAsPercentageString(
@@ -186,16 +210,9 @@ fun getTagTooltip(tag: String): String {
                 " or shotgun-style weapons, such as the devastator cannon." +
                 "\nNote: This does not modify the actual range of the weapon, it only affects autofire behavior!"
 
-        forceFireRegex.matches(tag) -> "ForceFire: Weapon will ignore firing restrictions of other tags while flux < ${
-            extractRegexThresholdAsPercentageString(
-                forceFireRegex, tag
-            )
-        }." +
-                "\nNote: This will not circumvent targeting restrictions, only firing restrictions."
-
         rofRegex.matches(tag) -> "Reduces the rate of fire of the weapon by a factor of ${
             extractRegexThresholdAsPercentageString(
-                forceFireRegex, tag
+                forceFireHFRegex, tag
             )
         }. E.g. LowRoF(200%) makes the weapon shot half as often."
 
@@ -206,12 +223,14 @@ fun getTagTooltip(tag: String): String {
 var unknownTagWarnCounter = 0
 fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
     when {
-        holdRegex.matches(name) -> return FluxTag(weapon, extractRegexThreshold(holdRegex, name))
+        holdFireHFRegex.matches(name) -> return HoldFireHFTag(weapon, extractRegexThreshold(holdFireHFRegex, name))
+        holdFireSFRegex.matches(name) -> return HoldFireSFTag(weapon, extractRegexThreshold(holdFireSFRegex, name))
+        forceFireHFRegex.matches(name) -> return ForceFireTag(weapon, extractRegexThreshold(forceFireHFRegex, name))
+        forceFireSFRegex.matches(name) -> return ForceFireTag(weapon, extractRegexThreshold(forceFireSFRegex, name))
         pdFluxRegex.matches(name) -> return PDAtFluxThresholdTag(weapon, extractRegexThreshold(pdFluxRegex, name))
         avoidArmorRegex.matches(name) -> return AvoidArmorTag(weapon, extractRegexThreshold(avoidArmorRegex, name))
         panicFireRegex.matches(name) -> return PanicFireTag(weapon, extractRegexThreshold(panicFireRegex, name))
         rangeRegex.matches(name) -> return RangeTag(weapon, extractRegexThreshold(rangeRegex, name))
-        forceFireRegex.matches(name) -> return ForceFireTag(weapon, extractRegexThreshold(forceFireRegex, name))
         rofRegex.matches(name) -> return ReduceRoFTag(weapon, extractRegexThreshold(rofRegex, name))
     }
     return when (name) {
@@ -265,12 +284,12 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
 
 fun tagNameToRegexName(tag: String): String {
     return when {
-        holdRegex.matches(tag) -> "Hold(Flx>N%)"
+        holdFireHFRegex.matches(tag) -> "Hold(Flx>N%)"
         pdFluxRegex.matches(tag) -> "PD(Flx>N%)"
         avoidArmorRegex.matches(tag) -> "AvoidArmor"
         panicFireRegex.matches(tag) -> "Panic"
         rangeRegex.matches(tag) -> "Range"
-        forceFireRegex.matches(tag) -> "ForceF(Flx<N%)"
+        forceFireHFRegex.matches(tag) -> "ForceF(Flx<N%)"
         else -> tag
     }
 }
