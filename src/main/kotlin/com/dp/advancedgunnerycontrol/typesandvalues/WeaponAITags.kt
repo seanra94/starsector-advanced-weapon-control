@@ -19,11 +19,17 @@ import org.lwjgl.input.Keyboard
 val pdTags = listOf("PD", "NoPD", "PD(Flx>N%)", "NoMissiles")
 val ammoTags = listOf("ConserveAmmo", "CnsrvPDAmmo")
 
-val holdFireHFRegex = Regex("HoldHF\\(Fl?u?x?>(\\d+)%\\)")
-val holdFireSFRegex = Regex("HoldSF\\(Fl?u?x?>(\\d+)%\\)")
-val forceFireHFRegex = Regex("ForceHF\\(Fl?u?x?<(\\d+)%\\)")
-val forceFireSFRegex = Regex("ForceSF\\(Fl?u?x?<(\\d+)%\\)")
+val holdFireFTRegex = Regex("HoldFT\\(Fl?u?x?>(\\d+)%\\)")
+val holdFireSFTRegex = Regex("HoldSFT\\(Fl?u?x?>(\\d+)%\\)")
+val forceFireFTRegex = Regex("ForceFT\\(Fl?u?x?<(\\d+)%\\)")
+val forceFireSFTRegex = Regex("ForceSFT\\(Fl?u?x?<(\\d+)%\\)")
 
+val avoidShieldsFTRegex = Regex("AvShldFT\\(Fl?u?x?<(\\d+)%\\)")
+val avoidShieldsSFTRegex = Regex("AvShlddSFT\\(Fl?u?x?<(\\d+)%\\)")
+val targetShieldsFTRegex = Regex("TgtShldFT\\(Fl?u?x?<(\\d+)%\\)")
+val targetShieldsSFTRegex = Regex("TgtShldSFT\\(Fl?u?x?<(\\d+)%\\)")
+
+val BurstPDSFTRegex = Regex("BurstPDSFT\\(Fl?u?x?<(\\d+)%\\)")
 val pdFluxRegex = Regex("PD\\(Fl?u?x?>(\\d+)%\\)")
 val avoidArmorRegex = Regex("AvdArmor\\((\\d+)%\\)")
 val panicFireRegex = Regex("Panic\\(H<(\\d+)%\\)")
@@ -54,8 +60,6 @@ val priorityBoilerplateText = "\nIncreases priority by a factor of ${Settings.pr
 
 val tagTooltips = mapOf(
     "PD" to "Restricts targeting to fighters and missiles.",
-    "PrioritisePD" to "Weapon will always prioritise from small to large (Missiles > fighters > small ships > big ships)." +
-            if (Settings.strictBigSmall()) "\nRestricts targeting to missiles and ships smaller than cruisers." else "\nNo targeting restrictions.",
     "NoPD" to "Forbids targeting missiles and prioritizes ships over fighters.",
     "Fighter" to "Restricts targeting to fighters.",
     "AvoidShields" to "Weapon will prioritize targets without shields, flanked shields or high flux/shields off. \nShields of fighters will ${
@@ -99,7 +103,7 @@ val tagTooltips = mapOf(
     "CnsrvPDAmmo" to "When ammo is below ${(Settings.conservePDAmmo() * 100f).toInt()}%, weapon will only fire when the target is a fighter/missile." +
             "\nFor non-PD weapons, only fighters will be fired upon in that case." +
             "\nNo targeting restrictions.",
-    "Opportunist" to "Weapon will be much more hesitant to fire and won't target missiles or fighters. Use for e.g. limited ammo weapons.",
+    "Opportunist" to "Weapon will be much more hesitant to fire unless circumstances are optimal and won't target missiles or fighters. Use for e.g. limited ammo weapons.",
     "AvoidDebris" to "Weapon will not fire when the shot is blocked by debris/asteroids." +
             "\nNote: This only affects the custom AI and the Opportunist mode already includes this option.",
     "BigShips" to "Weapon won't target missiles and prioritize big ships" +
@@ -117,20 +121,6 @@ val tagTooltips = mapOf(
             "\nNo targeting restrictions.",
     "ShipTarget" to "Weapon will only target the selected ship target (R-Key). I like to use this for regenerating missiles." +
             "\nFor AI-controlled ships, this will limit them to the maneuver-target that the ShipAI has chosen.",
-    "TgtShieldsFT" to "As TargetShields, but will allow targeting of anything when flux is below ${(Settings.targetShieldsAtFT() * 100f).toInt()}%. \nShields of fighters will ${
-        mapBooleanToSpecificString(
-            Settings.ignoreFighterShields(),
-            "",
-            "not"
-        )
-    } be ignored (configurable in settings)",
-    "AvdShieldsFT" to "As AvoidShields, but will allow targeting of anything when flux is below ${(Settings.avoidShieldsAtFT() * 100f).toInt()}%. \nShields of fighters will ${
-        mapBooleanToSpecificString(
-            Settings.ignoreFighterShields(),
-            "",
-            "not"
-        )
-    } be ignored (configurable in settings)",
     "NoMissiles" to "Weapon won't target missiles.",
     "Overloaded" to "Weapon will only target and fire at overloaded ships.",
     "ShieldsOff" to "Simplified version of AvoidShields. Will only fire at targets that have no shields or have shields turned off.",
@@ -139,11 +129,14 @@ val tagTooltips = mapOf(
             "\nUse this tag to unleash big manually aimed barrages at your enemies!",
     "PrioFighter" to "Prioritize fighters over all other targets but target other things if no fighters present.$priorityBoilerplateText",
     "PrioMissile" to "Prioritize missiles over all other targets but target other things if no missiles present.$priorityBoilerplateText",
+    "PrioritisePD" to "Weapon will always prioritise from small to large (Missiles == fighters > small ships > big ships)." +
+            if (Settings.strictBigSmall()) "\nRestricts targeting to missiles and ships smaller than cruisers." else "\nNo targeting restrictions.",
     "PrioShips" to "Prioritize non-fighter ships over all other targets but target other things if no ships present.$priorityBoilerplateText",
     "PrioWounded" to "Prioritize targets that have already taken lots of hull damage.",
     "PrioHealthy" to "Prioritize targets that have high hull level",
     "BlockBeams" to "Will shoot at enemies that are shooting this ship with beams, even when out of range. Intended mainly for the SVC Ink Spitter gun.",
     "CustomAI" to "This tag does nothing but prevent the vanilla AI from doing anything. I use this for devastators to prevent vanilla jank.",
+    "SynchronizedFire" to "This tag synchronizes all weapons in a group to fire in volley at the rate of the slowest firing weapon",
     "PrioDense" to "Prioritize target rich areas. Weapon will prioritize shooting at targets that are big and/or have lots of other targets nearby. Good for AoE weapons."
 )
 
@@ -152,33 +145,90 @@ fun getTagTooltip(tag: String): String {
         return tagTooltips[tag] ?: "No description available."
     }
     return when {
-        holdFireHFRegex.matches(tag) -> "HoldFire: Weapon will stop firing if ship's hard flux exceeds ${
+        holdFireFTRegex.matches(tag) -> "HoldFire: Weapon will stop firing if ship's combined flux exceeds ${
             extractRegexThresholdAsPercentageString(
-                holdFireHFRegex,
+                holdFireFTRegex,
                 tag
             )
         } of total flux capacity."
 
-        holdFireSFRegex.matches(tag) -> "HoldFire: Weapon will stop firing if ship's soft flux exceeds ${
+        holdFireSFTRegex.matches(tag) -> "HoldFire: Weapon will stop firing if ship's soft flux exceeds ${
             extractRegexThresholdAsPercentageString(
-                holdFireSFRegex,
+                holdFireSFTRegex,
                 tag
             )
-        } of remaining flux capacity."
+        } of total flux capacity or combined flux exceeds ${(Settings.SFTUpperFluxLimit)}% of total flux capacity."
 
-        forceFireHFRegex.matches(tag) -> "ForceFire: Weapon will ignore firing restrictions of other tags while hard flux < ${
+        forceFireFTRegex.matches(tag) -> "ForceFire: Weapon will ignore firing restrictions of other tags while combined flux < ${
             extractRegexThresholdAsPercentageString(
-                forceFireHFRegex, tag
+                forceFireFTRegex, tag
             )
         } of total flux capacity." +
                 "\nNote: This will not circumvent targeting restrictions, only firing restrictions."
 
-        forceFireSFRegex.matches(tag) -> "ForceFire: Weapon will ignore firing restrictions of other tags while soft flux < ${
+        forceFireSFTRegex.matches(tag) -> "ForceFire: Weapon will ignore firing restrictions of other tags while soft flux < ${
             extractRegexThresholdAsPercentageString(
-                forceFireSFRegex, tag
+                forceFireSFTRegex, tag
             )
-        } of remaining flux capacity." +
+        } of total flux capacity (unless combined flux is above ${(Settings.SFTUpperFluxLimit)}% of total flux capacity)." +
                 "\nNote: This will not circumvent targeting restrictions, only firing restrictions."
+
+        targetShieldsFTRegex.matches(tag) -> "As TargetShields, but will allow targeting of anything when combined flux is below ${
+            extractRegexThresholdAsPercentageString(
+                targetShieldsFTRegex, tag
+            )
+        } of total flux capacity.%. \nShields of fighters will ${
+            mapBooleanToSpecificString(
+                Settings.ignoreFighterShields(),
+                "",
+                "not"
+            )
+        } be ignored (configurable in settings)"
+
+        targetShieldsSFTRegex.matches(tag) -> "As TargetShields, but will allow targeting of anything when soft flux is below ${
+            extractRegexThresholdAsPercentageString(
+                targetShieldsSFTRegex, tag
+            )
+        } of total flux capacity (unless combined flux is above ${(Settings.SFTUpperFluxLimit)} of total flux capacity)." +
+                "%. \nShields of fighters will ${
+            mapBooleanToSpecificString(
+                Settings.ignoreFighterShields(),
+                "",
+                "not"
+            )
+        } be ignored (configurable in settings)"
+
+        avoidShieldsFTRegex.matches(tag) -> "As AvoidShields, but will allow targeting of anything when combined flux is below ${
+            extractRegexThresholdAsPercentageString(
+                avoidShieldsFTRegex, tag
+            )
+        } of total flux capacity.%. \nShields of fighters will ${
+            mapBooleanToSpecificString(
+                Settings.ignoreFighterShields(),
+                "",
+                "not"
+            )
+        } be ignored (configurable in settings)"
+
+        avoidShieldsSFTRegex.matches(tag) -> "As AvoidShields, but will allow targeting of anything when soft flux is below ${
+            extractRegexThresholdAsPercentageString(
+                targetShieldsSFTRegex, tag
+            )
+        } of total flux capacity (unless combined flux is above ${(Settings.SFTUpperFluxLimit)} of total flux capacity)." +
+                "%. \nShields of fighters will ${
+            mapBooleanToSpecificString(
+                Settings.ignoreFighterShields(),
+                "",
+                "not"
+            )
+        } be ignored (configurable in settings)"
+
+        BurstPDSFTRegex.matches(tag) -> "Weapon only fires when soft flux is below ${
+            extractRegexThresholdAsPercentageString(
+                BurstPDSFTRegex, tag
+            )
+        } of total flux capacity (unless combined flux is above ${(Settings.SFTUpperFluxLimit)} of total flux capacity)" +
+                " or when its target is a missile or fighter. Has no effect on priorities or target restrictions. Recommended to pair with prioritisePD tag"
 
         pdFluxRegex.matches(tag) -> "Weapon will act as PD mode while ship flux > ${
             extractRegexThresholdAsPercentageString(
@@ -212,7 +262,7 @@ fun getTagTooltip(tag: String): String {
 
         rofRegex.matches(tag) -> "Reduces the rate of fire of the weapon by a factor of ${
             extractRegexThresholdAsPercentageString(
-                forceFireHFRegex, tag
+                rofRegex, tag
             )
         }. E.g. LowRoF(200%) makes the weapon shot half as often."
 
@@ -223,10 +273,17 @@ fun getTagTooltip(tag: String): String {
 var unknownTagWarnCounter = 0
 fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
     when {
-        holdFireHFRegex.matches(name) -> return HoldFireHFTag(weapon, extractRegexThreshold(holdFireHFRegex, name))
-        holdFireSFRegex.matches(name) -> return HoldFireSFTag(weapon, extractRegexThreshold(holdFireSFRegex, name))
-        forceFireHFRegex.matches(name) -> return ForceFireTag(weapon, extractRegexThreshold(forceFireHFRegex, name))
-        forceFireSFRegex.matches(name) -> return ForceFireTag(weapon, extractRegexThreshold(forceFireSFRegex, name))
+        holdFireFTRegex.matches(name) -> return HoldFireFTTag(weapon, extractRegexThreshold(holdFireFTRegex, name))
+        holdFireSFTRegex.matches(name) -> return HoldFireSFTTag(weapon, extractRegexThreshold(holdFireSFTRegex, name))
+        forceFireFTRegex.matches(name) -> return ForceFireFTTag(weapon, extractRegexThreshold(forceFireFTRegex, name))
+        forceFireSFTRegex.matches(name) -> return ForceFireSFTTag(weapon, extractRegexThreshold(forceFireSFTRegex, name))
+
+        avoidShieldsFTRegex.matches(name) -> return AvoidShieldsFTTag(weapon, extractRegexThreshold(avoidShieldsFTRegex, name))
+        avoidShieldsSFTRegex.matches(name) -> return AvoidShieldsSFTTag(weapon, extractRegexThreshold(avoidShieldsSFTRegex, name))
+        targetShieldsFTRegex.matches(name) -> return TargetShieldsFTTag(weapon, extractRegexThreshold(targetShieldsFTRegex, name))
+        targetShieldsSFTRegex.matches(name) -> return TargetShieldsSFTTag(weapon, extractRegexThreshold(targetShieldsSFTRegex, name))
+
+        BurstPDSFTRegex.matches(name) -> return BurstPDSFTTag(weapon, extractRegexThreshold(BurstPDSFTRegex, name))
         pdFluxRegex.matches(name) -> return PDAtFluxThresholdTag(weapon, extractRegexThreshold(pdFluxRegex, name))
         avoidArmorRegex.matches(name) -> return AvoidArmorTag(weapon, extractRegexThreshold(avoidArmorRegex, name))
         panicFireRegex.matches(name) -> return PanicFireTag(weapon, extractRegexThreshold(panicFireRegex, name))
@@ -239,8 +296,8 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
         "NoPD" -> NoPDTag(weapon)
         "Fighter" -> FighterTag(weapon)
         "AvoidShields" -> AvoidShieldsTag(weapon)
-        "TargetShields" -> TargetShieldsTag(weapon)
         "AvdShields+" -> AvoidShieldsTag(weapon, 0.02f)
+        "TargetShields" -> TargetShieldsTag(weapon)
         "TgtShields+" -> TargetShieldsTag(weapon, 0.01f)
         "NoFighters" -> NoFightersTag(weapon)
         "ConserveAmmo" -> ConserveAmmoTag(weapon, Settings.conserveAmmo())
@@ -253,8 +310,6 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
         "AvoidPhased" -> AvoidPhaseTag(weapon)
         "TargetPhase" -> TargetPhaseTag(weapon)
         "ShipTarget" -> ShipTargetTag(weapon)
-        "TgtShieldsFT" -> TargetShieldsAtFTTag(weapon)
-        "AvdShieldsFT" -> AvoidShieldsAtFTTag(weapon)
         "NoMissiles" -> NoMissilesTag(weapon)
         "Overloaded" -> OverloadTag(weapon)
         "ShieldsOff" -> ShieldsOff(weapon)
@@ -266,6 +321,7 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
         "PrioHealthy" -> PrioritizeHealthyTag(weapon)
         "BlockBeams" -> InterdictBeamsTag(weapon)
         "CustomAI" -> CustomAITag(weapon)
+        "SynchronizedFire" -> SynchronizedFireTag(weapon)
         "PrioDense" -> PrioritizeDense(weapon)
         else -> {
             unknownTagWarnCounter++
@@ -284,14 +340,24 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
 
 fun tagNameToRegexName(tag: String): String {
     return when {
-        holdFireHFRegex.matches(tag) -> "Hold(Flx>N%)"
+        holdFireFTRegex.matches(tag) -> "HoldFT(Flx>N%)"
+        holdFireSFTRegex.matches(tag) -> "HoldSFT(Flx>N%)"
+        forceFireFTRegex.matches(tag) -> "ForceFT(Flx<N%)"
+        forceFireSFTRegex.matches(tag) -> "ForceSFT(Flx<N%)"
+
+        avoidShieldsFTRegex.matches(tag) -> "AvShldFT(Flx<N%)"
+        avoidShieldsSFTRegex.matches(tag) -> "AvShlddSFT(Flx<N%)"
+        targetShieldsFTRegex.matches(tag) -> "TgtShldFT(Flx<N%)"
+        targetShieldsSFTRegex.matches(tag) -> "TgtShldSFT(Flx<N%)"
+
+        BurstPDSFTRegex.matches(tag) -> "burstPDSFT(Flx<N%)"
         pdFluxRegex.matches(tag) -> "PD(Flx>N%)"
         avoidArmorRegex.matches(tag) -> "AvoidArmor"
         panicFireRegex.matches(tag) -> "Panic"
         rangeRegex.matches(tag) -> "Range"
-        forceFireHFRegex.matches(tag) -> "ForceF(Flx<N%)"
         else -> tag
     }
+
 }
 
 val tagIncompatibility = mapOf(
@@ -303,7 +369,8 @@ val tagIncompatibility = mapOf(
         "BigShips",
         "SmallShips",
         "CnsrvPDAmmo",
-        "PrioritisePD"
+        "PrioritisePD",
+        "SynchronizedFire"
     ),
     "PrioritisePD" to listOf("Opportunist", "NoPD", "BigShips", "SmallShips", "Fighter", "PD"),
     "Fighter" to listOf(
@@ -316,6 +383,7 @@ val tagIncompatibility = mapOf(
         "SmallShips",
         "PrioritisePD",
         "CnsrvPDAmmo",
+        "SynchronizedFire"
     ),
     "NoPD" to listOf("PD", "Fighter", "PD(Flx>N%)", "PrioritisePD", "CnsrvPDAmmo"),
     "ShieldsOff" to listOf(
@@ -324,14 +392,19 @@ val tagIncompatibility = mapOf(
         "TgtShields+",
         "AvdShields+",
         "AvdShieldsFT",
-        "TgtShieldsFT"
+        "AvdShieldsSFT",
+        "TgtShieldsFT",
+        "TgtShieldsSFT",
+        "BurstPDSFT"
     ),
     "AvoidShields" to listOf(
         "TargetShields",
         "TgtShields+",
         "AvdShields+",
         "AvdShieldsFT",
+        "AvdShieldsSFT",
         "TgtShieldsFT",
+        "TgtShieldsSFT",
         "ShieldsOff"
     ),
     "TargetShields" to listOf(
@@ -339,7 +412,9 @@ val tagIncompatibility = mapOf(
         "AvdShields+",
         "TgtShields+",
         "AvdShieldsFT",
+        "AvdShieldsSFT",
         "TgtShieldsFT",
+        "TgtShieldsSFT",
         "ShieldsOff"
     ),
     "TgtShields+" to listOf(
@@ -347,7 +422,9 @@ val tagIncompatibility = mapOf(
         "AvdShields+",
         "TargetShields",
         "AvdShieldsFT",
+        "AvdShieldsSFT",
         "TgtShieldsFT",
+        "TgtShieldsSFT",
         "ShieldsOff"
     ),
     "AvdShields+" to listOf(
@@ -355,7 +432,9 @@ val tagIncompatibility = mapOf(
         "TgtShields+",
         "AvoidShields",
         "AvdShieldsFT",
+        "AvdShieldsSFT",
         "TgtShieldsFT",
+        "TgtShieldsSFT",
         "ShieldsOff"
     ),
     "AvdShieldsFT" to listOf(
@@ -363,7 +442,9 @@ val tagIncompatibility = mapOf(
         "AvdShields+",
         "TargetShields",
         "TgtShields+",
+        "AvdShieldsSFT",
         "TgtShieldsFT",
+        "TgtShieldsSFT",
         "ShieldsOff"
     ),
     "TgtShieldsFT" to listOf(
@@ -372,12 +453,14 @@ val tagIncompatibility = mapOf(
         "TargetShields",
         "TgtShields+",
         "AvdShieldsFT",
+        "AvdShieldsSFT",
+        "TgtShieldsSFT",
         "ShieldsOff"
     ),
     "NoFighters" to listOf("Fighter", "Opportunist"),
     "CnsrvPDAmmo" to listOf("PD", "Fighter", "NoPD"),
     "Opportunist" to listOf("Fighter", "PD", "NoFighters", "PD(Flx>N%)", "PrioritisePD", "CnsrvPDAmmo", "NoMissiles"),
-    "PD(Flx>N%)" to listOf("Fighter", "Opportunist", "NoPD", "PD", "BigShips", "SmallShips"),
+    "PD(Flx>N%)" to listOf("Fighter", "Opportunist", "NoPD", "PD", "BigShips", "SmallShips", "SynchronizedFire"),
     "SmallShips" to listOf("BigShips", "PD", "Fighter", "PD(Flx>N%)", "PrioritisePD"),
     "BigShips" to listOf("SmallShips", "PD", "Fighter", "PD(Flx>N%)", "PrioritisePD"),
     "NoMissiles" to listOf("Opportunist"),

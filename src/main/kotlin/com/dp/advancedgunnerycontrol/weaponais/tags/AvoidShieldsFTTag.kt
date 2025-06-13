@@ -9,7 +9,7 @@ import com.fs.starfarer.api.combat.ShipAPI
 import com.fs.starfarer.api.combat.WeaponAPI
 
 // Allows targeting of anything when flux < fluxThreshold, otherwise avoids shields. Always prioritises by target shield factor
-class AvoidShieldsAtFTTagAvoidShieldsAtFTTag(
+class AvoidShieldsFTTag(
     weapon: WeaponAPI,
     private val shieldThreshold: Float = Settings.avoidShieldsThreshold(),
     private val fluxThreshold: Float = Settings.avoidShieldsAtFT()

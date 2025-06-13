@@ -3,6 +3,7 @@ package com.dp.advancedgunnerycontrol.weaponais.tags
 import com.dp.advancedgunnerycontrol.weaponais.*
 import com.fs.starfarer.api.combat.CombatEntityAPI
 import com.fs.starfarer.api.combat.MissileAPI
+import com.fs.starfarer.api.combat.ShieldAPI
 import com.fs.starfarer.api.combat.ShipAPI
 import com.fs.starfarer.api.combat.WeaponAPI
 
@@ -18,7 +19,7 @@ class PrioritisePDTag(weapon: WeaponAPI, private val multiplier: Float) : Weapon
 
     override fun computeTargetPriorityModifier(solution: FiringSolution): Float {
         return if (isValidPDTargetForWeapon(solution.target, weapon)) {
-            1f / multiplier
+            0.1f
         } else {
             (solution.target as? ShipAPI)?.let { bigness(it) } ?: 10f
         }

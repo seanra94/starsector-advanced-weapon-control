@@ -95,6 +95,12 @@ dependencies {
         include("*.java")
     })
 
+    sourceSets {
+        main {
+            java.srcDir("api/src")   // ← add this
+        }
+    }
+
 }
 
 //java{
@@ -235,10 +241,11 @@ tasks {
                    |   #                                 #### TAG LIST ####
                    |   # Determines which tags will be shown in the GUIs. Feel free to add/remove tags as you see fit.
                    |   # Allowed values are: (replace N with a number, usually between 0 and 100)
-                   |   # "PD", "NoPD", "NoMissiles", "PD(Flux>N%)", "PrioritisePD", "Fighter", "NoFighters", "AvoidShields", "TargetShields",
-                   |   # "AvdShields+", "TgtShields+", "AvdShieldsFT", "TgtShieldsFT", "AvdArmor(N%)", "AvoidDebris", "ShieldsOff",
-                   |   # "Opportunist", "Hold(Flux>N%)", "ConserveAmmo", "CnsrvPDAmmo", "ShipTarget", "AvoidPhased", "TargetPhase",
-                   |   # "BigShips", "SmallShips", "Panic(H<N%)", "AvoidPhased", "Range<N%", "ForceF(Flux<N%)", "Overloaded", "Merge",
+                   |   # "PD", "NoPD", "NoMissiles", "PD(F>N%)", "PrioritisePD", "Fighter", "NoFighters", "AvoidShields", "TargetShields",
+                   |   # "AvdShields+", "TgtShields+", "AvdShieldsFT", "TgtShieldsFT", "AvdShieldsSFT(F<N%)", "TgtShieldsSFT(F<N%)", 
+                   |   # "AvdArmor(N%)", "AvoidDebris", "ShieldsOff",
+                   |   # "Opportunist", "HoldFT(F>N%)", "HoldSFT(F>N%)" "ConserveAmmo", "CnsrvPDAmmo", BurstPDSFT(F<N%)" "ShipTarget", "AvoidPhased", "TargetPhase",
+                   |   # "BigShips", "SmallShips", "Panic(H<N%)", "AvoidPhased", "Range<N%", "ForceF(F<N%)", "Overloaded", "Merge",
                    |   # "PrioFighter", "PrioMissile", "PrioShips", "PrioWounded", "PrioHealthy", "CustomAI", "LowRoF(N%)"
                    |   
                    |   # Note: The word Flux in parentheses may be abbreviated by skipping any of the non-capitalized letters, e.g.: F, Fx, Flx
@@ -248,26 +255,26 @@ tasks {
                    |   "listVariant" : "classic"
                    |   
                    |   ,"completeTagList" : [
-                   |                "PD", "NoPD", "PD(Flx>50%)", "PD(Flx>10%)",
-                   |                "AvoidShields", "TargetShields", "AvdShields+", "TgtShields+", "AvdArmor(33%)", "AvdArmor(75%)",
-                   |                "Hold(Flx>90%)", "Hold(Flx>75%)", "Hold(Flx>50%)", "Merge",
+                   |                "AvoidShields", "TargetShields", "AvdShields+", "TgtShields+",
+                   |                "AvdShieldsFT(F<20%)", "TgtShieldsFT(F<20%)", "AvdShieldsSFT(F<10%)", "TgtShieldsSFT(F<10%)",
+                   |                "AvdArmor(33%)", "AvdArmor(75%)",
+                   |                "HoldFT(F>90%)", "HoldFT(F>75%)", "HoldFT(Fx>50%)", "HoldSFT(F>10%)", "HoldSFT(F>20%)", "Merge",
+                   |                "ForceAF", "ForceFT(F<25%)", "ForceFT(F<50%)", "ForceFT(F<75%)", "ForceSFT(F<5%)", "ForceSFT(F<15%)",
                    |                "AvoidPhased", "TargetPhase", "ShipTarget", 
-                   |                "ForceAF", "ForceF(F<25%)", "ForceF(F<50%)", "ForceF(F<75%)",
                    |                "PrioritisePD", "PrioFighter", "PrioMissile", "PrioShips", "PrioWounded", "PrioHealthy",
-                   |                "Fighter", "AvdShieldsFT", "TgtShieldsFT", "AvoidDebris",
-                   |                "NoMissiles", "NoFighters",
-                   |                "Opportunist", "Panic(H<25%)", "Range<60%", "Range<80%",
-                   |                "ConserveAmmo", "CnsrvPDAmmo",
+                   |                "PD", "NoPD", "PD(Flx>50%)", "PD(Flx>10%)",
+                   |                "Fighter", "NoFighters",  "NoMissiles",
+                   |                "CnsrvPDAmmo", BurstPDSFT(F<10%)", "ConserveAmmo", "Opportunist", "Overloaded", "Panic(H<25%)", "Range<60%", "Range<80%", "AvoidDebris",
                    |                "BigShips", "SmallShips",
-                   |                "Overloaded", "LowRoF(200%)", "CustomAI", "PrioDense"
+                   |                 "LowRoF(200%)", "CustomAI", "PrioDense"
                    |                ]  
                    |   
                    |   ,"classicTagList" : [
                    |                "PD", "PD(Flx>50%)",
                    |                "AvoidShields", "TargetShields", "AvdArmor(33%)", 
-                   |                "Hold(Flx>90%)", "Hold(Flx>75%)", "Merge",
+                   |                "Hold(Flx>90%)", "Hold(Flx>75%)", "HoldSFT(F>10%)", "Merge",
                    |                "AvoidPhased", "TargetPhase", "ShipTarget", 
-                   |                "ForceAF", "ForceF(F<50%)",
+                   |                "ForceAF", "ForceF(F<50%)", "ForceSFT(F<5%)",
                    |                "PrioritisePD", "PrioFighter", "PrioMissile",
                    |                "NoMissiles", "NoFighters",
                    |                "Opportunist", "Panic(H<25%)", "Range<60%",

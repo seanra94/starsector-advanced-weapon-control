@@ -75,6 +75,7 @@ object Settings : SettingsDefinition() {
     val ignoreFighterShields = addSetting<Boolean>("ignoreFighterShields", true)
     val targetShieldsAtFT = addSetting<Float>("targetShieldsAtFT_flux", 0.2f, false)
     val avoidShieldsAtFT = addSetting<Float>("avoidShieldsAtFT_flux", 0.2f, false)
+    val SFTUpperFluxLimit = addSetting<Float>("SFTUpperFluxLimit", 0.9f, false)
     val prioXModifier = addSetting<Float>("prioXModifier", 10f, false)
     val useExactBoundsForFiringDecision = addSetting<Boolean>("useExactBoundsForFiringDecision", true)
     val useConeFFForSpreadOver = addSetting("useConeFFAboveSpread", 4f, true)
