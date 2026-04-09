@@ -4,6 +4,7 @@ import com.dp.advancedgunnerycontrol.utils.softFluxBelowThreshold
 import com.dp.advancedgunnerycontrol.weaponais.FiringSolution
 import com.fs.starfarer.api.combat.WeaponAPI
 
+// SEAN
 class ForceFireSFTTag(weapon: WeaponAPI, private val softFluxThreshold: Float) : WeaponAITagBase(weapon) {
     override fun computeTargetPriorityModifier(solution: FiringSolution): Float = 1f
 

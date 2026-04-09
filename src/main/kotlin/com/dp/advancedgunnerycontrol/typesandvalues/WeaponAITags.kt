@@ -19,11 +19,13 @@ import org.lwjgl.input.Keyboard
 val pdTags = listOf("PD", "NoPD", "PD(Flx>N%)", "NoMissiles")
 val ammoTags = listOf("ConserveAmmo", "CnsrvPDAmmo")
 
+// SEAN
 val holdFireFTRegex = Regex("HoldFT\\(Fl?u?x?>(\\d+)%\\)")
 val holdFireSFTRegex = Regex("HoldSFT\\(Fl?u?x?>(\\d+)%\\)")
 val forceFireFTRegex = Regex("ForceFT\\(Fl?u?x?<(\\d+)%\\)")
 val forceFireSFTRegex = Regex("ForceSFT\\(Fl?u?x?<(\\d+)%\\)")
 
+// CODEX
 val avoidShieldsFTRegex = Regex("(?:AvdShieldsFT|AvShldFT)\\(Fl?u?x?<(\\d+)%\\)")
 val avoidShieldsSFTRegex = Regex("(?:AvdShieldsSFT|AvShlddSFT)\\(Fl?u?x?<(\\d+)%\\)")
 val targetShieldsFTRegex = Regex("(?:TgtShieldsFT|TgtShldFT)\\(Fl?u?x?<(\\d+)%\\)")
@@ -70,6 +72,7 @@ val tagTooltips = mapOf(
         )
     } be ignored (configurable in settings)" +
             "\nNo targeting restrictions.",
+    // PETER
     "TargetShields" to "Weapon will prioritize targeting shields. Will stop firing against enemies with very high flux or no shields." +
             "\nCan target, but not fire against unshielded targets. Combine with a ForceFire tag to still shoot." +
             "\nShields of fighters will ${
@@ -124,6 +127,7 @@ val tagTooltips = mapOf(
     "ShipTarget" to "Weapon will only target the selected ship target (R-Key). I like to use this for regenerating missiles." +
             "\nFor AI-controlled ships, this will limit them to the maneuver-target that the ShipAI has chosen.",
     "NoMissiles" to "Weapon won't target missiles.",
+    // PETER
     "Overloaded" to "Weapon will only target and fire at overloaded or venting ships.",
     "ShieldsOff" to "Simplified version of AvoidShields. Will only fire at targets that have no shields or have shields turned off.",
     "Merge" to "Press [${Keyboard.getKeyName(Settings.mergeHotkey())}] to merge all weapons with this tag into current weapon group. " +
@@ -131,6 +135,7 @@ val tagTooltips = mapOf(
             "\nUse this tag to unleash big manually aimed barrages at your enemies!",
     "PrioFighter" to "Prioritize fighters over all other targets but target other things if no fighters present.$priorityBoilerplateText",
     "PrioMissile" to "Prioritize missiles over all other targets but target other things if no missiles present.$priorityBoilerplateText",
+    // SEAN
     "PrioritisePD" to "Weapon will always prioritise from small to large (Missiles == fighters > small ships > big ships)." +
             if (Settings.strictBigSmall()) "\nRestricts targeting to missiles and ships smaller than cruisers." else "\nNo targeting restrictions.",
     "PrioShips" to "Prioritize non-fighter ships over all other targets but target other things if no ships present.$priorityBoilerplateText",
@@ -138,8 +143,10 @@ val tagTooltips = mapOf(
     "PrioHealthy" to "Prioritize targets that have high hull level",
     "BlockBeams" to "Will shoot at enemies that are shooting this ship with beams, even when out of range. Intended mainly for the SVC Ink Spitter gun.",
     "CustomAI" to "This tag does nothing but prevent the vanilla AI from doing anything. I use this for devastators to prevent vanilla jank.",
+    // SEAN
     "SynchronizedFire" to "This tag synchronizes all weapons in a group to fire in volley at the rate of the slowest firing weapon",
     "PrioDense" to "Prioritize target rich areas. Weapon will prioritize shooting at targets that are big and/or have lots of other targets nearby. Good for AoE weapons.",
+    // PETER
     "DoNotShoot" to "Weapon will never fire unless paired with a ForceFire tag."
 )
 
@@ -276,6 +283,7 @@ fun getTagTooltip(tag: String): String {
 var unknownTagWarnCounter = 0
 fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
     when {
+        // SEAN
         holdFireFTRegex.matches(name) -> return HoldFireFTTag(weapon, extractRegexThreshold(holdFireFTRegex, name))
         holdFireSFTRegex.matches(name) -> return HoldFireSFTTag(weapon, extractRegexThreshold(holdFireSFTRegex, name))
         forceFireFTRegex.matches(name) -> return ForceFireFTTag(weapon, extractRegexThreshold(forceFireFTRegex, name))
@@ -326,6 +334,7 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
         "CustomAI" -> CustomAITag(weapon)
         "SynchronizedFire" -> SynchronizedFireTag(weapon)
         "PrioDense" -> PrioritizeDense(weapon)
+        // PETER
         "DoNotShoot" -> DoNotShootTag(weapon)
         else -> {
             unknownTagWarnCounter++
@@ -342,6 +351,7 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
     }
 }
 
+// CODEX
 fun tagNameToRegexName(tag: String): String {
     return when {
         holdFireFTRegex.matches(tag) -> "HoldFT"
@@ -364,6 +374,7 @@ fun tagNameToRegexName(tag: String): String {
 
 }
 
+// SEAN
 val tagIncompatibility = mapOf(
     "PD" to listOf(
         "Fighter",
@@ -474,6 +485,7 @@ val tagIncompatibility = mapOf(
     "PrioWounded" to listOf("PrioHealthy")
 )
 
+// CODEX
 data class TagCompatibilityCheck(
     val isIncompatible: Boolean,
     val reason: String? = null

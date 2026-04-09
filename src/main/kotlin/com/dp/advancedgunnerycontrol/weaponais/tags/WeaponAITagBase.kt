@@ -25,6 +25,7 @@ abstract class WeaponAITagBase(protected val weapon: WeaponAPI) {
 
     abstract fun computeTargetPriorityModifier(solution: FiringSolution): Float
 
+    // PETER
     /**
      * Weapon will fire only if all active tags return true here.
      */

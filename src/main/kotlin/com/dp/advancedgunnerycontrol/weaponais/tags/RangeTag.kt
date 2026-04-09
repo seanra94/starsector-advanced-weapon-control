@@ -8,6 +8,7 @@ import org.lazywizard.lazylib.ext.minus
 import org.lwjgl.util.vector.Vector2f
 
 class RangeTag(weapon: WeaponAPI, private val threshold: Float) : WeaponAITagBase(weapon) {
+    // SEAN
     override fun computeTargetPriorityModifier(solution: FiringSolution): Float {
         return if (weapon.isInRangeOf(solution.target.location, threshold)) 1.0f else 100f
     }

@@ -10,9 +10,11 @@ class StayAwayAI(ship: ShipAPI) : ShipCommandGenerator(ship) {
 
     companion object{
         const val SCANNING_RANGE = 2500f
+        // PETER
         const val MAX_ENGAGEMENT_RANGE = 1500f
     }
 
+    // PETER
     private fun computeIdealEngagementRange(): Float{
         return maxOf(
             MAX_ENGAGEMENT_RANGE,
@@ -40,6 +42,7 @@ class StayAwayAI(ship: ShipAPI) : ShipCommandGenerator(ship) {
     private fun shouldBackOff(): Boolean{
         val shipTargetDistance = ship.determineUniversalShipTarget()?.location?.minus(ship.location)?.length()
             ?: return false
+        // PETER
         return shipTargetDistance < computeIdealEngagementRange()
     }
 }

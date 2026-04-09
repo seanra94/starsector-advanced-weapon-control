@@ -5,6 +5,7 @@ import com.dp.advancedgunnerycontrol.weaponais.isInRangeOf
 import com.fs.starfarer.api.combat.CombatEntityAPI
 import com.fs.starfarer.api.combat.WeaponAPI
 
+// SEAN
 /**
  * Fires as a volley when **all** weapons in the same group are
  *     • ready (cool-down == 0) **and**

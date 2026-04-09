@@ -15,6 +15,7 @@ class RefreshWeaponButtons(private val ship: ShipAPI, private val index: Int) : 
         group.refreshAllButtons(currentTags)
         group.enableAllButtons()
         group.buttons.forEach {
+            // PETER
             it.info.tooltip.txt = getTagTooltip(it.info.txt)
             val str = it.data as? String ?: ""
             var (isInvalid, invalidityReason) = isIncompatibleWithExistingTags(str, currentTags)

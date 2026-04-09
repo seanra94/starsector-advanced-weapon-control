@@ -5,9 +5,11 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 object Variables {
     // Note: On Linux, if you installed Starsector into ~/something, you have to write /home/<user>/ instead of ~/
+    // SEAN
     val starsectorDirectory = System.getenv("STARSECTOR_DIRECTORY") ?: "D:/Program Files (x86)/Fractal Softworks/Starsector"
 
 
+    // PETER
     val modVersion = "1.20.0"
     val jarFileNameBase = "AdvancedGunneryControl-$modVersion"
     val jarFileName = "$jarFileNameBase.jar"
@@ -32,6 +34,7 @@ object Variables {
 // LazyLib is needed to use Kotlin, as it provides the Kotlin Runtime
 }
 //////////////////////
+// CODEX
 // Build supports two path strategies:
 // 1. Original install-based setup via agc.starsectorDir / STARSECTOR_DIRECTORY.
 // 2. Modular setup via explicit per-dependency paths, defaulting to this workspace's jar folders.
@@ -169,6 +172,7 @@ version = Variables.modVersion
 
 repositories {
     maven(url = uri("$projectDir/libs"))
+    // CODEX
     mavenCentral()
     jcenter()
 }
@@ -182,6 +186,7 @@ dependencies {
 
     // Get kotlin sdk from LazyLib during runtime, only use it here during compile time
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersionInLazyLib")
+    // CODEX
     compileOnly(installedConsoleCommandJars)
     compileOnly(bundledModderJars)
 
@@ -197,12 +202,14 @@ dependencies {
         }
     )
 
+    // SEAN
     compileOnly(fileTree("$projectDir/CommunityApiDocs/src/com/fs/starfarer/api"){
         include("*.java")
     })
 
 }
 
+// SEAN
 sourceSets {
     main {
         java.srcDir("api/src")
@@ -290,6 +297,7 @@ tasks {
                 """.trimIndent()
             )
 
+        // PETER
         File(projectDir, "${Variables.modId}.version")
             .writeText(
                 """
@@ -333,6 +341,7 @@ tasks {
 
     }
 
+    // SEAN
     register("write-settings-file") {
         System.setProperty("line.separator", "\n")
         File(projectDir, "Settings.editme")
@@ -594,6 +603,7 @@ tasks {
             )
     }
 
+    // PETER
     register("create-everything"){
         dependsOn(jar, kotlinSourcesJar, "write-settings-file", "create-metadata-files")
     }
@@ -610,6 +620,7 @@ tasks {
 
         println("Installing mod into Starsector mod folder...")
 
+        // CODEX
         val destinations = listOfNotNull(modInModsFolder)
 
         destinations.forEach { dest ->
@@ -627,6 +638,7 @@ tasks {
 //}
 
 tasks.withType<KotlinCompile> {
+    // CODEX
     if (!hasConsoleCommandsDependency) {
         exclude("**/AGCConsoleCommands.kt")
     }

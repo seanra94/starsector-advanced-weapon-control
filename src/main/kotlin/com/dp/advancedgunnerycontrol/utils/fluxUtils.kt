@@ -4,6 +4,7 @@ import com.dp.advancedgunnerycontrol.settings.Settings
 import com.fs.starfarer.api.combat.ShipAPI
 
 
+// SEAN
 /**
  * - 0 = all flux capacity is free
  * - 1 = all flux capacity is occupied by soft flux <br>

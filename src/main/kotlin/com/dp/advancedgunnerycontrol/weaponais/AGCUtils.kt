@@ -30,6 +30,7 @@ fun ShipAPI.hasPhaseCloak(): Boolean{
     return hullSpec.isPhase && phaseCloak != null
 }
 
+// SEAN
 fun WeaponAPI.isInRangeOf(point: Vector2f, threshold: Float = 1f): Boolean =
     ((location - point).length()) <= threshold * range
 

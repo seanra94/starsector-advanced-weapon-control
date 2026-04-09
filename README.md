@@ -27,6 +27,7 @@ and unzip it in your mods folder.
 If you install a new version, please make sure to delete the old folder before doing so. Backup you Settings.editme 
 if you wish to keep it.
 
+<!-- CODEX -->
 ## Development / Building ##
 
 The Gradle build supports two setup styles:
@@ -86,6 +87,7 @@ If you have ConsoleCommands installed, you can also hotload new tags via AGC_add
 Ship refers to a non-fighter ship in the table below
 Replace N with a number between 1 and 99 when the tag name contains N%
 
+<!-- SEAN -->
 |             Tag             | Targets                        | Prioritizes                                          | Requirements  |       Uses Custom AI When       |                                                                       Comments                                                                       |                                 Incompatible with                                 | Suggested Use Case                                                                                                    | Recommended as suggested tag?  |
 |:---------------------------:|:-------------------------------|:-----------------------------------------------------|:--------------|:-------------------------------:|:----------------------------------------------------------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------:|:----------------------------------------------------------------------------------------------------------------------|:-------------------------------|
 |             PD              | Fighters/Missiles              | Fighters/Missiles                                    | PD Weapon     |               No                |                                                            Will never shoot regular ships                                                            |         "Fighter", "Opportunist", "NoPD", "PD(Flx>N%)", "Big/SmallShips"          | Weapons that only make sense as PD weapons and shouldn't waste shots/flux on enemy ships                              | Yes                            |
@@ -123,6 +125,7 @@ Replace N with a number between 1 and 99 when the tag name contains N%
 
 ## Settings ##
 
+<!-- SEAN -->
 The settings allow you to configure many aspects of the mod.SynchronizedFireTag
 
 Simply open the file ***Settings.editme*** (located in the folder of this mod) in a text editor of your choice 

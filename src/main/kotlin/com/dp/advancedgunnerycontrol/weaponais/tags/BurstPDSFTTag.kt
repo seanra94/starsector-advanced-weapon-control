@@ -7,6 +7,7 @@ import com.dp.advancedgunnerycontrol.weaponais.isValidPDTargetForWeapon
 import com.fs.starfarer.api.combat.CombatEntityAPI
 import com.fs.starfarer.api.combat.WeaponAPI
 
+// SEAN
 // Only fire at full ROF if target is missile or fighter and ammo < ammoThreshold
 class BurstPDSFTTag(weapon: WeaponAPI, private val softFluxThreshold: Float) : WeaponAITagBase(weapon) {
 

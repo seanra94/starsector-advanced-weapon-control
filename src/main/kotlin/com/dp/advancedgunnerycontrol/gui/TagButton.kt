@@ -63,6 +63,7 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
         val tags = loadPersistentTags(ship.id, ship, group, AGCGUI.storageIndex).toMutableList()
         sameGroupButtons.forEach {
             it.enable()
+            // CODEX
             if (isIncompatibleWithExistingTags(it.associatedValue, tags).isIncompatible || shouldTagBeDisabled(
                     group,
                     ship,
