@@ -27,6 +27,26 @@ and unzip it in your mods folder.
 If you install a new version, please make sure to delete the old folder before doing so. Backup you Settings.editme 
 if you wish to keep it.
 
+## Development / Building ##
+
+The Gradle build supports two setup styles:
+
+- Original install-based setup: point `agc.starsectorDir` (or `STARSECTOR_DIRECTORY`) at your Starsector install and the build will resolve core jars plus supported mod jars from `mods/`, matching the original project structure.
+- Modular setup: point the individual `agc.*` properties at separate jar locations. By default in this workspace, Gradle looks for bundled jars in `../../Game Jars` and `../../Modder Jars`, so this fork can build without depending on a specific local Starsector install layout.
+
+Useful properties live in `gradle.properties`:
+
+- `agc.starsectorDir`
+- `agc.gameJarsDir`
+- `agc.modArchivesDir`
+- `agc.consoleCommandsDir`
+- `agc.lazyLibDir`
+- `agc.magicLibDir`
+- `agc.lunaLibDir`
+
+From the project root, run `./gradlew.bat create-everything` on Windows or `./gradlew create-everything` on Linux.
+That regenerates the metadata files, `Settings.editme`, and the release jars under `jars/agc/`.
+
 ## Controls (Combat) ##
 
 Press the "J"-Key to open up a GUI. This will pause the game and lock the camera. Press "J" again to close the GUI.

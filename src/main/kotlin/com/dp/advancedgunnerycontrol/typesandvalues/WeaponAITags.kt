@@ -24,10 +24,10 @@ val holdFireSFTRegex = Regex("HoldSFT\\(Fl?u?x?>(\\d+)%\\)")
 val forceFireFTRegex = Regex("ForceFT\\(Fl?u?x?<(\\d+)%\\)")
 val forceFireSFTRegex = Regex("ForceSFT\\(Fl?u?x?<(\\d+)%\\)")
 
-val avoidShieldsFTRegex = Regex("AvShldFT\\(Fl?u?x?<(\\d+)%\\)")
-val avoidShieldsSFTRegex = Regex("AvShlddSFT\\(Fl?u?x?<(\\d+)%\\)")
-val targetShieldsFTRegex = Regex("TgtShldFT\\(Fl?u?x?<(\\d+)%\\)")
-val targetShieldsSFTRegex = Regex("TgtShldSFT\\(Fl?u?x?<(\\d+)%\\)")
+val avoidShieldsFTRegex = Regex("(?:AvdShieldsFT|AvShldFT)\\(Fl?u?x?<(\\d+)%\\)")
+val avoidShieldsSFTRegex = Regex("(?:AvdShieldsSFT|AvShlddSFT)\\(Fl?u?x?<(\\d+)%\\)")
+val targetShieldsFTRegex = Regex("(?:TgtShieldsFT|TgtShldFT)\\(Fl?u?x?<(\\d+)%\\)")
+val targetShieldsSFTRegex = Regex("(?:TgtShieldsSFT|TgtShldSFT)\\(Fl?u?x?<(\\d+)%\\)")
 
 val BurstPDSFTRegex = Regex("BurstPDSFT\\(Fl?u?x?<(\\d+)%\\)")
 val pdFluxRegex = Regex("PD\\(Fl?u?x?>(\\d+)%\\)")
@@ -70,7 +70,9 @@ val tagTooltips = mapOf(
         )
     } be ignored (configurable in settings)" +
             "\nNo targeting restrictions.",
-    "TargetShields" to "Weapon will prioritize shooting shields. Will stop firing against enemies with very high flux. \nShields of fighters will ${
+    "TargetShields" to "Weapon will prioritize targeting shields. Will stop firing against enemies with very high flux or no shields." +
+            "\nCan target, but not fire against unshielded targets. Combine with a ForceFire tag to still shoot." +
+            "\nShields of fighters will ${
         mapBooleanToSpecificString(
             Settings.ignoreFighterShields(),
             "",
@@ -122,7 +124,7 @@ val tagTooltips = mapOf(
     "ShipTarget" to "Weapon will only target the selected ship target (R-Key). I like to use this for regenerating missiles." +
             "\nFor AI-controlled ships, this will limit them to the maneuver-target that the ShipAI has chosen.",
     "NoMissiles" to "Weapon won't target missiles.",
-    "Overloaded" to "Weapon will only target and fire at overloaded ships.",
+    "Overloaded" to "Weapon will only target and fire at overloaded or venting ships.",
     "ShieldsOff" to "Simplified version of AvoidShields. Will only fire at targets that have no shields or have shields turned off.",
     "Merge" to "Press [${Keyboard.getKeyName(Settings.mergeHotkey())}] to merge all weapons with this tag into current weapon group. " +
             "\nFor player controlled ship only! Press [${Keyboard.getKeyName(Settings.mergeHotkey())}] again to undo." +
@@ -137,7 +139,8 @@ val tagTooltips = mapOf(
     "BlockBeams" to "Will shoot at enemies that are shooting this ship with beams, even when out of range. Intended mainly for the SVC Ink Spitter gun.",
     "CustomAI" to "This tag does nothing but prevent the vanilla AI from doing anything. I use this for devastators to prevent vanilla jank.",
     "SynchronizedFire" to "This tag synchronizes all weapons in a group to fire in volley at the rate of the slowest firing weapon",
-    "PrioDense" to "Prioritize target rich areas. Weapon will prioritize shooting at targets that are big and/or have lots of other targets nearby. Good for AoE weapons."
+    "PrioDense" to "Prioritize target rich areas. Weapon will prioritize shooting at targets that are big and/or have lots of other targets nearby. Good for AoE weapons.",
+    "DoNotShoot" to "Weapon will never fire unless paired with a ForceFire tag."
 )
 
 fun getTagTooltip(tag: String): String {
@@ -323,6 +326,7 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
         "CustomAI" -> CustomAITag(weapon)
         "SynchronizedFire" -> SynchronizedFireTag(weapon)
         "PrioDense" -> PrioritizeDense(weapon)
+        "DoNotShoot" -> DoNotShootTag(weapon)
         else -> {
             unknownTagWarnCounter++
             when {
@@ -340,17 +344,17 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
 
 fun tagNameToRegexName(tag: String): String {
     return when {
-        holdFireFTRegex.matches(tag) -> "HoldFT(Flx>N%)"
-        holdFireSFTRegex.matches(tag) -> "HoldSFT(Flx>N%)"
-        forceFireFTRegex.matches(tag) -> "ForceFT(Flx<N%)"
-        forceFireSFTRegex.matches(tag) -> "ForceSFT(Flx<N%)"
+        holdFireFTRegex.matches(tag) -> "HoldFT"
+        holdFireSFTRegex.matches(tag) -> "HoldSFT"
+        forceFireFTRegex.matches(tag) -> "ForceFT"
+        forceFireSFTRegex.matches(tag) -> "ForceSFT"
 
-        avoidShieldsFTRegex.matches(tag) -> "AvShldFT(Flx<N%)"
-        avoidShieldsSFTRegex.matches(tag) -> "AvShlddSFT(Flx<N%)"
-        targetShieldsFTRegex.matches(tag) -> "TgtShldFT(Flx<N%)"
-        targetShieldsSFTRegex.matches(tag) -> "TgtShldSFT(Flx<N%)"
+        avoidShieldsFTRegex.matches(tag) -> "AvdShieldsFT"
+        avoidShieldsSFTRegex.matches(tag) -> "AvdShieldsSFT"
+        targetShieldsFTRegex.matches(tag) -> "TgtShieldsFT"
+        targetShieldsSFTRegex.matches(tag) -> "TgtShieldsSFT"
 
-        BurstPDSFTRegex.matches(tag) -> "burstPDSFT(Flx<N%)"
+        BurstPDSFTRegex.matches(tag) -> "BurstPDSFT"
         pdFluxRegex.matches(tag) -> "PD(Flx>N%)"
         avoidArmorRegex.matches(tag) -> "AvoidArmor"
         panicFireRegex.matches(tag) -> "Panic"
@@ -470,12 +474,25 @@ val tagIncompatibility = mapOf(
     "PrioWounded" to listOf("PrioHealthy")
 )
 
-fun isIncompatibleWithExistingTags(tag: String, existingTags: List<String>): Boolean {
+data class TagCompatibilityCheck(
+    val isIncompatible: Boolean,
+    val reason: String? = null
+)
+
+fun isIncompatibleWithExistingTags(tag: String, existingTags: List<String>): TagCompatibilityCheck {
     val modTag = tagNameToRegexName(tag)
     if (tagIncompatibility.containsKey(modTag)) {
-        return existingTags.map { tagNameToRegexName(it) }.any { tagIncompatibility[modTag]?.contains(it) == true }
+        val conflictingTag = existingTags
+            .map { tagNameToRegexName(it) }
+            .firstOrNull { tagIncompatibility[modTag]?.contains(it) == true }
+        if (conflictingTag != null) {
+            return TagCompatibilityCheck(
+                isIncompatible = true,
+                reason = "$modTag is incompatible with $conflictingTag"
+            )
+        }
     }
-    return false
+    return TagCompatibilityCheck(false)
 }
 
 fun createTags(names: List<String>, weapon: WeaponAPI): List<WeaponAITagBase> {

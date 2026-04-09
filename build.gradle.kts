@@ -8,7 +8,7 @@ object Variables {
     val starsectorDirectory = System.getenv("STARSECTOR_DIRECTORY") ?: "D:/Program Files (x86)/Fractal Softworks/Starsector"
 
 
-    val modVersion = "1.19.1"
+    val modVersion = "1.20.0"
     val jarFileNameBase = "AdvancedGunneryControl-$modVersion"
     val jarFileName = "$jarFileNameBase.jar"
     val sourceJarFileName = "$jarFileNameBase-sources.jar"
@@ -32,45 +32,114 @@ object Variables {
 // LazyLib is needed to use Kotlin, as it provides the Kotlin Runtime
 }
 //////////////////////
-val starsectorCoreDirectory = if(Os.isFamily(Os.FAMILY_WINDOWS)) "${Variables.starsectorDirectory}/starsector-core" else Variables.starsectorDirectory
-val starsectorModDirectory = "${Variables.starsectorDirectory}/mods"
-val modInModsFolder = File("$starsectorModDirectory/${Variables.modFolderName}")
+// Build supports two path strategies:
+// 1. Original install-based setup via agc.starsectorDir / STARSECTOR_DIRECTORY.
+// 2. Modular setup via explicit per-dependency paths, defaulting to this workspace's jar folders.
+val workspaceRootDirectory = projectDir.parentFile.parentFile
+val defaultBundledGameJarsDirectory = workspaceRootDirectory.resolve("Game Jars")
+val defaultBundledModderJarsDirectory = workspaceRootDirectory.resolve("Modder Jars")
 
-plugins {
-    kotlin("jvm") version "2.1.20"
-    java
-    // id("org.jetbrains.dokka") version "2.0.0"
+fun configuredPath(
+    propertyName: String,
+    environmentName: String? = null,
+    defaultPath: File? = null
+): File? {
+    val configuredValue = providers.gradleProperty(propertyName).orNull
+        ?: environmentName?.let { System.getenv(it) }
+        ?: defaultPath?.path
+
+    return configuredValue
+        ?.takeIf { it.isNotBlank() }
+        ?.let(::File)
+        ?.normalize()
 }
 
-version = Variables.modVersion
+val configuredStarsectorDirectory = configuredPath(
+    propertyName = "agc.starsectorDir",
+    environmentName = "STARSECTOR_DIRECTORY",
+    defaultPath = File(Variables.starsectorDirectory)
+)
 
-repositories {
-    maven(url = uri("$projectDir/libs"))
-    jcenter()
+val configuredGameJarsDirectory = configuredPath(
+    propertyName = "agc.gameJarsDir",
+    environmentName = "AGC_GAME_JARS_DIR",
+    defaultPath = defaultBundledGameJarsDirectory
+)
+
+val configuredModderArchivesDirectory = configuredPath(
+    propertyName = "agc.modArchivesDir",
+    environmentName = "AGC_MOD_ARCHIVES_DIR",
+    defaultPath = defaultBundledModderJarsDirectory
+)
+
+val starsectorCoreDirectory = configuredStarsectorDirectory?.let {
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) it.resolve("starsector-core") else it
+}
+val starsectorModDirectory = configuredStarsectorDirectory?.resolve("mods")
+val modInModsFolder = starsectorModDirectory?.resolve(Variables.modFolderName)
+
+val configuredConsoleCommandsDirectory = configuredPath(
+    propertyName = "agc.consoleCommandsDir",
+    environmentName = "AGC_CONSOLE_COMMANDS_DIR",
+    defaultPath = starsectorModDirectory?.resolve("Console Commands/jars")
+)
+
+val configuredLazyLibDirectory = configuredPath(
+    propertyName = "agc.lazyLibDir",
+    environmentName = "AGC_LAZYLIB_DIR",
+    defaultPath = starsectorModDirectory?.resolve("LazyLib/jars")
+)
+
+val configuredMagicLibDirectory = configuredPath(
+    propertyName = "agc.magicLibDir",
+    environmentName = "AGC_MAGICLIB_DIR",
+    defaultPath = starsectorModDirectory?.resolve("MagicLib/jars")
+)
+
+val configuredLunaLibDirectory = configuredPath(
+    propertyName = "agc.lunaLibDir",
+    environmentName = "AGC_LUNALIB_DIR",
+    defaultPath = starsectorModDirectory?.resolve("LunaLib/jars")
+)
+
+fun optionalJarTree(directory: File?): FileCollection =
+    if (directory?.exists() == true) {
+        fileTree(directory) { include("*.jar") }
+    } else {
+        files()
+    }
+
+fun extractBundledModderJars(): FileCollection {
+    if (configuredModderArchivesDirectory?.exists() != true) return files()
+
+    val archives = configuredModderArchivesDirectory
+        .listFiles()
+        ?.filter { it.isFile && it.extension.equals("zip", ignoreCase = true) }
+        .orEmpty()
+
+    if (archives.isEmpty()) return files()
+
+    val extractedDir = layout.buildDirectory.dir("bundled-modder-jars").get().asFile
+    copy {
+        from(archives.map { zipTree(it) })
+        into(extractedDir)
+        include(
+            "**/jars/LunaLib.jar",
+            "**/jars/libs/*.jar",
+            "**/jars/internal/LazyLib-Console.jar"
+        )
+        includeEmptyDirs = false
+    }
+
+    return fileTree(extractedDir) { include("**/*.jar") }
 }
 
-dependencies {
-    // implementation("org.junit.jupiter:junit-jupiter:5.7.0")
-    // implementation("junit:junit:4.13.1")
-    val kotlinVersionInLazyLib = "2.1.20"
-
-    implementation(fileTree("libs") { include("*.jar") })
-
-    // Get kotlin sdk from LazyLib during runtime, only use it here during compile time
-    compileOnly("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersionInLazyLib")
-
-    implementation(
-        fileTree(starsectorModDirectory) {
-            include(
-                "LazyLib*/jars/*.jar",
-                "MagicLib*/jars/*.jar",
-                "LunaLib*/jars/*.jar",
-                "Console Commands*/jars/*.jar",   // with space
-            )
-        }
-    )
-
-    implementation(
+val installedConsoleCommandJars = optionalJarTree(configuredConsoleCommandsDirectory)
+val installedLazyLibJars = optionalJarTree(configuredLazyLibDirectory)
+val installedMagicLibJars = optionalJarTree(configuredMagicLibDirectory)
+val installedLunaLibJars = optionalJarTree(configuredLunaLibDirectory)
+val installedGameJars =
+    if (starsectorCoreDirectory?.exists() == true) {
         fileTree(starsectorCoreDirectory) {
             include(
                 "starfarer.api.jar",
@@ -83,7 +152,44 @@ dependencies {
                 "lwjgl_util.jar"
             )
         }
-    )
+    } else {
+        files()
+    }
+val bundledGameJars = optionalJarTree(configuredGameJarsDirectory)
+val bundledModderJars = extractBundledModderJars()
+val hasConsoleCommandsDependency = !installedConsoleCommandJars.isEmpty
+
+plugins {
+    kotlin("jvm") version "2.1.20"
+    java
+    // id("org.jetbrains.dokka") version "2.0.0"
+}
+
+version = Variables.modVersion
+
+repositories {
+    maven(url = uri("$projectDir/libs"))
+    mavenCentral()
+    jcenter()
+}
+
+dependencies {
+    // implementation("org.junit.jupiter:junit-jupiter:5.7.0")
+    // implementation("junit:junit:4.13.1")
+    val kotlinVersionInLazyLib = "2.1.20"
+
+    implementation(fileTree("libs") { include("*.jar") })
+
+    // Get kotlin sdk from LazyLib during runtime, only use it here during compile time
+    compileOnly("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersionInLazyLib")
+    compileOnly(installedConsoleCommandJars)
+    compileOnly(bundledModderJars)
+
+    compileOnly(installedLazyLibJars)
+    compileOnly(installedMagicLibJars)
+    compileOnly(installedLunaLibJars)
+    compileOnly(bundledGameJars)
+    compileOnly(installedGameJars)
 
     compileOnly(
         fileTree("$projectDir/api/src/com/fs/starfarer/api") {
@@ -95,12 +201,12 @@ dependencies {
         include("*.java")
     })
 
-    sourceSets {
-        main {
-            java.srcDir("api/src")   // ← add this
-        }
-    }
+}
 
+sourceSets {
+    main {
+        java.srcDir("api/src")
+    }
 }
 
 //java{
@@ -242,11 +348,11 @@ tasks {
                    |   # Determines which tags will be shown in the GUIs. Feel free to add/remove tags as you see fit.
                    |   # Allowed values are: (replace N with a number, usually between 0 and 100)
                    |   # "PD", "NoPD", "NoMissiles", "PD(F>N%)", "PrioritisePD", "Fighter", "NoFighters", "AvoidShields", "TargetShields",
-                   |   # "AvdShields+", "TgtShields+", "AvdShieldsFT", "TgtShieldsFT", "AvdShieldsSFT(F<N%)", "TgtShieldsSFT(F<N%)", 
+                   |   # "AvdShields+", "TgtShields+", "AvdShieldsFT(F<N%)", "TgtShieldsFT(F<N%)", "AvdShieldsSFT(F<N%)", "TgtShieldsSFT(F<N%)", 
                    |   # "AvdArmor(N%)", "AvoidDebris", "ShieldsOff",
-                   |   # "Opportunist", "HoldFT(F>N%)", "HoldSFT(F>N%)" "ConserveAmmo", "CnsrvPDAmmo", BurstPDSFT(F<N%)" "ShipTarget", "AvoidPhased", "TargetPhase",
-                   |   # "BigShips", "SmallShips", "Panic(H<N%)", "AvoidPhased", "Range<N%", "ForceF(F<N%)", "Overloaded", "Merge",
-                   |   # "PrioFighter", "PrioMissile", "PrioShips", "PrioWounded", "PrioHealthy", "CustomAI", "LowRoF(N%)"
+                   |   # "Opportunist", "HoldFT(F>N%)", "HoldSFT(F>N%)", "ConserveAmmo", "CnsrvPDAmmo", "BurstPDSFT(F<N%)", "ShipTarget", "AvoidPhased", "TargetPhase",
+                   |   # "BigShips", "SmallShips", "Panic(H<N%)", "AvoidPhased", "Range<N%", "ForceFT(F<N%)", "ForceSFT(F<N%)", "Overloaded", "Merge",
+                   |   # "PrioFighter", "PrioMissile", "PrioShips", "PrioWounded", "PrioHealthy", "CustomAI", "LowRoF(N%)", "DoNotShoot"
                    |   
                    |   # Note: The word Flux in parentheses may be abbreviated by skipping any of the non-capitalized letters, e.g.: F, Fx, Flx
                    |   
@@ -264,17 +370,17 @@ tasks {
                    |                "PrioritisePD", "PrioFighter", "PrioMissile", "PrioShips", "PrioWounded", "PrioHealthy",
                    |                "PD", "NoPD", "PD(Flx>50%)", "PD(Flx>10%)",
                    |                "Fighter", "NoFighters",  "NoMissiles",
-                   |                "CnsrvPDAmmo", BurstPDSFT(F<10%)", "ConserveAmmo", "Opportunist", "Overloaded", "Panic(H<25%)", "Range<60%", "Range<80%", "AvoidDebris",
+                   |                "CnsrvPDAmmo", "BurstPDSFT(F<10%)", "ConserveAmmo", "Opportunist", "Overloaded", "Panic(H<25%)", "Range<60%", "Range<80%", "AvoidDebris",
                    |                "BigShips", "SmallShips",
-                   |                 "LowRoF(200%)", "CustomAI", "PrioDense"
+                   |                 "LowRoF(200%)", "CustomAI", "PrioDense", "DoNotShoot"
                    |                ]  
                    |   
                    |   ,"classicTagList" : [
                    |                "PD", "PD(Flx>50%)",
                    |                "AvoidShields", "TargetShields", "AvdArmor(33%)", 
-                   |                "Hold(Flx>90%)", "Hold(Flx>75%)", "HoldSFT(F>10%)", "Merge",
+                   |                "HoldFT(F>90%)", "HoldFT(F>75%)", "HoldSFT(F>10%)", "Merge",
                    |                "AvoidPhased", "TargetPhase", "ShipTarget", 
-                   |                "ForceAF", "ForceF(F<50%)", "ForceSFT(F<5%)",
+                   |                "ForceAF", "ForceFT(F<50%)", "ForceSFT(F<5%)",
                    |                "PrioritisePD", "PrioFighter", "PrioMissile",
                    |                "NoMissiles", "NoFighters",
                    |                "Opportunist", "Panic(H<25%)", "Range<60%",
@@ -285,9 +391,9 @@ tasks {
                    |   ,"noviceTagList" : [
                    |                "PD",
                    |                "AvoidShields", "TargetShields", "AvdArmor(33%)", 
-                   |                "Hold(Flx>90%)",
+                   |                "HoldFT(F>90%)",
                    |                "AvoidPhased", "ShipTarget", 
-                   |                "ForceAF", "ForceF(F<50%)",
+                   |                "ForceAF", "ForceFT(F<50%)",
                    |                "NoMissiles", "NoFighters",
                    |                "Range<60%"
                    |                ]   
@@ -297,7 +403,7 @@ tasks {
                    |   ,"allowHotLoadingTags" : true
                    |   
                    |   # Tags to display in simple mode. 
-                   |   , "simpleTagList" : [ "PD", "AvoidShields", "TargetShields", "AvdArmor(33%)", "Hold(Flx>90%)", "NoFighters" ]
+                   |   , "simpleTagList" : [ "PD", "AvoidShields", "TargetShields", "AvdArmor(33%)", "HoldFT(F>90%)", "NoFighters" ]
                    |   
                    |   # Determines which ship modes will be shown in the GUIs. Modes that do not exist will be discarded
                    |   # Allowed Values: "DEFAULT", "LowShields", "ShieldsUp", "Vent(Flx>75%)", "VntA(Flx>25%)", "Run(HP<50%)", "NoSystem", "SpamSystem", "Charge", "ForceAF", "NeverVent", "FarAway", "StayAway"
@@ -489,7 +595,7 @@ tasks {
     }
 
     register("create-everything"){
-        dependsOn(jar, kotlinSourcesJar, "write-settings-file", "create-metadata-files", "javadocJar")
+        dependsOn(jar, kotlinSourcesJar, "write-settings-file", "create-metadata-files")
     }
 
     // If enabled, will copy your mod to the /mods directory when run (and whenever gradle syncs).
@@ -504,7 +610,7 @@ tasks {
 
         println("Installing mod into Starsector mod folder...")
 
-        val destinations = listOf(modInModsFolder)
+        val destinations = listOfNotNull(modInModsFolder)
 
         destinations.forEach { dest ->
             copy {
@@ -521,6 +627,9 @@ tasks {
 //}
 
 tasks.withType<KotlinCompile> {
+    if (!hasConsoleCommandsDependency) {
+        exclude("**/AGCConsoleCommands.kt")
+    }
     kotlinOptions.jvmTarget = "17"
 }
 

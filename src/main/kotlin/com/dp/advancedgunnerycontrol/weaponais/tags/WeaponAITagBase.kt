@@ -24,8 +24,21 @@ abstract class WeaponAITagBase(protected val weapon: WeaponAPI) {
     open fun addFarAwayTargets(): List<CombatEntityAPI> = emptyList()
 
     abstract fun computeTargetPriorityModifier(solution: FiringSolution): Float
+
+    /**
+     * Weapon will fire only if all active tags return true here.
+     */
     abstract fun shouldFire(solution: FiringSolution): Boolean
+
+    /**
+     * If any tag returns true here, custom AI can still override target selection.
+     * Tags that only influence firing should usually return false.
+     */
     abstract fun isBaseAiOverridable(): Boolean
+
+    /**
+     * If any tag returns true here, debris blocking checks are enabled for the shot.
+     */
     abstract fun avoidDebris(): Boolean
 
     open fun isBaseAiValid(entity: CombatEntityAPI): Boolean {
