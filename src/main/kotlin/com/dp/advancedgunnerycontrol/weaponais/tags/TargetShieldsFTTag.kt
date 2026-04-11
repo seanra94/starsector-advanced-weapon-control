@@ -8,8 +8,9 @@ import com.fs.starfarer.api.combat.CombatEntityAPI
 import com.fs.starfarer.api.combat.ShipAPI
 import com.fs.starfarer.api.combat.WeaponAPI
 
+// SEAN
 // Allows targeting of anything when flux < fluxThreshold, otherwise target shields. Always prioritises by target shield factor
-class TargetShieldsAtFTTag(
+class TargetShieldsFTTag(
     weapon: WeaponAPI,
     private val shieldThreshold: Float = Settings.targetShieldsThreshold(),
     private val fluxThreshold: Float = Settings.targetShieldsAtFT()

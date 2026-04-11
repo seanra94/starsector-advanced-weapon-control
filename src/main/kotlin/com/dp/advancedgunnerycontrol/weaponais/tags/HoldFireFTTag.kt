@@ -4,7 +4,8 @@ import com.dp.advancedgunnerycontrol.weaponais.FiringSolution
 import com.fs.starfarer.api.combat.CombatEntityAPI
 import com.fs.starfarer.api.combat.WeaponAPI
 
-class FluxTag(weapon: WeaponAPI, private val threshold: Float) : WeaponAITagBase(weapon) {
+// SEAN
+class HoldFireFTTag(weapon: WeaponAPI, private val threshold: Float) : WeaponAITagBase(weapon) {
     override fun isValidTarget(entity: CombatEntityAPI): Boolean = true
 
     override fun isBaseAiValid(entity: CombatEntityAPI): Boolean {

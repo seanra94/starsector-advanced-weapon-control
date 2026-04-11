@@ -3,7 +3,8 @@ package com.dp.advancedgunnerycontrol.weaponais.tags
 import com.dp.advancedgunnerycontrol.weaponais.FiringSolution
 import com.fs.starfarer.api.combat.WeaponAPI
 
-class ForceFireTag(weapon: WeaponAPI, private val fluxThreshold: Float) : WeaponAITagBase(weapon) {
+// SEAN
+class ForceFireFTTag(weapon: WeaponAPI, private val fluxThreshold: Float) : WeaponAITagBase(weapon) {
     override fun computeTargetPriorityModifier(solution: FiringSolution): Float = 1f
 
     override fun shouldFire(solution: FiringSolution): Boolean = true

@@ -3,5 +3,6 @@
 
     <groupId>agc</groupId>
     <artifactId>AdvancedGunneryControl</artifactId>
-    <version>1.19.1</version>
+    <!-- PETER -->
+    <version>1.20.0</version>
 </project>

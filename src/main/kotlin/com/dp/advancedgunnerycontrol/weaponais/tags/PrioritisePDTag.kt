@@ -17,6 +17,7 @@ class PrioritisePDTag(weapon: WeaponAPI, private val multiplier: Float) : Weapon
     override fun isBaseAiValid(entity: CombatEntityAPI): Boolean = entity is MissileAPI
 
     override fun computeTargetPriorityModifier(solution: FiringSolution): Float {
+        // CODEX
         return if (isValidPDTargetForWeapon(solution.target, weapon)) {
             1f / multiplier
         } else {

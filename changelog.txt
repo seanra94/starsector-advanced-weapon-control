@@ -1,9 +1,19 @@
 === For Starsector 0.98a ===
 
-- 0.19.1
+# PETER
+- 1.20.0
+feat: overloaded tag now also considers venting targets as valid
+fix: clarify what TgtShields tag means
+feat: add DoNotShoot tag (complete tag list)
+feat: unavailable tags now say in the tooltip why they are unavailable (combat gui)
+fluff: changed default value of Spam System Prevents Deactivation to true, as that is probably the expected behavior for most people
+feat: Change StayAway ship mode, such that it tries to keep the longest range weapon/fighter in range
+
+- 1.19.1
 hotfix: fix issue where AGC would reset the AI of ships to default for essentially no reason
 
-- 0.19.0: 0.98a update
+# PETER
+- 1.19.0: 0.98a update
 feat: add option for spam system to prevent toggling off systems
 feat: add NeverVent ship mode
 feat: add custom ship data flag to allow other mods to block ship modes (for mod authors: add "AGC_doNotReplaceShipAI" as a key with any value to custom ship data)

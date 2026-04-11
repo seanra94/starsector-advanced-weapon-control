@@ -75,7 +75,9 @@ class SuggestedTagButton(private val weaponId: String, tag: String, button: Butt
         val tags = Settings.getCurrentSuggestedTags()[weaponId] ?: emptyList()
         sameGroupButtons.forEach {
             it.enable()
-            if(isIncompatibleWithExistingTags(it.associatedValue, tags)){
+            // CODEX
+            val compatibilityCheck = isIncompatibleWithExistingTags(it.associatedValue, tags)
+            if(compatibilityCheck.isIncompatible){
                 it.disable()
             }
         }
