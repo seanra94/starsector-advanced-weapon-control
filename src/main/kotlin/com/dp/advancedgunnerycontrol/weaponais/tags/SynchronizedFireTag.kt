@@ -21,15 +21,18 @@ class SynchronizedFireTag(
     private val factor: Float = 1f          // 1 = 100 % nominal range
 ) : WeaponAITagBase(weapon) {
 
+    // CODEX
     private fun WeaponAPI.groupShouldFireAgainst(target: CombatEntityAPI?): Boolean {
 
         val guns = ship?.getWeaponGroupFor(this)?.weaponsCopy ?: return true
         if (target == null) return true
 
         var anyActive   = false    // at least one gun mid-shot
+        var anyInRange  = false    // at least one gun can still hit
         var allReady    = true     // every gun cooldown == 0
         var allInRange  = true     // every gun can reach target
         var thisReady   = cooldownRemaining == 0f
+        var thisInRange = isInRangeOf(target.location, factor)
         val location       = target.location
 
         for (g in guns) {
@@ -37,18 +40,22 @@ class SynchronizedFireTag(
 
             val active = g.isFiring || g.isInBurst || g.chargeLevel > 0f
             val ready  = g.cooldownRemaining == 0f
-            val inRange= g.isInRangeOf(location)
+            val inRange= g.isInRangeOf(location, factor)
 
             if (active)    anyActive  = true
+            if (inRange)   anyInRange = true
             if (!ready)    allReady   = false
             if (!inRange)  allInRange = false
 
-            if (g === this) thisReady = ready          // local gun ready flag
+            if (g === this) {
+                thisReady = ready
+                thisInRange = inRange
+            }
         }
 
         return when {
             /* volley already under way ------------------------------------------------ */
-            anyActive             -> thisReady                         // keep firing only if this gun is now ready
+            anyActive             -> anyInRange && thisReady && thisInRange
             /* no volley; start only if *all* guns meet both conditions ---------------- */
             else                  -> allInRange && allReady
         }

@@ -3,7 +3,6 @@
 package com.dp.advancedgunnerycontrol.weaponais
 
 import com.dp.advancedgunnerycontrol.settings.Settings
-import com.dp.advancedgunnerycontrol.weaponais.tags.WeaponAITagBase
 import com.fs.starfarer.api.combat.*
 import com.fs.starfarer.api.impl.campaign.ids.HullMods
 import org.lazywizard.lazylib.CollisionUtils
@@ -33,27 +32,6 @@ fun ShipAPI.hasPhaseCloak(): Boolean{
 // SEAN
 fun WeaponAPI.isInRangeOf(point: Vector2f, threshold: Float = 1f): Boolean =
     ((location - point).length()) <= threshold * range
-
-
-
-class RangeTag(weapon: WeaponAPI, private val threshold: Float) : WeaponAITagBase(weapon) {
-    override fun computeTargetPriorityModifier(solution: FiringSolution): Float {
-        return if (weapon.isInRangeOf(solution.target.location)) 1.0f else 100f
-    }
-
-    override fun shouldFire(solution: FiringSolution): Boolean {
-        return weapon.isInRangeOf(solution.target.location)
-    }
-
-    override fun isBaseAiOverridable(): Boolean = true
-
-    override fun avoidDebris(): Boolean = false
-
-    override fun isBaseAiValid(entity: CombatEntityAPI): Boolean {
-        return weapon.isInRangeOf(entity.location, )
-    }
-
-}
 
 
 fun WeaponAPI.getMaxSpreadForNextBurst(): Float{

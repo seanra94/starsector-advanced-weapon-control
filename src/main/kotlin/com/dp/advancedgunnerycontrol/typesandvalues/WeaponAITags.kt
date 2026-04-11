@@ -50,6 +50,11 @@ fun extractRegexThresholdAsPercentageString(regex: Regex, name: String): String 
     return "${(extractRegexThreshold(regex, name) * 100f).toInt()}%"
 }
 
+// CODEX
+fun formatFractionAsPercentageString(value: Float): String {
+    return "${(value * 100f).toInt()}%"
+}
+
 fun shouldTagBeDisabled(groupIndex: Int, sh: FleetMemberAPI, tag: String): Boolean {
     val modTag = tagNameToRegexName(tag)
     if (pdTags.contains(modTag) && !isElligibleForPD(groupIndex, sh)) return true
@@ -167,7 +172,7 @@ fun getTagTooltip(tag: String): String {
                 holdFireSFTRegex,
                 tag
             )
-        } of total flux capacity or combined flux exceeds ${(Settings.SFTUpperFluxLimit)}% of total flux capacity."
+        } of total flux capacity or combined flux exceeds ${formatFractionAsPercentageString(Settings.SFTUpperFluxLimit())} of total flux capacity."
 
         forceFireFTRegex.matches(tag) -> "ForceFire: Weapon will ignore firing restrictions of other tags while combined flux < ${
             extractRegexThresholdAsPercentageString(
@@ -180,7 +185,7 @@ fun getTagTooltip(tag: String): String {
             extractRegexThresholdAsPercentageString(
                 forceFireSFTRegex, tag
             )
-        } of total flux capacity (unless combined flux is above ${(Settings.SFTUpperFluxLimit)}% of total flux capacity)." +
+        } of total flux capacity (unless combined flux is above ${formatFractionAsPercentageString(Settings.SFTUpperFluxLimit())} of total flux capacity)." +
                 "\nNote: This will not circumvent targeting restrictions, only firing restrictions."
 
         targetShieldsFTRegex.matches(tag) -> "As TargetShields, but will allow targeting of anything when combined flux is below ${
@@ -199,8 +204,8 @@ fun getTagTooltip(tag: String): String {
             extractRegexThresholdAsPercentageString(
                 targetShieldsSFTRegex, tag
             )
-        } of total flux capacity (unless combined flux is above ${(Settings.SFTUpperFluxLimit)} of total flux capacity)." +
-                "%. \nShields of fighters will ${
+        } of total flux capacity (unless combined flux is above ${formatFractionAsPercentageString(Settings.SFTUpperFluxLimit())} of total flux capacity)." +
+                "\nShields of fighters will ${
             mapBooleanToSpecificString(
                 Settings.ignoreFighterShields(),
                 "",
@@ -222,10 +227,10 @@ fun getTagTooltip(tag: String): String {
 
         avoidShieldsSFTRegex.matches(tag) -> "As AvoidShields, but will allow targeting of anything when soft flux is below ${
             extractRegexThresholdAsPercentageString(
-                targetShieldsSFTRegex, tag
+                avoidShieldsSFTRegex, tag
             )
-        } of total flux capacity (unless combined flux is above ${(Settings.SFTUpperFluxLimit)} of total flux capacity)." +
-                "%. \nShields of fighters will ${
+        } of total flux capacity (unless combined flux is above ${formatFractionAsPercentageString(Settings.SFTUpperFluxLimit())} of total flux capacity)." +
+                "\nShields of fighters will ${
             mapBooleanToSpecificString(
                 Settings.ignoreFighterShields(),
                 "",
@@ -237,7 +242,7 @@ fun getTagTooltip(tag: String): String {
             extractRegexThresholdAsPercentageString(
                 BurstPDSFTRegex, tag
             )
-        } of total flux capacity (unless combined flux is above ${(Settings.SFTUpperFluxLimit)} of total flux capacity)" +
+        } of total flux capacity (unless combined flux is above ${formatFractionAsPercentageString(Settings.SFTUpperFluxLimit())} of total flux capacity)" +
                 " or when its target is a missile or fighter. Has no effect on priorities or target restrictions. Recommended to pair with prioritisePD tag"
 
         pdFluxRegex.matches(tag) -> "Weapon will act as PD mode while ship flux > ${

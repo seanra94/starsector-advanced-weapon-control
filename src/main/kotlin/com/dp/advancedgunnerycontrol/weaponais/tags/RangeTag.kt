@@ -4,8 +4,6 @@ import com.dp.advancedgunnerycontrol.weaponais.FiringSolution
 import com.dp.advancedgunnerycontrol.weaponais.isInRangeOf
 import com.fs.starfarer.api.combat.CombatEntityAPI
 import com.fs.starfarer.api.combat.WeaponAPI
-import org.lazywizard.lazylib.ext.minus
-import org.lwjgl.util.vector.Vector2f
 
 class RangeTag(weapon: WeaponAPI, private val threshold: Float) : WeaponAITagBase(weapon) {
     // SEAN

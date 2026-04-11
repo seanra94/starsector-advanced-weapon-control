@@ -64,7 +64,8 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
         sameGroupButtons.forEach {
             it.enable()
             // CODEX
-            if (isIncompatibleWithExistingTags(it.associatedValue, tags).isIncompatible || shouldTagBeDisabled(
+            val compatibilityCheck = isIncompatibleWithExistingTags(it.associatedValue, tags)
+            if (compatibilityCheck.isIncompatible || shouldTagBeDisabled(
                     group,
                     ship,
                     it.associatedValue

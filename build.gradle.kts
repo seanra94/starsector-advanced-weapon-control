@@ -201,19 +201,6 @@ dependencies {
             include("*.java")
         }
     )
-
-    // SEAN
-    compileOnly(fileTree("$projectDir/CommunityApiDocs/src/com/fs/starfarer/api"){
-        include("*.java")
-    })
-
-}
-
-// SEAN
-sourceSets {
-    main {
-        java.srcDir("api/src")
-    }
 }
 
 //java{
