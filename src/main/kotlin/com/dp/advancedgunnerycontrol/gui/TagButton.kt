@@ -111,7 +111,7 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
                     )
                 val rowFillColor = when {
                     pinned -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
-                    unavailable -> CampaignGuiStyle.DISABLED_TAG_BACKGROUND_COLOR
+                    unavailable -> null
                     else -> null
                 }
                 val itemPanel = panel.createCustomPanel(
@@ -119,7 +119,8 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
                     metrics.itemHeight,
                     DebugBorderPanelPlugin(
                         CampaignContainerType.ITEM,
-                        fillColor = rowFillColor
+                        fillColor = rowFillColor,
+                        borderColor = if (unavailable) CampaignGuiStyle.DISABLED_TAG_BORDER_COLOR else null
                     )
                 )
                 panel.addComponent(itemPanel)

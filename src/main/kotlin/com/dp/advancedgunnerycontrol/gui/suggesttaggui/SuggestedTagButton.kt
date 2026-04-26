@@ -79,13 +79,17 @@ class SuggestedTagButton(private val weaponId: String, tag: String, button: Butt
                 val unavailable = !pinned && isIncompatibleWithExistingTags(tag, otherSelectedTags)
                 val rowFillColor = when {
                     pinned -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
-                    unavailable -> CampaignGuiStyle.DISABLED_TAG_BACKGROUND_COLOR
+                    unavailable -> null
                     else -> null
                 }
                 val itemPanel = panel.createCustomPanel(
                     metrics.itemWidth,
                     metrics.itemHeight,
-                    DebugBorderPanelPlugin(CampaignContainerType.ITEM, fillColor = rowFillColor)
+                    DebugBorderPanelPlugin(
+                        CampaignContainerType.ITEM,
+                        fillColor = rowFillColor,
+                        borderColor = if (unavailable) CampaignGuiStyle.DISABLED_TAG_BORDER_COLOR else null
+                    )
                 )
                 panel.addComponent(itemPanel)
                 itemPanel.position.inTL(metrics.xFor(index), metrics.yFor(index))

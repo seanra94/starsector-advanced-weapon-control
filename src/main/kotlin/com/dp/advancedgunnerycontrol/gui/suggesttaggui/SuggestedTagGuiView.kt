@@ -172,10 +172,7 @@ class SuggestedTagGuiView(
         val indicator = panel.createCustomPanel(
             panel.position.width,
             TAG_ELLIPSIS_HEIGHT,
-            DebugBorderPanelPlugin(
-                CampaignContainerType.ITEM,
-                fillColor = CampaignGuiStyle.INACTIVE_ROW_BACKGROUND_COLOR
-            )
+            DebugBorderPanelPlugin(CampaignContainerType.ITEM)
         )
         panel.addComponent(indicator)
         indicator.position.inTL(0f, top)

@@ -9,6 +9,7 @@ class DebugBorderPanelPlugin(
     private val containerType: CampaignContainerType,
     private val lineWidth: Float = 1f,
     private val fillColor: Color? = null,
+    private val borderColor: Color? = null,
 ) : BaseCustomUIPanelPlugin() {
     private var position: PositionAPI? = null
 
@@ -42,14 +43,15 @@ class DebugBorderPanelPlugin(
         val mode = campaignBorderModeByType.getValue(containerType)
         if (mode == CampaignBorderMode.NONE) return
         val pos = position ?: return
+        val outline = borderColor ?: containerType.debugColor
         GL11.glPushMatrix()
         GL11.glDisable(GL11.GL_TEXTURE_2D)
         GL11.glEnable(GL11.GL_BLEND)
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
         GL11.glColor4f(
-            containerType.debugColor.red / 255f,
-            containerType.debugColor.green / 255f,
-            containerType.debugColor.blue / 255f,
+            outline.red / 255f,
+            outline.green / 255f,
+            outline.blue / 255f,
             0.95f * alphaMult
         )
         GL11.glBegin(GL11.GL_LINES)

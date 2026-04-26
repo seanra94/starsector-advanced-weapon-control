@@ -250,13 +250,6 @@ class SuggestedTagGui : InteractionDialogPlugin {
             if (isFilterView) {
                 infoPanel.addPara("Filter mode", Misc.getHighlightColor(), 4f)
             }
-            if (resetConfirmationPending) {
-                infoPanel.addPara(
-                    "Reset is armed. Click Confirm Reset to replace all custom suggested tags with defaults.",
-                    Misc.getNegativeHighlightColor(),
-                    6f
-                )
-            }
             panel.addUIElement(infoPanel).inTL(CampaignGuiStyle.PANEL_PADDING, currentTop)
         }
 
