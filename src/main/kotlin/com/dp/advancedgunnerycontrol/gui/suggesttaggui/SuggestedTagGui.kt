@@ -235,7 +235,7 @@ class SuggestedTagGui : InteractionDialogPlugin {
                     rowHeight - ACTION_ROW_PADDING - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
                     false
                 )
-                if (isRed) {
+                if (isRed || isGreen) {
                     textPanel.addPara(label, CampaignGuiStyle.UNAVAILABLE_TAG_TEXT_COLOR, 0f)
                 } else {
                     textPanel.addPara(label, 0f)

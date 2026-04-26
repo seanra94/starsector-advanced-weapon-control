@@ -85,7 +85,7 @@ val priorityBoilerplateText = "\nIncreases priority by a factor of ${Settings.pr
 
 val tagTooltips = mapOf(
     "PD" to "Restricts targeting to fighters and missiles.",
-    "PrioritizePD" to "Weapon will always prioritize from small to large (Missiles > fighters > small ships > big ships)." +
+    "PrioPD" to "Weapon will always prioritize from small to large (Missiles > fighters > small ships > big ships)." +
             if (Settings.strictBigSmall()) "\nRestricts targeting to missiles and ships smaller than cruisers." else "\nNo targeting restrictions.",
     "NoPD" to "Forbids targeting missiles and prioritizes ships over fighters.",
     "Fighter" to "Restricts targeting to fighters.",
@@ -197,7 +197,8 @@ fun canonicalizeWeaponTagName(tag: String): String {
         pdTotalFluxRegex.matches(tag) -> tag
         pdTotalFluxLegacyRegex.matches(tag) -> "PD(TF>${extractRegexThresholdAsPercentageString(pdTotalFluxLegacyRegex, tag)})"
         avoidArmorRegex.matches(tag) -> "AvoidArmor(${extractRegexThresholdAsPercentageString(avoidArmorRegex, tag)})"
-        tag == "PrioritisePD" -> "PrioritizePD"
+        tag == "PrioritisePD" -> "PrioPD"
+        tag == "PrioritizePD" -> "PrioPD"
         tag == "CnsrvPDAmmo" -> "ConservePDAmmo"
         tag == "NoFighters" -> "NoFighter"
         tag == "NoMissiles" -> "NoMissile"
@@ -379,7 +380,7 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
     }
     return when (name) {
         "PD" -> PDTag(weapon)
-        "PrioritizePD", "PrioritisePD" -> PrioritizePDTag(weapon, Settings.prioXModifier())
+        "PrioPD", "PrioritizePD", "PrioritisePD" -> PrioritizePDTag(weapon, Settings.prioXModifier())
         "NoPD" -> NoPDTag(weapon)
         "Fighter" -> FighterTag(weapon)
         "AvoidShield", "AvoidShields" -> AvoidShieldTag(weapon)
@@ -475,9 +476,9 @@ val tagIncompatibility = mapOf(
         "BigShip",
         "SmallShip",
         "ConservePDAmmo",
-        "PrioritizePD"
+        "PrioPD"
     ),
-    "PrioritizePD" to listOf("Opportunist", "NoPD", "BigShip", "SmallShip", "Fighter", "PD"),
+    "PrioPD" to listOf("Opportunist", "NoPD", "BigShip", "SmallShip", "Fighter", "PD"),
     "Fighter" to listOf(
         "PD",
         "NoFighter",
@@ -486,10 +487,10 @@ val tagIncompatibility = mapOf(
         "PD(TF>N%)",
         "BigShip",
         "SmallShip",
-        "PrioritizePD",
+        "PrioPD",
         "ConservePDAmmo",
     ),
-    "NoPD" to listOf("PD", "Fighter", "PD(TF>N%)", "PrioritizePD", "ConservePDAmmo"),
+    "NoPD" to listOf("PD", "Fighter", "PD(TF>N%)", "PrioPD", "ConservePDAmmo"),
     "ShieldOff" to shieldTagIncompatibilities("ShieldOff"),
     "AvoidShield" to shieldTagIncompatibilities("AvoidShield"),
     "TargetShield" to shieldTagIncompatibilities("TargetShield"),
@@ -501,10 +502,10 @@ val tagIncompatibility = mapOf(
     "TargetShield(SF>N%)" to shieldTagIncompatibilities("TargetShield(SF>N%)"),
     "NoFighter" to listOf("Fighter", "Opportunist"),
     "ConservePDAmmo" to listOf("PD", "Fighter", "NoPD"),
-    "Opportunist" to listOf("Fighter", "PD", "NoFighter", "PD(TF>N%)", "PrioritizePD", "ConservePDAmmo", "NoMissile"),
+    "Opportunist" to listOf("Fighter", "PD", "NoFighter", "PD(TF>N%)", "PrioPD", "ConservePDAmmo", "NoMissile"),
     "PD(TF>N%)" to listOf("Fighter", "Opportunist", "NoPD", "PD", "BigShip", "SmallShip"),
-    "SmallShip" to listOf("BigShip", "PD", "Fighter", "PD(TF>N%)", "PrioritizePD"),
-    "BigShip" to listOf("SmallShip", "PD", "Fighter", "PD(TF>N%)", "PrioritizePD"),
+    "SmallShip" to listOf("BigShip", "PD", "Fighter", "PD(TF>N%)", "PrioPD"),
+    "BigShip" to listOf("SmallShip", "PD", "Fighter", "PD(TF>N%)", "PrioPD"),
     "NoMissile" to listOf("Opportunist"),
     "TargetPhase" to listOf("AvoidPhased"),
     "AvoidPhased" to listOf("TargetPhase"),

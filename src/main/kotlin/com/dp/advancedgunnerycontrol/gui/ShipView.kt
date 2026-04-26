@@ -271,7 +271,10 @@ class ShipView(
         val indicator = panel.createCustomPanel(
             panel.position.width,
             TAG_ELLIPSIS_HEIGHT,
-            DebugBorderPanelPlugin(CampaignContainerType.ITEM)
+            DebugBorderPanelPlugin(
+                CampaignContainerType.ITEM,
+                fillColor = CampaignGuiStyle.INACTIVE_ROW_BACKGROUND_COLOR
+            )
         )
         panel.addComponent(indicator)
         indicator.position.inTL(0f, top)

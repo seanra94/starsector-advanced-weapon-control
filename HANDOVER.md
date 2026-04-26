@@ -78,6 +78,15 @@ C:\Games\Starsector\starsector-core\starsector.log
 - Empty weapon groups keep their seven-column layout footprint; recent behavior shows the group heading but leaves the rest blank.
 - Suggested-tags GUI mirrors campaign tag behavior: forwarded wheel scrolling, pinned selected tags, selected tags removed from normal rows, and colored tag-label segments.
 
+## Sensitive areas
+
+- `assignShipModes()` and `shouldNotOverrideShipAI()` in `ShipModes.kt`.
+- `CustomShipAI.advance()` delegation to `baseAI`.
+- Any use of `ship.resetDefaultAI()`: recent history indicates this caused unintended AI resets.
+- Settings additions may need matching updates in `Settings.kt`, `Settings.editme` generation in `build.gradle.kts`, and `data/config/LunaSettings.csv`.
+- Campaign GUI row backgrounds are primarily controlled by row/panel fill plugins rather than only the colors passed to `addAreaCheckbox(...)`. Transparent row fills can read as black from the parent container.
+- Weapon tag renames are compatibility-sensitive because persisted saves/settings/loadouts may contain old tag strings. Prefer legacy aliases that normalize to the new canonical tag over breaking existing stored data.
+
 ## Known pitfalls and lessons learned
 
 - Starsector custom UI components must be created by the same panel they are added to. Creating a `TooltipMakerAPI` from a parent and adding it to a child panel caused crashes.

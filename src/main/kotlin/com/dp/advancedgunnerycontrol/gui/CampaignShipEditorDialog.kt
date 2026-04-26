@@ -302,7 +302,7 @@ class CampaignShipEditorPanelPlugin(
             rowHeight - ACTION_ROW_PADDING - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
             false
         )
-        if (isRed) {
+        if (isRed || isGreen) {
             textPanel.addPara(buildActionLabel(action), CampaignGuiStyle.UNAVAILABLE_TAG_TEXT_COLOR, 0f)
         } else {
             textPanel.addPara(buildActionLabel(action), 0f)

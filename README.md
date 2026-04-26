@@ -71,7 +71,7 @@ Replace N with a number between 1 and 99 when the tag name contains N%
 |       PD       | Fighters/Missiles              | Fighters/Missiles                                    | PD Weapon     |               No                |                                                            Will never shoot regular ships                                                            |         "Fighter", "Opportunist", "NoPD", "PD(TF>N%)", "BigShip/SmallShip"        | Weapons that only make sense as PD weapons and shouldn't waste shots/flux on enemy ships | Yes                            |
 |    Fighters    | Fighters                       | Fighters                                             | None          |   Base AI targets non-fighter   |                                                                          -                                                                           | "PD", "NoFighter", "Opportunist", "NoPD", "PD(TF>N%)", "BigShip", "SmallShip"    | Dedicated Anti-Fighter Weapons                                                           | Usually not                    |
 |      NoPD      | Ships, Fighters                | Ships                                                | PD Weapon     |       Target is not Ship        |                                                         Doesn't change weapon classification                                                         |                           "PD", "Fighter", "PD(TF>N%)"                           | Weapons that have the PD tag but aren't really PD weapons, e.g. MachineGuns              | No                             |
-|  PrioritizePD  | Everything                     | Missile > Fighter > small ship > big ship            | None          |             Always              |                                             Consistently prioritizes smaller targets over larger targets                                             |            "Opportunist", "NoPD", "BigShip", "SmallShip", "Fighter"               | Any weapon that needs to reliably prioritize fighters and missiles over ships            | Yes                            |
+|     PrioPD     | Everything                     | Missile > Fighter > small ship > big ship            | None          |             Always              |                                             Consistently prioritizes smaller targets over larger targets                                             |            "Opportunist", "NoPD", "BigShip", "SmallShip", "Fighter"               | Any weapon that needs to reliably prioritize fighters and missiles over ships            | Yes                            |
 |   NoFighter    | Anything but Fighters          | Same as base AI                                      | None          |    base AI targets a fighter    |                                                                          -                                                                           |                             "Fighter", "Opportunist"                              | Low rate of fire, slow projectile speed                                                  | Yes                            |
 |  Opportunist   | Ignores fighters/missiles      | Special*                                             | None          |             Always              |                                             Only shoots when the shot is likely to hit and be effective                                              |                    "Fighter", "PD", "NoFighter", "PD(TF>N%)"                      | Weapons with severely limited ammo or extreme re-fire delay                              | Yes                            |
 |    BigShip     | Ships/Fighters                 | Bigger=Better                                        | None          |  base AI targeting Destroyer-   |                                                          cf. strict mode in Settings.editme                                                          |                    "SmallShip", "PD", "Fighter", "PD(TF>N%)"                      | Low rate of fire, slow projectile speed                                                  | No                             |
@@ -199,7 +199,7 @@ A simple modSettings.json that only includes suggested tags would look like this
 {
   "AdvancedGunneryControl": {
     "suggestedWeaponTags" : {
-      "my_awesome_pd_also_weapon_id": "PrioritizePD,PrioMissile",
+      "my_awesome_pd_also_weapon_id": "PrioPD,PrioMissile",
       "my_needler_style_weapon_id": "TargetShield"
     }
   }
@@ -320,7 +320,7 @@ Has been moved to changelog.txt
 
 ## Acknowledgements ##
 
-Special thanks to Seanra for contributing the option to ignore fighter shields and the legacy shield-threshold tags plus PrioritizePD
+Special thanks to Seanra for contributing the option to ignore fighter shields and the legacy shield-threshold tags plus PrioPD
 and ConservePDAmmo tags!
 
 Special thanks to Genir for fixing an issue where weapons that should be aimed were incorrectly assumed to be non-aimable.

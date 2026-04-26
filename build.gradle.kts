@@ -238,7 +238,7 @@ tasks {
                    |   #                                 #### TAG LIST ####
                    |   # Determines which tags will be shown in the GUIs. Feel free to add/remove tags as you see fit.
                    |   # Allowed values are: (replace N with a number, usually between 0 and 100)
-                   |   # "PD", "NoPD", "NoMissile", "PD(TF>N%)", "PrioritizePD", "Fighter", "NoFighter", "AvoidShield", "TargetShield",
+                   |   # "PD", "NoPD", "NoMissile", "PD(TF>N%)", "PrioPD", "Fighter", "NoFighter", "AvoidShield", "TargetShield",
                    |   # "AvoidShield+", "TargetShield+", "AvoidShield(TF>N%)", "AvoidShield(SF>N%)",
                    |   # "TargetShield(TF>N%)", "TargetShield(SF>N%)", "AvoidArmor(N%)", "AvoidDebris", "ShieldOff",
                    |   # "Opportunist", "Hold(TF>N%)", "Hold(SF>N%)", "ConserveAmmo", "ConservePDAmmo", "BurstPD(SF>N%)",
@@ -262,7 +262,7 @@ tasks {
                    |                "Hold(SF>10%)", "Hold(SF>20%)", "Merge", "SyncWindow", "SyncVolley", "Ambush",
                    |                "AvoidPhased", "TargetPhase", "ShipTarget", 
                    |                "ForceAF", "Force(TF<25%)", "Force(TF<50%)", "Force(TF<75%)", "Force(SF<5%)", "Force(SF<15%)",
-                   |                "PrioritizePD", "PrioFighter", "PrioMissile", "PrioShip", "PrioWounded", "PrioHealthy",
+                   |                "PrioPD", "PrioFighter", "PrioMissile", "PrioShip", "PrioWounded", "PrioHealthy",
                    |                "Fighter", "AvoidDebris",
                    |                "NoMissile", "NoFighter",
                    |                "Opportunist", "Panic(H<25%)", "Range<60%", "Range<80%",
@@ -277,7 +277,7 @@ tasks {
                    |                "Hold(TF>90%)", "Hold(TF>75%)", "Hold(SF>10%)", "Merge", "SyncWindow", "SyncVolley", "Ambush",
                    |                "AvoidPhased", "TargetPhase", "ShipTarget", 
                    |                "ForceAF", "Force(TF<50%)", "Force(SF<5%)",
-                   |                "PrioritizePD", "PrioFighter", "PrioMissile",
+                   |                "PrioPD", "PrioFighter", "PrioMissile",
                    |                "NoMissile", "NoFighter",
                    |                "Opportunist", "Panic(H<25%)", "Range<60%",
                    |                "ConserveAmmo", "ConservePDAmmo", "BurstPD(SF>90%)", "IgnoreMinorPD",

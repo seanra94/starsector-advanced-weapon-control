@@ -38,11 +38,11 @@ val campaignBorderModeByType = mapOf(
 
 object CampaignGuiStyle {
     val TOOLTIP_TEXT_COLOR: Color = Color(245, 230, 150)
-    val INACTIVE_ROW_BACKGROUND_COLOR: Color = Color(100, 100, 100, 225)
-    val UNAVAILABLE_TAG_BACKGROUND_COLOR: Color = Color(220, 70, 60, 235)
-    val UNAVAILABLE_TAG_DARK_COLOR: Color = Color(170, 40, 35)
-    val UNAVAILABLE_TAG_BRIGHT_COLOR: Color = Color(255, 130, 120)
-    val UNAVAILABLE_TAG_TEXT_COLOR: Color = Color.WHITE
+    val INACTIVE_ROW_BACKGROUND_COLOR: Color = Color(115, 115, 115, 225)
+    val UNAVAILABLE_TAG_BACKGROUND_COLOR: Color = Color(245, 95, 85, 240)
+    val UNAVAILABLE_TAG_DARK_COLOR: Color = Color(205, 70, 65)
+    val UNAVAILABLE_TAG_BRIGHT_COLOR: Color = Color(255, 155, 145)
+    val UNAVAILABLE_TAG_TEXT_COLOR: Color = Color(220, 220, 220)
     val ACTIVE_GREEN_BACKGROUND_COLOR: Color = Color(70, 150, 75)
     val ACTIVE_GREEN_DARK_COLOR: Color = Color(25, 80, 35)
     val ACTIVE_GREEN_BRIGHT_COLOR: Color = Color(125, 225, 130)

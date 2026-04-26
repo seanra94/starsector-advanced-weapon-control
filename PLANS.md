@@ -3,6 +3,7 @@
 ## Active task
 
 Resume GUI work on Advanced Gunnery Control Fork.
+Status: active UI polish and tag-rename follow-up.
 
 ## Goal
 
@@ -36,6 +37,12 @@ The prior agent moved the campaign and suggested-tags workflows into custom full
 The current GUI work is centered on `CampaignShipEditorDialog.kt`, `ShipView.kt`, `CampaignGuiStyle.kt`, `TagButton.kt`, `ShipModeButton.kt`, `SuggestedTagGui.kt`, `SuggestedTagGuiView.kt`, `SuggestedTagButton.kt`, and `WeaponFilter.kt`.
 
 The best recent campaign baseline uses forwarded `InputEventAPI` wheel handling, pinned selected tags, no duplicate selected tags in normal rows, seven fixed weapon-group columns, full-width item rows, ASCII scroll indicators, direct colored text segments, and fallback error panels for failed custom UI builds.
+
+## Near-term queue
+
+- Confirm or reject the suspected `saveShipModesInShip()` custom-data key mismatch in `ShipModes.kt`.
+- Finish campaign GUI row/background polish: consistent inactive grey rows, matching confirm/cancel text brightness, grey scroll rows, and brighter incompatible-tag red.
+- Rename `PrioritisePD` to canonical `PrioPD` while preserving legacy `PrioritisePD` loading compatibility.
 
 ## Plan
 
