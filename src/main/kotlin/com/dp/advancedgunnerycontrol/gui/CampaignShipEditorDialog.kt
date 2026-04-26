@@ -58,11 +58,14 @@ class CampaignShipEditorPanelPlugin(
 
     companion object {
         private const val SECTION_HEADER_HEIGHT = 20f
-        private const val ACTION_LINE_HEIGHT = 16f
+        private const val ACTION_LINE_HEIGHT = 17f
         private const val ACTION_ROW_GAP = 2f
         private const val ACTION_ROW_PADDING = 4f
-        private const val ACTION_LABEL_MAX_CHARS_PER_LINE = 42
-        private const val ACTION_LABEL_MAX_LINES = 2
+        private const val ACTION_LABEL_FALLBACK_MAX_CHARS_PER_LINE = 30
+        private const val ACTION_LABEL_MIN_CHARS_PER_LINE = 20
+        private const val ACTION_LABEL_ESTIMATED_CHAR_WIDTH = 5.4f
+        private const val ACTION_LABEL_MAX_LINES = 3
+        private const val OPTIONS_WIDTH_ESTIMATE = 176f
         private val ACTION_SHORTCUT_HIGHLIGHTS = listOf(
             "[TAB]",
             "[DELETE]",
@@ -228,8 +231,9 @@ class CampaignShipEditorPanelPlugin(
         var currentTop = bodyTop
 
         currentOptionRows.forEach { row ->
-            val rowHeight = actionRowHeight(row)
-            renderActionRow(panel, width, row, currentTop, rowHeight)
+            val labelText = buildActionLabel(row, width)
+            val rowHeight = actionRowHeight(labelText)
+            renderActionRow(panel, width, row, labelText, currentTop, rowHeight)
             currentTop += rowHeight + ACTION_ROW_GAP
         }
 
@@ -251,8 +255,8 @@ class CampaignShipEditorPanelPlugin(
         )
     }
 
-    private fun actionRowHeight(action: CampaignOptionRow): Float {
-        val lineCount = minOf(ACTION_LABEL_MAX_LINES, buildActionLabel(action).split("\n").size)
+    private fun actionRowHeight(labelText: String): Float {
+        val lineCount = minOf(ACTION_LABEL_MAX_LINES, labelText.split("\n").size)
         return ACTION_ROW_PADDING * 2f + ACTION_LINE_HEIGHT * lineCount
     }
 
@@ -260,6 +264,7 @@ class CampaignShipEditorPanelPlugin(
         panel: CustomPanelAPI,
         width: Float,
         action: CampaignOptionRow,
+        labelText: String,
         top: Float,
         rowHeight: Float,
     ) {
@@ -313,10 +318,9 @@ class CampaignShipEditorPanelPlugin(
 
         val textPanel = itemPanel.createUIElement(
             width - 2f * ACTION_ROW_PADDING,
-            rowHeight - ACTION_ROW_PADDING - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+            rowHeight - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
             false
         )
-        val labelText = buildActionLabel(action)
         if (isRed || isGreen) {
             addActionLabel(textPanel, labelText, CampaignGuiStyle.UNAVAILABLE_TAG_TEXT_COLOR)
         } else {
@@ -368,13 +372,28 @@ class CampaignShipEditorPanelPlugin(
         return wrapped.joinToString("\n")
     }
 
-    private fun buildActionLabel(action: CampaignOptionRow): String {
+    private fun actionLabelMaxCharsPerLine(width: Float): Int {
+        if (width <= 0f) return ACTION_LABEL_FALLBACK_MAX_CHARS_PER_LINE
+        val contentWidth = max(80f, width - 2f * ACTION_ROW_PADDING)
+        return max(
+            ACTION_LABEL_MIN_CHARS_PER_LINE,
+            (contentWidth / ACTION_LABEL_ESTIMATED_CHAR_WIDTH).toInt()
+        )
+    }
+
+    private fun buildActionLabel(action: CampaignOptionRow, width: Float = 0f): String {
         val shortcut = action.shortcut?.let { " [${Keyboard.getKeyName(it)}]" } ?: ""
-        return wrapActionLine(action.label + shortcut, ACTION_LABEL_MAX_CHARS_PER_LINE, ACTION_LABEL_MAX_LINES)
+        return wrapActionLine(
+            action.label + shortcut,
+            actionLabelMaxCharsPerLine(width),
+            ACTION_LABEL_MAX_LINES
+        )
     }
 
     private fun estimateOptionsPanelHeight(): Float {
-        val rowsHeight = currentOptionRows.sumOf { actionRowHeight(it).toDouble() }.toFloat()
+        val rowsHeight = currentOptionRows.sumOf {
+            actionRowHeight(buildActionLabel(it, OPTIONS_WIDTH_ESTIMATE)).toDouble()
+        }.toFloat()
         val rowGaps = max(0, currentOptionRows.size - 1) * ACTION_ROW_GAP
         val infoHeight = 46f
         return 2f * CampaignGuiStyle.PANEL_PADDING + SECTION_HEADER_HEIGHT + rowsHeight + rowGaps + infoHeight + 4f
