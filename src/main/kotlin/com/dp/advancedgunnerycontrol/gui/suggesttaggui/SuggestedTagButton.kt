@@ -16,7 +16,6 @@ import com.fs.starfarer.api.ui.ButtonAPI
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.util.Misc
-import java.awt.Color
 import kotlin.math.max
 
 class SuggestedTagButton(private val weaponId: String, tag: String, button: ButtonAPI) : ButtonBase<String>(tag, button, false) {
@@ -79,9 +78,9 @@ class SuggestedTagButton(private val weaponId: String, tag: String, button: Butt
                 val otherSelectedTags = selectedTags.toMutableList().apply { remove(tag) }
                 val unavailable = !pinned && isIncompatibleWithExistingTags(tag, otherSelectedTags)
                 val rowFillColor = when {
-                    pinned -> Color(190, 175, 95)
-                    unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
-                    else -> CampaignGuiStyle.INACTIVE_ROW_BACKGROUND_COLOR
+                    pinned -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
+                    unavailable -> CampaignGuiStyle.DISABLED_TAG_BACKGROUND_COLOR
+                    else -> null
                 }
                 val itemPanel = panel.createCustomPanel(
                     metrics.itemWidth,
@@ -93,18 +92,18 @@ class SuggestedTagButton(private val weaponId: String, tag: String, button: Butt
 
                 val inner = itemPanel.createUIElement(metrics.itemWidth, metrics.itemHeight, false)
                 val baseColor = when {
-                    pinned -> Color(190, 175, 95)
-                    unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
+                    pinned -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
+                    unavailable -> CampaignGuiStyle.DISABLED_TAG_BACKGROUND_COLOR
                     else -> Misc.getBasePlayerColor()
                 }
                 val darkColor = when {
-                    pinned -> Color(95, 85, 35)
-                    unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_DARK_COLOR
+                    pinned -> CampaignGuiStyle.ACTIVE_GREEN_DARK_COLOR
+                    unavailable -> CampaignGuiStyle.DISABLED_TAG_DARK_COLOR
                     else -> Misc.getDarkPlayerColor()
                 }
                 val brightColor = when {
-                    pinned -> Color(230, 215, 135)
-                    unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_BRIGHT_COLOR
+                    pinned -> CampaignGuiStyle.ACTIVE_GREEN_BRIGHT_COLOR
+                    unavailable -> CampaignGuiStyle.DISABLED_TAG_BRIGHT_COLOR
                     else -> Misc.getBrightPlayerColor()
                 }
                 val createdButton = inner.addAreaCheckbox(
@@ -132,7 +131,7 @@ class SuggestedTagButton(private val weaponId: String, tag: String, button: Butt
                     metrics.itemHeight - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
                     CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
                     CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
-                    textColor = if (unavailable) CampaignGuiStyle.UNAVAILABLE_TAG_TEXT_COLOR else null,
+                    textColor = if (unavailable) CampaignGuiStyle.DISABLED_TAG_TEXT_COLOR else null,
                     enableKeywordColors = !unavailable
                 )
 
