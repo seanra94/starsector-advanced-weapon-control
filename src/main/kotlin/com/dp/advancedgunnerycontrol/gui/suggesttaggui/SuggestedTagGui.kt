@@ -47,9 +47,11 @@ class SuggestedTagGui : InteractionDialogPlugin {
             "[DELETE]",
             "[ESCAPE]",
             "[LEFT]",
+            "[LEFT ARROW]",
             "[D]",
             "[A]",
             "[RIGHT]",
+            "[RIGHT ARROW]",
             "[F]",
         )
     }

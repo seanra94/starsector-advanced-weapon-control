@@ -46,7 +46,7 @@ class ShipView(
         private const val TAG_ELLIPSIS_HEIGHT = CampaignGuiStyle.TAG_ITEM_HEIGHT
         private const val TAG_SCROLL_STEP = 1
         private const val PICTURE_INFO_ROW_HEIGHT = 32f
-        private const val PICTURE_BOTTOM_PADDING = 8f
+        private const val PICTURE_BOTTOM_PADDING = 2f
         private const val PICTURE_IMAGE_TOP_GAP = 2f
         private const val PICTURE_IMAGE_BOTTOM_GAP = 5f
     }
@@ -225,6 +225,7 @@ class ShipView(
         value: String,
         top: Float,
         width: Float,
+        maxLines: Int = 2,
     ) {
         val labelWidth = width * 0.34f
         val valueWidth = width - labelWidth
@@ -235,7 +236,7 @@ class ShipView(
 
         val valuePanel = panel.createUIElement(valueWidth, PICTURE_INFO_ROW_HEIGHT, false)
         valuePanel.addPara(
-            wrapTextCapped(value, max(8, ((valueWidth - 8f) / 6.4f).toInt()), 2),
+            wrapTextCapped(value, max(8, ((valueWidth - 8f) / 6.4f).toInt()), maxLines),
             0f
         )
         panel.addUIElement(valuePanel).inTL(CampaignGuiStyle.PANEL_PADDING + labelWidth, top)
@@ -260,7 +261,8 @@ class ShipView(
             "Variant",
             ship.variant?.displayName?.ifBlank { "Default" } ?: "Default",
             rowsTop + 2f * PICTURE_INFO_ROW_HEIGHT,
-            innerWidth
+            innerWidth,
+            maxLines = 1,
         )
 
         val spacer = panel.createUIElement(innerWidth, PICTURE_BOTTOM_PADDING, false)

@@ -58,19 +58,21 @@ class CampaignShipEditorPanelPlugin(
 
     companion object {
         private const val SECTION_HEADER_HEIGHT = 20f
-        private const val ACTION_LINE_HEIGHT = 14f
+        private const val ACTION_LINE_HEIGHT = 16f
         private const val ACTION_ROW_GAP = 2f
         private const val ACTION_ROW_PADDING = 4f
-        private const val ACTION_LABEL_MAX_CHARS_PER_LINE = 36
+        private const val ACTION_LABEL_MAX_CHARS_PER_LINE = 42
         private const val ACTION_LABEL_MAX_LINES = 2
         private val ACTION_SHORTCUT_HIGHLIGHTS = listOf(
             "[TAB]",
             "[DELETE]",
             "[ESCAPE]",
             "[LEFT]",
+            "[LEFT ARROW]",
             "[D]",
             "[A]",
             "[RIGHT]",
+            "[RIGHT ARROW]",
             "[F]",
         )
     }
@@ -90,6 +92,7 @@ class CampaignShipEditorPanelPlugin(
     private val actionButtons = linkedMapOf<ButtonAPI, CampaignOptionRow>()
     private var lastModifierKeys = GUIAction.modifierKeys()
     private var resetConfirmationPending = false
+    private var resetConfirmationModifiers: Pair<Boolean, Boolean>? = null
 
     fun init(panel: CustomPanelAPI, callbacks: CustomVisualDialogDelegate.DialogCallbacks) {
         this.panel = panel
@@ -147,6 +150,7 @@ class CampaignShipEditorPanelPlugin(
             currentActions = generateShipActions(attributes)
             if (currentActions.none { it is ResetAction }) {
                 resetConfirmationPending = false
+                resetConfirmationModifiers = null
             }
             currentOptionRows = buildOptionRows()
 
@@ -397,8 +401,10 @@ class CampaignShipEditorPanelPlugin(
                                 tooltip = action.getTooltip(),
                                 style = CampaignOptionRowStyle.GREEN,
                                 callback = {
-                                    action.execute()
+                                    val (allLoadouts, wholeFleet) = resetConfirmationModifiers ?: GUIAction.modifierKeys()
+                                    action.executeWithModifiers(allLoadouts, wholeFleet)
                                     resetConfirmationPending = false
+                                    resetConfirmationModifiers = null
                                 }
                             )
                         )
@@ -407,7 +413,10 @@ class CampaignShipEditorPanelPlugin(
                                 label = "Cancel Reset",
                                 tooltip = "Do not reset current settings.",
                                 style = CampaignOptionRowStyle.RED,
-                                callback = { resetConfirmationPending = false }
+                                callback = {
+                                    resetConfirmationPending = false
+                                    resetConfirmationModifiers = null
+                                }
                             )
                         )
                     } else {
@@ -416,7 +425,10 @@ class CampaignShipEditorPanelPlugin(
                                 label = action.getName(),
                                 tooltip = action.getTooltip(),
                                 shortcut = action.getShortcut(),
-                                callback = { resetConfirmationPending = true }
+                                callback = {
+                                    resetConfirmationPending = true
+                                    resetConfirmationModifiers = GUIAction.modifierKeys()
+                                }
                             )
                         )
                     }

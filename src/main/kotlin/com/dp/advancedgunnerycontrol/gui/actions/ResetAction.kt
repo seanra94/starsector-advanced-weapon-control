@@ -1,5 +1,6 @@
 package com.dp.advancedgunnerycontrol.gui.actions
 
+import com.dp.advancedgunnerycontrol.gui.AGCGUI
 import com.dp.advancedgunnerycontrol.gui.GUIAttributes
 import com.dp.advancedgunnerycontrol.settings.Settings
 import com.dp.advancedgunnerycontrol.utils.ShipModeStorage
@@ -7,15 +8,35 @@ import com.dp.advancedgunnerycontrol.utils.persistTags
 import org.lwjgl.input.Keyboard
 
 class ResetAction(attributes: GUIAttributes) : GUIAction(attributes) {
-    override fun execute() {
-        affectedLoadouts().forEach { index ->
-            affectedShips().forEach { ship ->
+    fun executeWithModifiers(allLoadouts: Boolean, wholeFleet: Boolean) {
+        val loadouts = if (allLoadouts) {
+            (0 until Settings.maxLoadouts()).toList()
+        } else {
+            listOf(AGCGUI.storageIndex)
+        }
+        val ships = if (wholeFleet) {
+            com.fs.starfarer.api.Global.getSector().playerFleet.membersWithFightersCopy
+                .filterNot { it.isFighterWing }
+                .filterNotNull()
+        } else {
+            attributes.ship?.let { listOf(it) } ?: emptyList()
+        }
+
+        loadouts.forEach { index ->
+            ships.forEach { ship ->
                 ShipModeStorage[index].modesByShip[ship.id]?.clear()
                 for(i in 0 until (ship.variant?.weaponGroups?.size ?: 0)){
                     persistTags(ship.id, ship, i, index, emptyList())
                 }
             }
         }
+    }
+
+    override fun execute() {
+        executeWithModifiers(
+            allLoadouts = isAllLoadoutsKeyHeld(),
+            wholeFleet = isWholeFleetKeyHeld()
+        )
     }
 
     override fun getTooltip(): String {
