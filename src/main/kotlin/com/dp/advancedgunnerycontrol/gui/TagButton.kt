@@ -113,7 +113,10 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
                 val itemPanel = panel.createCustomPanel(
                     metrics.itemWidth,
                     metrics.itemHeight,
-                    DebugBorderPanelPlugin(CampaignContainerType.ITEM)
+                    DebugBorderPanelPlugin(
+                        CampaignContainerType.ITEM,
+                        fillColor = if (unavailable) CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR else null
+                    )
                 )
                 panel.addComponent(itemPanel)
                 itemPanel.position.inTL(metrics.xFor(index), metrics.yFor(index))
@@ -125,17 +128,17 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
                 val baseColor = when {
                     pinned -> Color(190, 175, 95)
                     unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
-                    else -> CampaignGuiStyle.NORMAL_TAG_BACKGROUND_COLOR
+                    else -> Misc.getBasePlayerColor()
                 }
                 val darkColor = when {
                     pinned -> Color(95, 85, 35)
                     unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_DARK_COLOR
-                    else -> CampaignGuiStyle.NORMAL_TAG_DARK_COLOR
+                    else -> Misc.getDarkPlayerColor()
                 }
                 val brightColor = when {
                     pinned -> Color(230, 215, 135)
                     unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_BRIGHT_COLOR
-                    else -> CampaignGuiStyle.NORMAL_TAG_BRIGHT_COLOR
+                    else -> Misc.getBrightPlayerColor()
                 }
                 toReturn.add(
                     TagButton(
