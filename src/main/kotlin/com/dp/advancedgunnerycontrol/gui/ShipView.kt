@@ -31,7 +31,8 @@ class ShipView(
         private const val PICTURE_HEIGHT_MIN = 242f
         private const val PICTURE_HEIGHT_MAX = 255f
         private const val SHIP_MODE_HEIGHT_MIN = 96f
-        private const val SHIP_MODE_HEIGHT_MAX = 132f
+        private const val SHIP_MODE_HEIGHT_MAX = 176f
+        private const val SHIP_MODE_SPARE_ROWS = 1
         private const val SECTION_HEADER_HEIGHT = 20f
         private const val WEAPON_ENTRY_HEIGHT = 40f
         private const val WEAPON_IMAGE_WIDTH = 30f
@@ -164,7 +165,8 @@ class ShipView(
             Settings.getCurrentShipModes().size > 1 &&
             innerWidth >= (CampaignGuiStyle.SHIP_MODE_ITEM_MIN_WIDTH * 2f + CampaignGuiStyle.SHIP_MODE_ITEM_HGAP)
         ) 2 else 1
-        val rows = max(1, kotlin.math.ceil(Settings.getCurrentShipModes().size / columns.toFloat()).toInt())
+        val rows = max(1, kotlin.math.ceil(Settings.getCurrentShipModes().size / columns.toFloat()).toInt()) +
+            SHIP_MODE_SPARE_ROWS
         val bodyHeight =
             rows * CampaignGuiStyle.SHIP_MODE_ITEM_HEIGHT + max(0, rows - 1) * CampaignGuiStyle.SHIP_MODE_ITEM_VGAP
         val totalHeight = 2f * CampaignGuiStyle.PANEL_PADDING + SECTION_HEADER_HEIGHT + bodyHeight

@@ -77,18 +77,35 @@ class SuggestedTagButton(private val weaponId: String, tag: String, button: Butt
             val toReturn = mutableListOf<SuggestedTagButton>()
 
             tags.forEachIndexed { index, tag ->
+                val otherSelectedTags = selectedTags.toMutableList().apply { remove(tag) }
+                val unavailable = !pinned && isIncompatibleWithExistingTags(tag, otherSelectedTags)
                 val itemPanel = panel.createCustomPanel(
                     metrics.itemWidth,
                     metrics.itemHeight,
-                    DebugBorderPanelPlugin(CampaignContainerType.ITEM)
+                    DebugBorderPanelPlugin(
+                        CampaignContainerType.ITEM,
+                        fillColor = if (unavailable) CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR else null
+                    )
                 )
                 panel.addComponent(itemPanel)
                 itemPanel.position.inTL(metrics.xFor(index), metrics.yFor(index))
 
                 val inner = itemPanel.createUIElement(metrics.itemWidth, metrics.itemHeight, false)
-                val baseColor = if (pinned) Color(190, 175, 95) else Misc.getBasePlayerColor()
-                val darkColor = if (pinned) Color(95, 85, 35) else Misc.getDarkPlayerColor()
-                val brightColor = if (pinned) Color(230, 215, 135) else Misc.getBrightPlayerColor()
+                val baseColor = when {
+                    pinned -> Color(190, 175, 95)
+                    unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
+                    else -> Misc.getBasePlayerColor()
+                }
+                val darkColor = when {
+                    pinned -> Color(95, 85, 35)
+                    unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_DARK_COLOR
+                    else -> Misc.getDarkPlayerColor()
+                }
+                val brightColor = when {
+                    pinned -> Color(230, 215, 135)
+                    unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_BRIGHT_COLOR
+                    else -> Misc.getBrightPlayerColor()
+                }
                 val createdButton = inner.addAreaCheckbox(
                     "",
                     tag,
@@ -113,7 +130,9 @@ class SuggestedTagButton(private val weaponId: String, tag: String, button: Butt
                     metrics.itemWidth - 2f * CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
                     metrics.itemHeight - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
                     CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
-                    CampaignGuiStyle.ITEM_TEXT_TOP_PADDING
+                    CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+                    textColor = if (unavailable) CampaignGuiStyle.UNAVAILABLE_TAG_TEXT_COLOR else null,
+                    enableKeywordColors = !unavailable
                 )
 
                 if (selectedTags.contains(tag)) {
@@ -165,7 +184,8 @@ class SuggestedTagButton(private val weaponId: String, tag: String, button: Butt
         val tags = Settings.getCurrentSuggestedTags()[weaponId] ?: emptyList()
         sameGroupButtons.forEach {
             it.enable()
-            if(isIncompatibleWithExistingTags(it.associatedValue, tags)){
+            val otherTags = tags.toMutableList().apply { remove(it.associatedValue) }
+            if(isIncompatibleWithExistingTags(it.associatedValue, otherTags)){
                 it.disable()
             }
         }

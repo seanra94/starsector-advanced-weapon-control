@@ -38,6 +38,10 @@ val campaignBorderModeByType = mapOf(
 
 object CampaignGuiStyle {
     val TOOLTIP_TEXT_COLOR: Color = Color(245, 230, 150)
+    val UNAVAILABLE_TAG_BACKGROUND_COLOR: Color = Color(120, 20, 20)
+    val UNAVAILABLE_TAG_DARK_COLOR: Color = Color(55, 10, 10)
+    val UNAVAILABLE_TAG_BRIGHT_COLOR: Color = Color(210, 60, 60)
+    val UNAVAILABLE_TAG_TEXT_COLOR: Color = Color.WHITE
     data class TagKeywordColor(val keyword: String, val color: Color)
     data class TagTextSegment(val text: String, val color: Color?)
     val TAG_KEYWORD_COLORS: List<TagKeywordColor> = listOf(
@@ -189,12 +193,12 @@ fun splitTagLabelSegments(text: String): List<CampaignGuiStyle.TagTextSegment> {
 }
 
 fun TooltipMakerAPI.addColoredTagLabel(text: String, pad: Float = 0f) {
-    splitTagLabelSegments(text).forEach { segment ->
-        if (segment.color == null) {
-            addPara(segment.text, pad)
-        } else {
-            addPara(segment.text, segment.color, pad)
-        }
+    val label = addPara(text, pad)
+    val highlighted = splitTagLabelSegments(text)
+        .filter { it.color != null }
+    if (highlighted.isNotEmpty()) {
+        label.setHighlight(*highlighted.map { it.text }.toTypedArray())
+        label.setHighlightColors(*highlighted.map { it.color }.toTypedArray())
     }
 }
 
@@ -205,26 +209,22 @@ fun renderColoredTagLabel(
     height: Float,
     x: Float,
     y: Float,
+    textColor: Color? = null,
+    enableKeywordColors: Boolean = true,
 ) {
-    var cursor = x
-    splitTagLabelSegments(text).forEach { segment ->
-        if (segment.text.isEmpty()) return@forEach
-        val measuringElement = panel.createUIElement(width, height, false)
-        val textWidth = max(
-            measuringElement.computeStringWidth(segment.text),
-            segment.text.length * 7.5f
-        )
-        val remainingWidth = width - (cursor - x)
-        val renderWidth = min(remainingWidth, max(12f, textWidth + 14f))
-        if (renderWidth <= 0f) return
-        val element = panel.createUIElement(renderWidth, height, false)
-        if (segment.color == null) {
-            element.addPara(segment.text, 0f)
-        } else {
-            element.addPara(segment.text, segment.color, 0f)
-        }
-        panel.addUIElement(element).inTL(cursor, y)
-        cursor += min(remainingWidth, max(4f, textWidth + 1f))
-        if (cursor - x >= width) return
+    val element = panel.createUIElement(width, height, false)
+    val label = if (textColor == null) {
+        element.addPara(text, 0f)
+    } else {
+        element.addPara(text, textColor, 0f)
     }
+    if (enableKeywordColors) {
+        val highlighted = splitTagLabelSegments(text)
+            .filter { it.color != null }
+        if (highlighted.isNotEmpty()) {
+            label.setHighlight(*highlighted.map { it.text }.toTypedArray())
+            label.setHighlightColors(*highlighted.map { it.color }.toTypedArray())
+        }
+    }
+    panel.addUIElement(element).inTL(x, y)
 }

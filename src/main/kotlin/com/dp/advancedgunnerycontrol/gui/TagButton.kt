@@ -105,10 +105,18 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
             )
             val toReturn = mutableListOf<TagButton>()
             tags.forEachIndexed { index, tag ->
+                val otherSelectedTags = sanitizedTags.toMutableList().apply { remove(tag) }
+                val unavailable = !pinned && (
+                    isIncompatibleWithExistingTags(tag, otherSelectedTags) ||
+                        shouldTagBeDisabled(group, ship, tag)
+                    )
                 val itemPanel = panel.createCustomPanel(
                     metrics.itemWidth,
                     metrics.itemHeight,
-                    DebugBorderPanelPlugin(CampaignContainerType.ITEM)
+                    DebugBorderPanelPlugin(
+                        CampaignContainerType.ITEM,
+                        fillColor = if (unavailable) CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR else null
+                    )
                 )
                 panel.addComponent(itemPanel)
                 itemPanel.position.inTL(metrics.xFor(index), metrics.yFor(index))
@@ -118,9 +126,21 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
                     false
                 )
                 val label = truncateLabel(tag, metrics.itemWidth, 22f)
-                val baseColor = if (pinned) Color(190, 175, 95) else Misc.getBasePlayerColor()
-                val darkColor = if (pinned) Color(95, 85, 35) else Misc.getDarkPlayerColor()
-                val brightColor = if (pinned) Color(230, 215, 135) else Misc.getBrightPlayerColor()
+                val baseColor = when {
+                    pinned -> Color(190, 175, 95)
+                    unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
+                    else -> Misc.getBasePlayerColor()
+                }
+                val darkColor = when {
+                    pinned -> Color(95, 85, 35)
+                    unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_DARK_COLOR
+                    else -> Misc.getDarkPlayerColor()
+                }
+                val brightColor = when {
+                    pinned -> Color(230, 215, 135)
+                    unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_BRIGHT_COLOR
+                    else -> Misc.getBrightPlayerColor()
+                }
                 toReturn.add(
                     TagButton(
                         ship,
@@ -149,7 +169,9 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
                     metrics.itemWidth - 2f * CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
                     metrics.itemHeight - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
                     CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
-                    CampaignGuiStyle.ITEM_TEXT_TOP_PADDING
+                    CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+                    textColor = if (unavailable) CampaignGuiStyle.UNAVAILABLE_TAG_TEXT_COLOR else null,
+                    enableKeywordColors = !unavailable
                 )
                 if (sanitizedTags.contains(tag)) {
                     toReturn.last().setCheckedFromPersistence(true)
