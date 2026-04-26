@@ -254,7 +254,7 @@ class CampaignShipEditorPanelPlugin(
         val rowFillColor = when {
             isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
             isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
-            else -> CampaignGuiStyle.INACTIVE_ROW_BACKGROUND_COLOR
+            else -> null
         }
         val itemPanel = panel.createCustomPanel(
             width,

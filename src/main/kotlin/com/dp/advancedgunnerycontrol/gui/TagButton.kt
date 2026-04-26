@@ -142,7 +142,7 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
                 val brightColor = when {
                     pinned -> CampaignGuiStyle.ACTIVE_GREEN_BRIGHT_COLOR
                     unavailable -> CampaignGuiStyle.DISABLED_TAG_BRIGHT_COLOR
-                    else -> Misc.getBrightPlayerColor()
+                    else -> CampaignGuiStyle.ACTIVE_GREEN_BRIGHT_COLOR
                 }
                 toReturn.add(
                     TagButton(
