@@ -5,12 +5,14 @@ import com.fs.starfarer.api.combat.CombatEntityAPI
 import com.fs.starfarer.api.combat.ShipAPI
 import com.fs.starfarer.api.combat.WeaponAPI
 
-class PrioritizeShipsTag(weapon: WeaponAPI, private val multiplier: Float) : WeaponAITagBase(weapon) {
-    override fun computeTargetPriorityModifier(solution: FiringSolution): Float {
-        return if((solution.target as? ShipAPI)?.isFighter == false) 1f / multiplier else 1f
+class ShieldOffTag(weapon: WeaponAPI) : WeaponAITagBase(weapon) {
+    override fun isValidTarget(entity: CombatEntityAPI): Boolean {
+        if (!super.isValidTarget(entity)) return false
+        if ((entity as? ShipAPI)?.shield == null) return true
+        return (entity as? ShipAPI)?.shield?.isOff ?: false
     }
 
-    override fun isBaseAiValid(entity: CombatEntityAPI): Boolean = (entity as? ShipAPI)?.isFighter == false
+    override fun computeTargetPriorityModifier(solution: FiringSolution): Float = 1.0f
 
     override fun shouldFire(solution: FiringSolution): Boolean = true
 

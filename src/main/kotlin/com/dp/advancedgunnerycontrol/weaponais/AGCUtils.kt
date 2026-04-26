@@ -29,6 +29,26 @@ fun ShipAPI.hasPhaseCloak(): Boolean{
     return hullSpec.isPhase && phaseCloak != null
 }
 
+fun WeaponAPI.isInRangeOf(point: Vector2f, threshold: Float = 1f): Boolean {
+    return (location - point).length() <= threshold * range
+}
+
+fun WeaponAPI.coerceAimPointIntoArc(point: Vector2f): Vector2f {
+    if (!isAimable(this) || arc >= 359.9f) return point
+
+    val distance = linearDistanceFromWeapon(point, this)
+    if (distance <= 0.01f) return point
+
+    val arcCenter = normalizeAngleDeg((ship?.facing ?: 0f) + arcFacing)
+    val aimAngle = degFromVector(point - location)
+    val offsetFromArcCenter = shortestSignedAngleDeg(arcCenter, aimAngle)
+    val halfArc = arc * 0.5f
+    if (abs(offsetFromArcCenter) <= halfArc) return point
+
+    val clampedAngle = arcCenter + offsetFromArcCenter.coerceIn(-halfArc, halfArc)
+    return location + (vectorFromAngleDeg(clampedAngle) times_ distance)
+}
+
 fun WeaponAPI.getMaxSpreadForNextBurst(): Float{
     spec ?: return currSpread
     if(spec.burstSize <= 1) return currSpread
@@ -456,6 +476,14 @@ fun vectorFromAngleDeg(angle: Float): Vector2f {
 
 fun degFromVector(vec: Vector2f): Float {
     return atan2(vec.y, vec.x) / degToRad
+}
+
+fun normalizeAngleDeg(angle: Float): Float {
+    return ((angle % 360f) + 360f) % 360f
+}
+
+fun shortestSignedAngleDeg(from: Float, to: Float): Float {
+    return ((to - from + 540f) % 360f) - 180f
 }
 
 fun mapBooleanToSpecificString(boolValue: Boolean, trueString: String, falseString: String): String {

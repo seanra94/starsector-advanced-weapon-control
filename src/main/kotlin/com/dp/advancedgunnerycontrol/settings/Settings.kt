@@ -2,6 +2,7 @@ package com.dp.advancedgunnerycontrol.settings
 
 import com.dp.advancedgunnerycontrol.typesandvalues.ShipModes
 import com.dp.advancedgunnerycontrol.typesandvalues.Values
+import com.dp.advancedgunnerycontrol.typesandvalues.canonicalizeWeaponTagNames
 import com.dp.advancedgunnerycontrol.typesandvalues.shipModeFromString
 import com.dp.advancedgunnerycontrol.utils.StorageBase
 import com.dp.advancedgunnerycontrol.utils.StorageBaseIntKey
@@ -15,6 +16,7 @@ import kotlin.math.max
 import kotlin.math.min
 
 object Settings : SettingsDefinition() {
+    private val completeListScrollTestTags = (10..19).map { "Hold(TF>$it%)" }
     private val classicTagList = addSetting<List<String>>("classicTagList", listOf(), false)
     private val noviceTagList = addSetting<List<String>>("noviceTagList", listOf(), false)
     private val completeTagList = addSetting<List<String>>("completeTagList", listOf(), false)
@@ -64,17 +66,18 @@ object Settings : SettingsDefinition() {
     val ventSafetyFactor = addSetting<Float>("vent_safetyFactor", 2f, true)
     val aggressiveVentSafetyFactor = addSetting<Float>("aggressiveVent_safetyFactor", 0.25f, true)
     val retreatHullThreshold = addSetting<Float>("retreat_hull", 0.5f, false)
-    val shieldsOffThreshold = addSetting<Float>("shieldsOff_flux", 0.5f, false)
+    val shieldOffThreshold = addSetting<Float>("shieldsOff_flux", 0.5f, false)
     val conserveAmmo = addSetting<Float>("conserveAmmo_ammo", 0.5f, false)
     val conservePDAmmo = addSetting<Float>("conservePDAmmo_ammo", 0.9f, false)
     val directRetreat = addSetting<Boolean>("retreat_shouldDirectRetreat", false, tryLunar = false)
     val opportunistModifier = addSetting<Float>("opportunist_triggerHappinessModifier", 1.0f, false)
     val strictBigSmall = addSetting<Boolean>("strictBigSmallShipMode", true, tryLunar = true)
-    val targetShieldsThreshold = addSetting<Float>("targetShields_threshold", 0.2f, true)
-    val avoidShieldsThreshold = addSetting<Float>("avoidShields_threshold", 0.5f, true)
-    val ignoreFighterShields = addSetting<Boolean>("ignoreFighterShields", true)
-    val targetShieldsAtFT = addSetting<Float>("targetShieldsAtFT_flux", 0.2f, false)
-    val avoidShieldsAtFT = addSetting<Float>("avoidShieldsAtFT_flux", 0.2f, false)
+    val targetShieldThreshold = addSetting<Float>("targetShields_threshold", 0.2f, true)
+    val avoidShieldThreshold = addSetting<Float>("avoidShields_threshold", 0.5f, true)
+    val ignoreFighterShield = addSetting<Boolean>("ignoreFighterShields", true)
+    val targetShieldAtTotalFlux = addSetting<Float>("targetShieldsAtFT_flux", 0.2f, false)
+    val avoidShieldAtTotalFlux = addSetting<Float>("avoidShieldsAtFT_flux", 0.2f, false)
+    val softFluxTotalFluxCap = addSetting<Float>("SFTUpperFluxLimit", 0.9f, false)
     val prioXModifier = addSetting<Float>("prioXModifier", 10f, false)
     val useExactBoundsForFiringDecision = addSetting<Boolean>("useExactBoundsForFiringDecision", true)
     val useConeFFForSpreadOver = addSetting("useConeFFAboveSpread", 4f, true)
@@ -103,8 +106,8 @@ object Settings : SettingsDefinition() {
         private set
 
     fun getCurrentSuggestedTags() : Map<String, List<String>>{
-        if(customSuggestedTags.isEmpty()) return defaultSuggestedTags
-        return customSuggestedTags
+        val source = if(customSuggestedTags.isEmpty()) defaultSuggestedTags else customSuggestedTags
+        return source.mapValues { canonicalizeWeaponTagNames(it.value) }
     }
 
     fun getCurrentShipModes(): List<ShipModes>{
@@ -118,16 +121,18 @@ object Settings : SettingsDefinition() {
     var tagStorageByWeaponComposition: List<StorageBase<String, List<String>>> = listOf()
 
     fun getCurrentWeaponTagList() : List<String>{
-        if(isAdvancedMode){
-            return when(listVariant()){
+        val tags = if(isAdvancedMode){
+            when(listVariant()){
                 "classic" -> classicTagList()
                 "novice" -> noviceTagList()
-                "complete" -> completeTagList()
+                "complete" -> completeTagList() + completeListScrollTestTags
                 else -> noviceTagList()
             }
 
+        } else {
+            simpleTagList()
         }
-        return simpleTagList()
+        return canonicalizeWeaponTagNames(tags)
     }
 
     override fun readSettings() {

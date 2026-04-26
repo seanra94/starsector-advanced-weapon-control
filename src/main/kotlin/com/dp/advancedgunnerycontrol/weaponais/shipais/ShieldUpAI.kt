@@ -5,7 +5,7 @@ import com.fs.starfarer.api.combat.ShipCommand
 import org.lazywizard.lazylib.combat.CombatUtils
 import org.lazywizard.lazylib.ext.minus
 
-class ShieldsUpAI(ship: ShipAPI, private val fluxThreshold: Float) : ShipCommandGenerator(ship) {
+class ShieldUpAI(ship: ShipAPI, private val fluxThreshold: Float) : ShipCommandGenerator(ship) {
     companion object {
         const val scanRange = 4000f
         const val scanFrequency = 20

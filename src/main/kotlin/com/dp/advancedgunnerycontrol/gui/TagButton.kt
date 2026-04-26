@@ -9,14 +9,39 @@ import com.dp.advancedgunnerycontrol.utils.loadPersistentTags
 import com.dp.advancedgunnerycontrol.utils.persistTags
 import com.fs.starfarer.api.fleet.FleetMemberAPI
 import com.fs.starfarer.api.ui.ButtonAPI
+import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.util.Misc
+import java.awt.Color
+import kotlin.math.max
 
 class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: ButtonAPI) :
     ButtonBase<String>(tag, button, false) {
 
     companion object {
         private var storage = Settings.tagStorage[AGCGUI.storageIndex]
+        var campaignTagSelectionVersion = 0
+            private set
+
+        private fun sanitizePersistedTags(ship: FleetMemberAPI, group: Int): MutableList<String> {
+            val allTags = Settings.getCurrentWeaponTagList()
+            val sanitized = loadPersistentTags(ship.id, ship, group, AGCGUI.storageIndex)
+                .filter { allTags.contains(it) }
+                .toMutableList()
+            var changed = true
+            while (changed) {
+                changed = false
+                sanitized.toList().forEach { persistedTag ->
+                    val otherTags = sanitized.toMutableList().apply { remove(persistedTag) }
+                    if (isIncompatibleWithExistingTags(persistedTag, otherTags) || shouldTagBeDisabled(group, ship, persistedTag)) {
+                        sanitized.remove(persistedTag)
+                        changed = true
+                    }
+                }
+            }
+            persistTags(ship.id, ship, group, AGCGUI.storageIndex, sanitized)
+            return sanitized
+        }
 
         fun createModeButtonGroup(
             ship: FleetMemberAPI,
@@ -46,7 +71,88 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
                     TooltipMakerAPI.TooltipLocation.BELOW
                 )
                 if (loadPersistentTags(ship.id, ship, group, AGCGUI.storageIndex).contains(it)) {
-                    toReturn.last().check()
+                    toReturn.last().setCheckedFromPersistence(true)
+                }
+            }
+            toReturn.forEach {
+                it.sameGroupButtons = toReturn
+            }
+            toReturn.forEach {
+                it.updateDisabledButtons()
+            }
+            return toReturn
+        }
+
+        fun createCampaignModeButtonGroup(
+            ship: FleetMemberAPI,
+            group: Int,
+            panel: CustomPanelAPI,
+            visibleTags: List<String> = Settings.getCurrentWeaponTagList(),
+            pinned: Boolean = false,
+        ): List<TagButton> {
+            storage = Settings.tagStorage[AGCGUI.storageIndex]
+            val tags = visibleTags
+            val sanitizedTags = sanitizePersistedTags(ship, group)
+            val metrics = computeWrapGridMetrics(
+                itemCount = max(tags.size, 1),
+                availableWidth = panel.position.width,
+                availableHeight = panel.position.height,
+                minItemWidth = CampaignGuiStyle.TAG_ITEM_MIN_WIDTH,
+                itemHeight = CampaignGuiStyle.TAG_ITEM_HEIGHT,
+                horizontalGap = CampaignGuiStyle.TAG_ITEM_HGAP,
+                verticalGap = CampaignGuiStyle.TAG_ITEM_VGAP,
+                maxColumns = 1
+            )
+            val toReturn = mutableListOf<TagButton>()
+            tags.forEachIndexed { index, tag ->
+                val itemPanel = panel.createCustomPanel(
+                    metrics.itemWidth,
+                    metrics.itemHeight,
+                    DebugBorderPanelPlugin(CampaignContainerType.ITEM)
+                )
+                panel.addComponent(itemPanel)
+                itemPanel.position.inTL(metrics.xFor(index), metrics.yFor(index))
+                val inner = itemPanel.createUIElement(
+                    metrics.itemWidth,
+                    metrics.itemHeight,
+                    false
+                )
+                val label = truncateLabel(tag, metrics.itemWidth, 22f)
+                val baseColor = if (pinned) Color(190, 175, 95) else Misc.getBasePlayerColor()
+                val darkColor = if (pinned) Color(95, 85, 35) else Misc.getDarkPlayerColor()
+                val brightColor = if (pinned) Color(230, 215, 135) else Misc.getBrightPlayerColor()
+                toReturn.add(
+                    TagButton(
+                        ship,
+                        group,
+                        tag,
+                        inner.addAreaCheckbox(
+                            "",
+                            tag,
+                            baseColor,
+                            darkColor,
+                            brightColor,
+                            metrics.itemWidth,
+                            metrics.itemHeight,
+                            0f
+                        )
+                    )
+                )
+                inner.addTooltipToPrevious(
+                    AGCGUI.makeTooltip(getTagTooltip(tag)),
+                    TooltipMakerAPI.TooltipLocation.BELOW
+                )
+                itemPanel.addUIElement(inner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
+                renderColoredTagLabel(
+                    itemPanel,
+                    label,
+                    metrics.itemWidth - 2f * CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
+                    metrics.itemHeight - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+                    CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
+                    CampaignGuiStyle.ITEM_TEXT_TOP_PADDING
+                )
+                if (sanitizedTags.contains(tag)) {
+                    toReturn.last().setCheckedFromPersistence(true)
                 }
             }
             toReturn.forEach {
@@ -59,22 +165,26 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
         }
     }
 
+    private fun setCheckedFromPersistence(checked: Boolean) {
+        active = checked
+        button.isChecked = checked
+    }
+
     private fun updateDisabledButtons() {
-        val tags = loadPersistentTags(ship.id, ship, group, AGCGUI.storageIndex).toMutableList()
+        val tags = sanitizePersistedTags(ship, group)
         sameGroupButtons.forEach {
             it.enable()
-            if (isIncompatibleWithExistingTags(it.associatedValue, tags) || shouldTagBeDisabled(
+            val otherTags = tags.toMutableList().apply { remove(it.associatedValue) }
+            if (isIncompatibleWithExistingTags(it.associatedValue, otherTags) || shouldTagBeDisabled(
                     group,
                     ship,
                     it.associatedValue
                 )
             ) {
-                tags.remove(it.associatedValue)
                 it.disable()
                 it.button.isChecked = false
             }
         }
-        persistTags(ship.id, ship, group, AGCGUI.storageIndex, tags)
     }
 
     override fun executeCallbackIfChecked() {
@@ -86,6 +196,7 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
             tags.remove(associatedValue)
             persistTags(ship.id, ship, group, AGCGUI.storageIndex, tags)
             uncheck()
+            campaignTagSelectionVersion++
             updateDisabledButtons()
         }
         button.isChecked = active
@@ -95,5 +206,6 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
         val tags = loadPersistentTags(ship.id, ship, group, AGCGUI.storageIndex).toMutableList()
         tags.add(associatedValue)
         persistTags(ship.id, ship, group, AGCGUI.storageIndex, tags)
+        campaignTagSelectionVersion++
     }
 }

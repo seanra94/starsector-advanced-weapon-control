@@ -8,7 +8,7 @@ import com.fs.starfarer.api.combat.CombatEntityAPI
 import com.fs.starfarer.api.combat.ShipAPI
 import com.fs.starfarer.api.combat.WeaponAPI
 
-class TargetShieldsTag(weapon: WeaponAPI, private val threshold: Float = Settings.targetShieldsThreshold()) :
+class TargetShieldTag(weapon: WeaponAPI, private val threshold: Float = Settings.targetShieldThreshold()) :
     WeaponAITagBase(weapon) {
 
     override fun isBaseAiValid(entity: CombatEntityAPI): Boolean {
@@ -22,7 +22,7 @@ class TargetShieldsTag(weapon: WeaponAPI, private val threshold: Float = Setting
 
     override fun shouldFire(solution: FiringSolution): Boolean {
         val tgtShip = (solution.target as? ShipAPI) ?: return false
-        if (Settings.ignoreFighterShields() && tgtShip.isFighter) {
+        if (Settings.ignoreFighterShield() && tgtShip.isFighter) {
             return true
         }
         val ttt = computeTimeToTravel(weapon, solution.aimPoint)

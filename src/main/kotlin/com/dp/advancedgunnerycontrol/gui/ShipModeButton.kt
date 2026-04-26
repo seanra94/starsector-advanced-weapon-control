@@ -1,17 +1,18 @@
 package com.dp.advancedgunnerycontrol.gui
 
-
 import com.dp.advancedgunnerycontrol.settings.Settings
 import com.dp.advancedgunnerycontrol.typesandvalues.*
-import com.dp.advancedgunnerycontrol.utils.ShipModeStorage
 import com.fs.starfarer.api.fleet.FleetMemberAPI
 import com.fs.starfarer.api.ui.ButtonAPI
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.ui.UIComponentAPI
 import com.fs.starfarer.api.util.Misc
+import java.awt.Color
+import kotlin.math.ceil
+import kotlin.math.max
 
-class ShipModeButton(var ship: FleetMemberAPI,  mode: ShipModes, button: ButtonAPI) :
+class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAPI) :
     ButtonBase<ShipModes>(mode, button, false) {
 
     companion object {
@@ -57,6 +58,85 @@ class ShipModeButton(var ship: FleetMemberAPI,  mode: ShipModes, button: ButtonA
             }
             return toReturn
         }
+
+        fun createCampaignModeButtonGroup(
+            ship: FleetMemberAPI,
+            panel: CustomPanelAPI,
+        ): List<ShipModeButton> {
+            val modes = Settings.getCurrentShipModes()
+            val columns = if (
+                modes.size > 1 &&
+                panel.position.width >= (CampaignGuiStyle.SHIP_MODE_ITEM_MIN_WIDTH * 2f + CampaignGuiStyle.SHIP_MODE_ITEM_HGAP)
+            ) 2 else 1
+            val itemWidth =
+                (panel.position.width - CampaignGuiStyle.SHIP_MODE_ITEM_HGAP * (columns - 1)) / columns
+            val rows = max(1, ceil(max(modes.size, 1).toFloat() / columns.toFloat()).toInt())
+            val itemHeight = if (rows <= 0) {
+                CampaignGuiStyle.SHIP_MODE_ITEM_HEIGHT
+            } else {
+                minOf(
+                    CampaignGuiStyle.SHIP_MODE_ITEM_HEIGHT,
+                    (panel.position.height - CampaignGuiStyle.SHIP_MODE_ITEM_VGAP * (rows - 1)) / rows
+                )
+            }
+            val toReturn = mutableListOf<ShipModeButton>()
+
+            modes.forEachIndexed { index, mode ->
+                val itemPanel = panel.createCustomPanel(
+                    itemWidth,
+                    itemHeight,
+                    DebugBorderPanelPlugin(CampaignContainerType.ITEM)
+                )
+                panel.addComponent(itemPanel)
+                itemPanel.position.inTL(
+                    (index % columns) * (itemWidth + CampaignGuiStyle.SHIP_MODE_ITEM_HGAP),
+                    (index / columns) * (itemHeight + CampaignGuiStyle.SHIP_MODE_ITEM_VGAP)
+                )
+                val inner = itemPanel.createUIElement(
+                    itemWidth,
+                    itemHeight,
+                    false
+                )
+                val label = truncateLabel(shipModeToString[mode] ?: defaultShipMode, itemWidth, 24f)
+                toReturn.add(
+                    ShipModeButton(
+                        ship,
+                        mode,
+                        inner.addAreaCheckbox(
+                            "",
+                            mode,
+                            Color(70, 150, 75),
+                            Color(25, 80, 35),
+                            Color(125, 225, 130),
+                            itemWidth,
+                            itemHeight,
+                            0f
+                        )
+                    )
+                )
+                inner.addTooltipToPrevious(
+                    AGCGUI.makeTooltip(detailedShipModeDescriptions[mode] ?: ""),
+                    TooltipMakerAPI.TooltipLocation.BELOW
+                )
+                itemPanel.addUIElement(inner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
+                val textPanel = itemPanel.createUIElement(
+                    itemWidth - 2f * CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
+                    itemHeight - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+                    false
+                )
+                textPanel.addPara(label, 0f)
+                itemPanel.addUIElement(textPanel).inTL(
+                    CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
+                    CampaignGuiStyle.ITEM_TEXT_TOP_PADDING
+                )
+            }
+
+            toReturn.forEach {
+                it.sameGroupButtons = toReturn
+                it.updateIfCheckedBasedOnData()
+            }
+            return toReturn
+        }
     }
 
     override fun executeCallbackIfChecked() {
@@ -71,10 +151,10 @@ class ShipModeButton(var ship: FleetMemberAPI,  mode: ShipModes, button: ButtonA
         button.isChecked = active
     }
 
-    private fun updateIfCheckedBasedOnData(){
-        if (loadPersistedShipModes(ship.id, AGCGUI.storageIndex).contains(shipModeToString[associatedValue] ?: defaultShipMode)){
+    private fun updateIfCheckedBasedOnData() {
+        if (loadPersistedShipModes(ship.id, AGCGUI.storageIndex).contains(shipModeToString[associatedValue] ?: defaultShipMode)) {
             check()
-        }else{
+        } else {
             uncheck()
         }
     }

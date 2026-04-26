@@ -12,8 +12,8 @@ object Variables {
     val sourceJarFileName = "$jarFileNameBase-sources.jar"
     val javadocJarFileName = "$jarFileNameBase-javadoc.jar"
 
-    val modId = "advanced_gunnery_control_dbeaa06e"
-    val modName = "AdvancedGunneryControl"
+    val modId = "advanced_gunnery_control_fork_dbeaa06e"
+    val modName = "Advanced Gunnery Control Fork"
     val author = "DesperatePeter"
     const val description = "A mod that allows fine-tuning of autofire. Press J-key in combat or on the campaign map to access."
     val gameVersion = "0.98a"
@@ -21,7 +21,7 @@ object Variables {
     val jars = arrayOf("$jarsDir/$jarFileName")
     val modPlugin = "com.dp.advancedgunnerycontrol.WeaponControlBasePlugin"
     val isUtilityMod = true
-    val masterVersionFile = "https://raw.githubusercontent.com/DesperatePeter/starsector-advanced-weapon-control/master/$modId.version"
+    val masterVersionFile = "https://raw.githubusercontent.com/seanra94/starsector-advanced-weapon-control/master/$modId.version"
     val modThreadId = "21280"
 
     val modFolderName = modName.replace(" ", "-")
@@ -33,6 +33,22 @@ object Variables {
 val starsectorCoreDirectory = if(Os.isFamily(Os.FAMILY_WINDOWS)) "${Variables.starsectorDirectory}/starsector-core" else Variables.starsectorDirectory
 val starsectorModDirectory = "${Variables.starsectorDirectory}/mods"
 val modInModsFolder = File("$starsectorModDirectory/${Variables.modFolderName}")
+
+fun resolveDependencyModDirectory(modName: String): File {
+    val modsDir = File(starsectorModDirectory)
+    val exact = File(modsDir, modName)
+    if (exact.isDirectory) return exact
+    return modsDir.listFiles()
+        ?.filter { it.isDirectory && (it.name.equals(modName, ignoreCase = true) || it.name.startsWith("$modName-", ignoreCase = true)) }
+        ?.sortedByDescending { it.name }
+        ?.firstOrNull()
+        ?: exact
+}
+
+val consoleCommandsDirectory = resolveDependencyModDirectory("Console Commands")
+val lazyLibDirectory = resolveDependencyModDirectory("LazyLib")
+val magicLibDirectory = resolveDependencyModDirectory("MagicLib")
+val lunaLibDirectory = resolveDependencyModDirectory("LunaLib")
 
 plugins {
     kotlin("jvm") version "2.1.20"
@@ -58,11 +74,11 @@ dependencies {
     // Get kotlin sdk from LazyLib during runtime, only use it here during compile time
     compileOnly("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersionInLazyLib")
     // compileOnly("org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersionInLazyLib")
-    compileOnly(fileTree("$starsectorModDirectory/Console Commands/jars"){include("*.jar")})
+    compileOnly(fileTree("${consoleCommandsDirectory.path}/jars"){include("*.jar")})
 
-    implementation(fileTree("$starsectorModDirectory/LazyLib/jars") { include("*.jar") })
-    implementation(fileTree("$starsectorModDirectory/MagicLib/jars") { include("*.jar") })
-    implementation(fileTree("$starsectorModDirectory/LunaLib/jars") { include("*.jar") })
+    implementation(fileTree("${lazyLibDirectory.path}/jars") { include("*.jar") })
+    implementation(fileTree("${magicLibDirectory.path}/jars") { include("*.jar") })
+    implementation(fileTree("${lunaLibDirectory.path}/jars") { include("*.jar") })
     //compileOnly(fileTree("$starsectorModDirectory/Console Commands/jars") { include("*.jar") })
 
     // Starsector jars and dependencies
@@ -222,53 +238,59 @@ tasks {
                    |   #                                 #### TAG LIST ####
                    |   # Determines which tags will be shown in the GUIs. Feel free to add/remove tags as you see fit.
                    |   # Allowed values are: (replace N with a number, usually between 0 and 100)
-                   |   # "PD", "NoPD", "NoMissiles", "PD(Flux>N%)", "PrioritisePD", "Fighter", "NoFighters", "AvoidShields", "TargetShields",
-                   |   # "AvdShields+", "TgtShields+", "AvdShieldsFT", "TgtShieldsFT", "AvdArmor(N%)", "AvoidDebris", "ShieldsOff",
-                   |   # "Opportunist", "Hold(Flux>N%)", "ConserveAmmo", "CnsrvPDAmmo", "ShipTarget", "AvoidPhased", "TargetPhase",
-                   |   # "BigShips", "SmallShips", "Panic(H<N%)", "AvoidPhased", "Range<N%", "ForceF(Flux<N%)", "Overloaded", "Merge",
-                   |   # "PrioFighter", "PrioMissile", "PrioShips", "PrioWounded", "PrioHealthy", "CustomAI", "LowRoF(N%)"
+                   |   # "PD", "NoPD", "NoMissile", "PD(TF>N%)", "PrioritizePD", "Fighter", "NoFighter", "AvoidShield", "TargetShield",
+                   |   # "AvoidShield+", "TargetShield+", "AvoidShield(TF>N%)", "AvoidShield(SF>N%)",
+                   |   # "TargetShield(TF>N%)", "TargetShield(SF>N%)", "AvoidArmor(N%)", "AvoidDebris", "ShieldOff",
+                   |   # "Opportunist", "Hold(TF>N%)", "Hold(SF>N%)", "ConserveAmmo", "ConservePDAmmo", "BurstPD(SF>N%)",
+                   |   # "ShipTarget", "AvoidPhased", "TargetPhase", "SyncWindow", "SyncVolley", "Ambush", "IgnoreMinorPD",
+                   |   # "BigShip", "SmallShip", "Panic(H<N%)", "AvoidPhased", "Range<N%", "Force(TF<N%)", "Force(SF<N%)",
+                   |   # "Overloaded", "Merge", "PrioFighter", "PrioMissile", "PrioShip", "PrioWounded", "PrioHealthy", "CustomAI", "LowRoF(N%)"
                    |   
-                   |   # Note: The word Flux in parentheses may be abbreviated by skipping any of the non-capitalized letters, e.g.: F, Fx, Flx
+                   |   # Flux notation inside parentheses: TF = total flux, HF = hard flux, SF = soft flux.
+                   |   # Legacy tags such as Hold(Flx>N%), HoldSFT(F>N%), and AvShldFT(F<N%) are still accepted for saved-loadout compatibility.
                    |   
                    |   # Choose which of the following lists will be used. Valid options are: "classic", "novice" and "complete"
                    |   # If you are using LunaSettings, adjust the lists below
                    |   "listVariant" : "classic"
                    |   
                    |   ,"completeTagList" : [
-                   |                "PD", "NoPD", "PD(Flx>50%)", "PD(Flx>10%)",
-                   |                "AvoidShields", "TargetShields", "AvdShields+", "TgtShields+", "AvdArmor(33%)", "AvdArmor(75%)",
-                   |                "Hold(Flx>90%)", "Hold(Flx>75%)", "Hold(Flx>50%)", "Merge",
+                   |                "PD", "NoPD", "PD(TF>50%)", "PD(TF>10%)",
+                   |                "AvoidShield", "TargetShield", "AvoidShield+", "TargetShield+",
+                   |                "AvoidShield(TF>80%)", "AvoidShield(SF>90%)", "TargetShield(TF>80%)", "TargetShield(SF>90%)",
+                   |                "AvoidArmor(33%)", "AvoidArmor(75%)",
+                   |                "Hold(TF>90%)", "Hold(TF>75%)", "Hold(TF>50%)",
+                   |                "Hold(SF>10%)", "Hold(SF>20%)", "Merge", "SyncWindow", "SyncVolley", "Ambush",
                    |                "AvoidPhased", "TargetPhase", "ShipTarget", 
-                   |                "ForceAF", "ForceF(F<25%)", "ForceF(F<50%)", "ForceF(F<75%)",
-                   |                "PrioritisePD", "PrioFighter", "PrioMissile", "PrioShips", "PrioWounded", "PrioHealthy",
-                   |                "Fighter", "AvdShieldsFT", "TgtShieldsFT", "AvoidDebris",
-                   |                "NoMissiles", "NoFighters",
+                   |                "ForceAF", "Force(TF<25%)", "Force(TF<50%)", "Force(TF<75%)", "Force(SF<5%)", "Force(SF<15%)",
+                   |                "PrioritizePD", "PrioFighter", "PrioMissile", "PrioShip", "PrioWounded", "PrioHealthy",
+                   |                "Fighter", "AvoidDebris",
+                   |                "NoMissile", "NoFighter",
                    |                "Opportunist", "Panic(H<25%)", "Range<60%", "Range<80%",
-                   |                "ConserveAmmo", "CnsrvPDAmmo",
-                   |                "BigShips", "SmallShips",
+                   |                "ConserveAmmo", "ConservePDAmmo", "BurstPD(SF>90%)", "IgnoreMinorPD",
+                   |                "BigShip", "SmallShip",
                    |                "Overloaded", "LowRoF(200%)", "CustomAI", "PrioDense"
                    |                ]  
                    |   
                    |   ,"classicTagList" : [
-                   |                "PD", "PD(Flx>50%)",
-                   |                "AvoidShields", "TargetShields", "AvdArmor(33%)", 
-                   |                "Hold(Flx>90%)", "Hold(Flx>75%)", "Merge",
+                   |                "PD", "PD(TF>50%)",
+                   |                "AvoidShield", "TargetShield", "AvoidArmor(33%)", "AvoidShield(TF>80%)", "AvoidShield(SF>90%)", "TargetShield(TF>80%)", "TargetShield(SF>90%)",
+                   |                "Hold(TF>90%)", "Hold(TF>75%)", "Hold(SF>10%)", "Merge", "SyncWindow", "SyncVolley", "Ambush",
                    |                "AvoidPhased", "TargetPhase", "ShipTarget", 
-                   |                "ForceAF", "ForceF(F<50%)",
-                   |                "PrioritisePD", "PrioFighter", "PrioMissile",
-                   |                "NoMissiles", "NoFighters",
+                   |                "ForceAF", "Force(TF<50%)", "Force(SF<5%)",
+                   |                "PrioritizePD", "PrioFighter", "PrioMissile",
+                   |                "NoMissile", "NoFighter",
                    |                "Opportunist", "Panic(H<25%)", "Range<60%",
-                   |                "ConserveAmmo", "CnsrvPDAmmo",
-                   |                "AvdShields+", "TgtShields+"
+                   |                "ConserveAmmo", "ConservePDAmmo", "BurstPD(SF>90%)", "IgnoreMinorPD",
+                   |                "AvoidShield+", "TargetShield+"
                    |                ]  
                    |                
                    |   ,"noviceTagList" : [
                    |                "PD",
-                   |                "AvoidShields", "TargetShields", "AvdArmor(33%)", 
-                   |                "Hold(Flx>90%)",
+                   |                "AvoidShield", "TargetShield", "AvoidArmor(33%)", 
+                   |                "Hold(TF>90%)",
                    |                "AvoidPhased", "ShipTarget", 
-                   |                "ForceAF", "ForceF(F<50%)",
-                   |                "NoMissiles", "NoFighters",
+                   |                "ForceAF", "Force(TF<50%)",
+                   |                "NoMissile", "NoFighter",
                    |                "Range<60%"
                    |                ]   
                    |   
@@ -277,13 +299,13 @@ tasks {
                    |   ,"allowHotLoadingTags" : true
                    |   
                    |   # Tags to display in simple mode. 
-                   |   , "simpleTagList" : [ "PD", "AvoidShields", "TargetShields", "AvdArmor(33%)", "Hold(Flx>90%)", "NoFighters" ]
+                   |   , "simpleTagList" : [ "PD", "AvoidShield", "TargetShield", "AvoidArmor(33%)", "Hold(TF>90%)", "NoFighter" ]
                    |   
                    |   # Determines which ship modes will be shown in the GUIs. Modes that do not exist will be discarded
-                   |   # Allowed Values: "DEFAULT", "LowShields", "ShieldsUp", "Vent(Flx>75%)", "VntA(Flx>25%)", "Run(HP<50%)", "NoSystem", "SpamSystem", "Charge", "ForceAF", "NeverVent", "FarAway", "StayAway"
+                   |   # Allowed Values: "DEFAULT", "LowShield", "ShieldUp", "Vent(TF>75%)", "VentA(TF>25%)", "Run(HP<50%)", "NoSystem", "SpamSystem", "Charge", "ForceAF", "NeverVent", "FarAway", "StayAway"
                    |   # Note that "DEFAULT" is not a real mode but instead a shortcut to disable all other modes. It's kind of deprecated and only still exists for compatibility reasons.
                    |   
-                   |   ,"shipModeList" : ["LowShields", "ShieldsUp", "Vent(Flx>75%)", "VntA(Flx>25%)", "Run(HP<50%)", "NoSystem", "SpamSystem", "Charge", "FarAway", "StayAway", "NeverVent"]
+                   |   ,"shipModeList" : ["LowShield", "ShieldUp", "Vent(TF>75%)", "VentA(TF>25%)", "Run(HP<50%)", "NoSystem", "SpamSystem", "Charge", "FarAway", "StayAway", "NeverVent"]
                    |   
                    |   # How tags are stored. Valid values are: "Index", "WeaponComposition", "WeaponCompositionGlobal"
                    |   # This affects how tags are persisted. When changing modes, you will have to redo all tags!
@@ -417,23 +439,23 @@ tasks {
                    |   ,"opportunist_triggerHappinessModifier" : 1.0
                    |   
                    |   # Vent ship modes:
-                   |   # Vent (Flux>75%)
+                   |   # Vent(TF>75%)
                    |   ,"vent_flux" : 0.75 # vent if flux level > X
                    |   ,"vent_safetyFactor" : 2.0 # vent only if ship thinks it will survive venting X times (positive non-zero number)
                    |   
-                   |   # VentAggressive (Flux>25%)
+                   |   # VentA(TF>25%)
                    |   ,"aggressiveVent_flux" : 0.25 # vent if flux level > X
                    |   ,"aggressiveVent_safetyFactor" : 0.25 # (positive non-zero number)
                    |   
                    |   ,"retreat_hull" : 0.5 # retreat if hull level < X
                    |   ,"retreat_shouldDirectRetreat" : false
                    |   
-                   |   ,"shieldsOff_flux" : 0.5 # In ShieldsOff (Flux>50%) mode, turn off shields if flux level > X
+                   |   ,"shieldsOff_flux" : 0.5 # In LowShield mode, turn off shields if total flux level > X
                    |   
                    |   ,"conserveAmmo_ammo" : 0.5 # Start conserving ammo when ammoLevel < X
                    |   ,"conservePDAmmo_ammo" : 0.8 # Only allow firing at fighters and missiles when ammo < X
                    |   
-                   |   # If true, the BigShips/SmallShips tags will exclusively target Destroyers and bigger/smaller
+                   |   # If true, the BigShip/SmallShip tags will exclusively target Destroyers and bigger/smaller
                    |   ,"strictBigSmallShipMode" : false
                    |   
                    |   # When set to true, the mod will periodically (~1/s) check if the custom ship AI has been stripped
@@ -448,11 +470,14 @@ tasks {
                    |   # (Note that these modes will still prioritise targets based on shield factor)
                    |   ,"ignoreFighterShields" : true
                    |   
-                   |   # Sets the flux threshold for "TgtShieldsFT" tag below which all targets are viable, regardless of their shield factor
+                   |   # Sets the legacy free-fire threshold for old "TgtShieldsFT"; canonical tags should use TargetShield(TF>N%).
                    |   ,"targetShieldsAtFT_flux" : 0.2
                    |   
-                   |   # Sets the flux threshold for "AvdShieldsFT" tag below which all targets are viable, regardless of their shield factor
+                   |   # Sets the legacy free-fire threshold for old "AvdShieldsFT"; canonical tags should use AvoidShield(TF>N%).
                    |   ,"avoidShieldsAtFT_flux" : 0.2
+                   |   
+                   |   # Soft-flux tags such as "Hold(SF>N%)" will still stop firing once total flux reaches this value.
+                   |   ,"SFTUpperFluxLimit" : 0.9
                    |   
                    |   # The PrioFighters/Missiles/Ships/PD tags will multiply the priority of the target type by this value.
                    |   # For reference: ShipTarget modifies priority by a factor of 1000, most other things by 2~1000

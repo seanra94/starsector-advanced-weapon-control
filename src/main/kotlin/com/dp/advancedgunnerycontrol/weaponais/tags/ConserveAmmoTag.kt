@@ -21,6 +21,10 @@ class ConserveAmmoTag(weapon: WeaponAPI, private val ammoThreshold: Float) : Wea
         return true
     }
 
+    override fun isValidSynchronizedTarget(solution: FiringSolution): Boolean = isValidTarget(solution.target)
+
+    override fun shouldFireDuringSynchronizedRelease(solution: FiringSolution): Boolean = isValidTarget(solution.target)
+
     override fun isBaseAiOverridable(): Boolean = true
 
     override fun avoidDebris(): Boolean = false

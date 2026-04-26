@@ -8,39 +8,39 @@ import com.fs.starfarer.api.combat.CombatEntityAPI
 import com.fs.starfarer.api.combat.ShipAPI
 import com.fs.starfarer.api.combat.WeaponAPI
 
-// Allows targeting of anything when flux < fluxThreshold, otherwise target shields. Always prioritises by target shield factor
-class TargetShieldsAtFTTag(
+// Allows targeting of anything when flux < fluxThreshold, otherwise avoids shields. Always prioritises by target shield factor
+class AvoidShieldAtTotalFluxTag(
     weapon: WeaponAPI,
-    private val shieldThreshold: Float = Settings.targetShieldsThreshold(),
-    private val fluxThreshold: Float = Settings.targetShieldsAtFT()
+    private val shieldThreshold: Float = Settings.avoidShieldThreshold(),
+    private val fluxThreshold: Float = Settings.avoidShieldAtTotalFlux()
 ) : WeaponAITagBase(weapon) {
 
     override fun isBaseAiValid(entity: CombatEntityAPI): Boolean {
         return if (weapon.ship.fluxLevel <= fluxThreshold) {
             true
         } else {
-            computeShieldFactor(entity, weapon) > shieldThreshold
+            computeShieldFactor(entity, weapon) < shieldThreshold
         }
     }
 
     override fun computeTargetPriorityModifier(solution: FiringSolution): Float {
-        val tgtShip = (solution.target as? ShipAPI) ?: return 1f
-        return 1f / (computeShieldFactor(tgtShip, weapon) + 0.5f)
+        return computeShieldFactor(solution.target, weapon) + 0.1f
     }
 
     override fun shouldFire(solution: FiringSolution): Boolean {
         return if (weapon.ship.fluxLevel <= fluxThreshold) {
             true
         } else if (solution.target is ShipAPI) {
-            if (Settings.ignoreFighterShields() && solution.target.isFighter) {
+            if (Settings.ignoreFighterShield() && solution.target.isFighter) {
                 true
             } else {
                 val ttt = computeTimeToTravel(weapon, solution.aimPoint)
-                computeShieldFactor(solution.target, weapon, ttt) > shieldThreshold
+                computeShieldFactor(solution.target, weapon, ttt) < shieldThreshold
             }
         } else {
             false
         }
+
     }
 
     override fun isBaseAiOverridable(): Boolean = true

@@ -2,17 +2,29 @@ package com.dp.advancedgunnerycontrol.gui.suggesttaggui
 
 import com.dp.advancedgunnerycontrol.gui.AGCGUI
 import com.dp.advancedgunnerycontrol.gui.ButtonBase
+import com.dp.advancedgunnerycontrol.gui.CampaignContainerType
+import com.dp.advancedgunnerycontrol.gui.CampaignGuiStyle
+import com.dp.advancedgunnerycontrol.gui.DebugBorderPanelPlugin
+import com.dp.advancedgunnerycontrol.gui.computeWrapGridMetrics
+import com.dp.advancedgunnerycontrol.gui.renderColoredTagLabel
+import com.dp.advancedgunnerycontrol.gui.truncateLabel
 import com.dp.advancedgunnerycontrol.settings.Settings
 import com.dp.advancedgunnerycontrol.typesandvalues.TagListView
 import com.dp.advancedgunnerycontrol.typesandvalues.getSuggestedModesForWeaponId
 import com.dp.advancedgunnerycontrol.typesandvalues.getTagTooltip
 import com.dp.advancedgunnerycontrol.typesandvalues.isIncompatibleWithExistingTags
 import com.fs.starfarer.api.ui.ButtonAPI
+import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.util.Misc
+import java.awt.Color
+import kotlin.math.max
 
 class SuggestedTagButton(private val weaponId: String, tag: String, button: ButtonAPI) : ButtonBase<String>(tag, button, false) {
     companion object{
+        var suggestedTagSelectionVersion = 0
+            private set
+
         fun createButtonGroup(weaponId: String, tooltip: TooltipMakerAPI, tagView: TagListView) : List<SuggestedTagButton>
         {
             val toReturn = mutableListOf<SuggestedTagButton>()
@@ -43,11 +55,88 @@ class SuggestedTagButton(private val weaponId: String, tag: String, button: Butt
             }
             return toReturn
         }
+
+        fun createCampaignButtonGroup(
+            weaponId: String,
+            panel: CustomPanelAPI,
+            visibleTags: List<String>,
+            pinned: Boolean = false,
+        ): List<SuggestedTagButton> {
+            val tags = visibleTags
+            val metrics = computeWrapGridMetrics(
+                itemCount = max(tags.size, 1),
+                availableWidth = panel.position.width,
+                availableHeight = panel.position.height,
+                minItemWidth = CampaignGuiStyle.TAG_ITEM_MIN_WIDTH,
+                itemHeight = CampaignGuiStyle.TAG_ITEM_HEIGHT,
+                horizontalGap = CampaignGuiStyle.TAG_ITEM_HGAP,
+                verticalGap = CampaignGuiStyle.TAG_ITEM_VGAP,
+                maxColumns = 1
+            )
+            val selectedTags = getSuggestedModesForWeaponId(weaponId)
+            val toReturn = mutableListOf<SuggestedTagButton>()
+
+            tags.forEachIndexed { index, tag ->
+                val itemPanel = panel.createCustomPanel(
+                    metrics.itemWidth,
+                    metrics.itemHeight,
+                    DebugBorderPanelPlugin(CampaignContainerType.ITEM)
+                )
+                panel.addComponent(itemPanel)
+                itemPanel.position.inTL(metrics.xFor(index), metrics.yFor(index))
+
+                val inner = itemPanel.createUIElement(metrics.itemWidth, metrics.itemHeight, false)
+                val baseColor = if (pinned) Color(190, 175, 95) else Misc.getBasePlayerColor()
+                val darkColor = if (pinned) Color(95, 85, 35) else Misc.getDarkPlayerColor()
+                val brightColor = if (pinned) Color(230, 215, 135) else Misc.getBrightPlayerColor()
+                val createdButton = inner.addAreaCheckbox(
+                    "",
+                    tag,
+                    baseColor,
+                    darkColor,
+                    brightColor,
+                    metrics.itemWidth,
+                    metrics.itemHeight,
+                    0f
+                )
+                val suggestedButton = SuggestedTagButton(weaponId, tag, createdButton)
+                toReturn.add(suggestedButton)
+                inner.addTooltipToPrevious(
+                    AGCGUI.makeTooltip(getTagTooltip(tag)),
+                    TooltipMakerAPI.TooltipLocation.BELOW
+                )
+                itemPanel.addUIElement(inner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
+
+                renderColoredTagLabel(
+                    itemPanel,
+                    truncateLabel(tag, metrics.itemWidth, 22f),
+                    metrics.itemWidth - 2f * CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
+                    metrics.itemHeight - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+                    CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
+                    CampaignGuiStyle.ITEM_TEXT_TOP_PADDING
+                )
+
+                if (selectedTags.contains(tag)) {
+                    suggestedButton.setCheckedFromPersistence(true)
+                }
+            }
+
+            toReturn.forEach { it.sameGroupButtons = toReturn }
+            toReturn.forEach { it.updateDisabledButtons() }
+            return toReturn
+        }
     }
+
+    private fun setCheckedFromPersistence(checked: Boolean) {
+        active = checked
+        button.isChecked = checked
+    }
+
     override fun onActivate() {
         val st = Settings.getCurrentSuggestedTags().toMutableMap()
         st[weaponId] = ((st[weaponId] ?: listOf()) + listOf(associatedValue)).toSet().toList()
         Settings.customSuggestedTags = st
+        suggestedTagSelectionVersion++
     }
 
     private fun onDeactivate() {
@@ -66,6 +155,7 @@ class SuggestedTagButton(private val weaponId: String, tag: String, button: Butt
         } else if (active && !button.isChecked) {
             onDeactivate()
             uncheck()
+            suggestedTagSelectionVersion++
             updateDisabledButtons()
         }
         button.isChecked = active

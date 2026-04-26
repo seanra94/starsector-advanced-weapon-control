@@ -15,7 +15,7 @@ class ChargeShipAI(ship: ShipAPI) : ShipCommandGenerator(ship) {
         get() { return field.ifEmpty {
             kotlin.run {
                 field = ship.allWeapons.filter {
-                    !isPD(it) || it.hasAnyAgcTag("NoPD", "NoMissiles", "PrioShips")
+                    !isPD(it) || it.hasAnyAgcTag("NoPD", "NoMissile", "PrioShip")
                 }
                 field
             }

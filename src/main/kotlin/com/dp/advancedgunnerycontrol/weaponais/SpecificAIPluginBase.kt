@@ -94,9 +94,9 @@ abstract class SpecificAIPluginBase(
     }
 
     protected fun advanceWithCustomAI() {
-        var potentialTargets = calculateFiringSolutions(
+        var aimCandidates = calculateFiringSolutions(
             getRelevantEntitiesWithinRange().filter { isHostile(it) }
-        ).filter { isInRange(it.aimPoint, effectiveCollRadius(it.target)) } +
+        ) +
                 calculateFiringSolutions(getRelevenEntitiesOutOfRange().filter { isHostile(it) })
 
 
@@ -104,14 +104,17 @@ abstract class SpecificAIPluginBase(
 //        // TODO: It would be faster to get friendlies and foes in one go
         if (Settings.customAIFriendlyFireComplexity() >= 2) {
             // this is a deceptively expensive call (therefore locked behind opt-in setting)
-            potentialTargets = potentialTargets.filter { !isFriendlyFire(potentialTargets, allies, it.aimPoint) }
+            aimCandidates = aimCandidates.filter { !isFriendlyFire(aimCandidates, allies, it.aimPoint) }
         }
 
+        val firingCandidates = aimCandidates
+            .filter { isInRange(it.aimPoint, effectiveCollRadius(it.target)) }
 
 
-        solution = potentialTargets.minByOrNull { computeTargetPriority(it) }
+        val selectionCandidates = firingCandidates.ifEmpty { aimCandidates }
+        solution = selectionCandidates.minByOrNull { computeTargetPriority(it) }
 
-        computeIfShouldFire(potentialTargets, allies).let {
+        computeIfShouldFire(firingCandidates, allies).let {
             weaponShouldFire = it
         }
     }
@@ -164,7 +167,7 @@ abstract class SpecificAIPluginBase(
     }
 
     override fun getTarget(): Vector2f? {
-        return solution?.aimPoint ?: getNeutralPosition(weapon)
+        return solution?.aimPoint?.let { weapon.coerceAimPointIntoArc(it) } ?: getNeutralPosition(weapon)
     }
 
     override fun getWeapon(): WeaponAPI {

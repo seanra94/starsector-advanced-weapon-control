@@ -8,7 +8,7 @@ import org.lwjgl.util.vector.Vector2f
 
 class AvoidArmorTag(
     weapon: WeaponAPI, private val armorThreshold: Float = 0.33f,
-    private val shieldThreshold: Float = Settings.targetShieldsThreshold()
+    private val shieldThreshold: Float = Settings.targetShieldThreshold()
 ) : WeaponAITagBase(weapon) {
 
     override fun isBaseAiValid(entity: CombatEntityAPI): Boolean {

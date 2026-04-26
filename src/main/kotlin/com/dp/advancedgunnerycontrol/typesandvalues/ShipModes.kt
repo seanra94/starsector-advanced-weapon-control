@@ -18,30 +18,45 @@ enum class ShipModes {
 
 const val defaultShipMode = "DEFAULT"
 
-val shipModeFromString = mapOf(
+private val canonicalShipModeFromString = mapOf(
     "DEFAULT" to ShipModes.DEFAULT,
     "ForceAF" to ShipModes.FORCE_AUTOFIRE,
-    "LowShields" to ShipModes.SHIELDS_OFF,
-    "Vent(Flx>75%)" to ShipModes.VENT,
-    "VntA(Flx>25%)" to ShipModes.VENT_AGGRESSIVE,
+    "LowShield" to ShipModes.SHIELDS_OFF,
+    "Vent(TF>75%)" to ShipModes.VENT,
+    "VentA(TF>25%)" to ShipModes.VENT_AGGRESSIVE,
     "Run(HP<50%)" to ShipModes.RETREAT,
     "NoSystem" to ShipModes.NO_SYSTEM,
-    "ShieldsUp" to ShipModes.SHIELDS_UP,
+    "ShieldUp" to ShipModes.SHIELDS_UP,
     "SpamSystem" to ShipModes.SPAM_SYSTEM,
     "Charge" to ShipModes.CHARGE,
-    "ShieldsUp+" to ShipModes.SHIELDS_UP_PLUS,
+    "ShieldUp+" to ShipModes.SHIELDS_UP_PLUS,
     "StayAway" to ShipModes.STAY_AWAY,
     "FarAway" to ShipModes.FAR_AWAY,
     "NeverVent" to ShipModes.NEVER_VENT
 )
 
-val shipModeToString = shipModeFromString.map { it.value to it.key }.toMap()
+private val legacyShipModeAliases = mapOf(
+    "LowShields" to ShipModes.SHIELDS_OFF,
+    "Vent(Flx>75%)" to ShipModes.VENT,
+    "Vent(Flux>75%)" to ShipModes.VENT,
+    "VntA(Flx>25%)" to ShipModes.VENT_AGGRESSIVE,
+    "VntA(Flux>25%)" to ShipModes.VENT_AGGRESSIVE,
+    "ShieldsUp" to ShipModes.SHIELDS_UP,
+    "ShieldsUp+" to ShipModes.SHIELDS_UP_PLUS
+)
+
+val shipModeFromString = canonicalShipModeFromString + legacyShipModeAliases
+val shipModeToString = canonicalShipModeFromString.map { it.value to it.key }.toMap()
+
+fun canonicalizeShipModeName(mode: String): String = shipModeToString[shipModeFromString[mode]] ?: mode
+
+fun canonicalizeShipModeNames(modes: List<String>): List<String> = modes.map { canonicalizeShipModeName(it) }.distinct()
 
 val detailedShipModeDescriptions = mapOf(
     ShipModes.DEFAULT to "Overwrites all other ship modes and forces default ship AI. Use to quickly turn off all ship mode tags.",
     ShipModes.FORCE_AUTOFIRE to "Forces autofire for all weapon groups. Use this to make ships obey all modes literally (99% of the time)." +
-            "\nUse with caution and make sure to combine with HoldFire-suffixes to prevent the ship from fluxing out.",
-    ShipModes.SHIELDS_OFF to "Force turn off the shield when ship flux exceeds ${(Settings.shieldsOffThreshold() * 100f).toInt()}%. " +
+            "\nUse with caution and make sure to combine with Hold tags to prevent the ship from fluxing out.",
+    ShipModes.SHIELDS_OFF to "Force turn off the shield when ship flux exceeds ${(Settings.shieldOffThreshold() * 100f).toInt()}%. " +
             "Make sure you have enough armor/PD to pull this off.",
     ShipModes.VENT to "Vent when ship flux exceeds ${(Settings.ventFluxThreshold() * 100f).toInt()}%. The ship will try to evaluate " +
             "the situation and only vent if it believes" +
@@ -67,13 +82,13 @@ val detailedShipModeDescriptions = mapOf(
 private fun generateCommander(mode: ShipModes, ship: ShipAPI): ShipCommandGenerator {
     return when (mode) {
         ShipModes.FORCE_AUTOFIRE -> AutofireShipAI(ship)
-        ShipModes.SHIELDS_OFF -> ShieldsOffShipAI(ship, Settings.shieldsOffThreshold())
+        ShipModes.SHIELDS_OFF -> ShieldOffShipAI(ship, Settings.shieldOffThreshold())
         ShipModes.VENT -> VentShipAI(ship, Settings.ventFluxThreshold(), Settings.ventSafetyFactor(), false)
         ShipModes.VENT_AGGRESSIVE -> VentShipAI(ship, Settings.aggressiveVentFluxThreshold(), Settings.aggressiveVentSafetyFactor(), true)
         ShipModes.RETREAT -> RetreatShipAI(ship, Settings.retreatHullThreshold())
         ShipModes.NO_SYSTEM -> NoSystemAI(ship)
-        ShipModes.SHIELDS_UP -> ShieldsUpAI(ship, 0.9f)
-        ShipModes.SHIELDS_UP_PLUS -> ShieldsUpAI(ship, 1.1f)
+        ShipModes.SHIELDS_UP -> ShieldUpAI(ship, 0.9f)
+        ShipModes.SHIELDS_UP_PLUS -> ShieldUpAI(ship, 1.1f)
         ShipModes.STAY_AWAY -> StayAwayAI(ship)
         ShipModes.FAR_AWAY -> StayFarAI(ship)
         ShipModes.SPAM_SYSTEM -> SpamSystemAI(ship)
@@ -94,7 +109,7 @@ fun assignShipModes(modes: List<String>, ship: ShipAPI, forceAssign: Boolean = f
     if (ship.customData.containsKey(Values.CUSTOM_SHIP_DATA_SHIP_AI_KEY)) {
         ship.customData.remove(Values.CUSTOM_SHIP_DATA_SHIP_AI_KEY)
     }
-    val shipModes = modes.mapNotNull { shipModeFromString[it] }
+    val shipModes = canonicalizeShipModeNames(modes).mapNotNull { shipModeFromString[it] }
     if (!forceAssign && (shipModes.contains(ShipModes.DEFAULT) || shipModes.isEmpty())) return
 
     val baseAI = ship.shipAI ?: return
@@ -118,7 +133,7 @@ fun getCustomShipAI(ship: ShipAPI): CustomShipAI? {
 
 fun persistShipModes(shipId: String, loadoutIndex: Int, tags: List<String>) {
     Settings.shipModeStorage[loadoutIndex].modesByShip[shipId] = mutableMapOf()
-    Settings.shipModeStorage[loadoutIndex].modesByShip[shipId]?.set(0, tags)
+    Settings.shipModeStorage[loadoutIndex].modesByShip[shipId]?.set(0, canonicalizeShipModeNames(tags))
 }
 
 fun saveShipModesInShip(ship: ShipAPI, tags: List<String>, storageIndex: Int) {
@@ -127,7 +142,7 @@ fun saveShipModesInShip(ship: ShipAPI, tags: List<String>, storageIndex: Int) {
     }
     (ship.customData[Values.CUSTOM_SHIP_DATA_WEAPONS_TAG_KEY] as? InShipShipModeStorage)?.modes?.set(
         storageIndex,
-        tags.toMutableList()
+        canonicalizeShipModeNames(tags).toMutableList()
     )
 }
 
@@ -141,23 +156,26 @@ fun saveShipModes(ship: ShipAPI, loadoutIndex: Int, tags: List<String>) {
 }
 
 fun loadPersistedShipModes(shipId: String, loadoutIndex: Int): List<String> {
-    return Settings.shipModeStorage[loadoutIndex].modesByShip[shipId]?.get(0) ?: emptyList()
+    return canonicalizeShipModeNames(Settings.shipModeStorage[loadoutIndex].modesByShip[shipId]?.get(0) ?: emptyList())
 }
 
 fun addPersistentShipMode(shipId: String, loadoutIndex: Int, mode: String){
     val modes = loadPersistedShipModes(shipId, AGCGUI.storageIndex)
-    val newModes = (modes + mode).toSet().toList()
+    val newModes = canonicalizeShipModeNames(modes + mode)
     persistShipModes(shipId, loadoutIndex, newModes)
 }
 
 fun removePersistentShipMode(shipId: String, loadoutIndex: Int, mode: String){
+    val canonicalMode = canonicalizeShipModeName(mode)
     val modes = loadPersistedShipModes(shipId, AGCGUI.storageIndex)
-    persistShipModes(shipId, loadoutIndex, modes.filter { it != mode })
+    persistShipModes(shipId, loadoutIndex, modes.filter { canonicalizeShipModeName(it) != canonicalMode })
 }
 
 fun loadShipModesFromShip(ship: ShipAPI, storageIndex: Int): List<String> {
-    return (ship.customData[Values.CUSTOM_SHIP_DATA_SHIP_MODES_KEY] as? InShipShipModeStorage)?.modes?.get(storageIndex)
-        ?: emptyList()
+    return canonicalizeShipModeNames(
+        (ship.customData[Values.CUSTOM_SHIP_DATA_SHIP_MODES_KEY] as? InShipShipModeStorage)?.modes?.get(storageIndex)
+            ?: emptyList()
+    )
 }
 
 fun loadShipModes(ship: ShipAPI, loadoutIndex: Int): List<String> {

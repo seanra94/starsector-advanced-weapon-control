@@ -5,12 +5,10 @@ import com.fs.starfarer.api.ui.PositionAPI
 import org.lwjgl.opengl.GL11
 
 abstract class CustomView : CustomUIPanelPlugin {
-    private var pos: PositionAPI? = null
+    protected var pos: PositionAPI? = null
 
     override fun positionChanged(pos: PositionAPI?) {
-        pos?.let {
-            this.pos = it
-        }
+        this.pos = pos
     }
 
     override fun renderBelow(alpha: Float) {}

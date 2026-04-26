@@ -2,7 +2,6 @@ package com.dp.advancedgunnerycontrol.gui
 
 import com.dp.advancedgunnerycontrol.gui.actions.ExitAction
 import com.dp.advancedgunnerycontrol.gui.actions.GUIAction
-import com.dp.advancedgunnerycontrol.gui.actions.generateShipActions
 import com.dp.advancedgunnerycontrol.gui.suggesttaggui.SuggestedTagGui
 import com.dp.advancedgunnerycontrol.settings.Settings
 import com.dp.advancedgunnerycontrol.typesandvalues.Values
@@ -14,7 +13,6 @@ import com.fs.starfarer.api.campaign.rules.MemoryAPI
 import com.fs.starfarer.api.combat.EngagementResultAPI
 import com.fs.starfarer.api.fleet.FleetMemberAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
-import java.awt.Color
 import kotlin.math.min
 
 class AGCGUI : InteractionDialogPlugin {
@@ -26,15 +24,16 @@ class AGCGUI : InteractionDialogPlugin {
                 override fun isTooltipExpandable(p0: Any?): Boolean = false
                 override fun getTooltipWidth(p0: Any?): Float = min(description.length.toFloat() * 7f, 850f)
                 override fun createTooltip(tooltip: TooltipMakerAPI?, p1: Boolean, p2: Any?) {
-                    tooltip?.addPara(description, Color.GREEN, 5f)
+                    tooltip?.addPara(description, CampaignGuiStyle.TOOLTIP_TEXT_COLOR, 5f)
                 }
             }
         }
     }
 
     private var attributes = GUIAttributes()
-    private var shipView: ShipView? = null
-    private var lastModifierKeys = GUIAction.modifierKeys()
+    private var campaignEditorPanel: CampaignShipEditorPanelPlugin? = null
+    private var pendingShipEditorOpen = false
+    private var pendingShipEditorDelay = 0f
 
     private fun addAction(action: GUIAction) {
         attributes.options?.addOption(action.getName(), action, action.getTooltip())
@@ -45,6 +44,8 @@ class AGCGUI : InteractionDialogPlugin {
 
     override fun init(dialog: InteractionDialogAPI?) {
         storageIndex = 0
+        pendingShipEditorOpen = false
+        pendingShipEditorDelay = 0f
         attributes.init(dialog)
         if (!Settings.enablePersistentModes()) {
             attributes.text?.addPara("Persistent Storage has been disabled in the settings.")
@@ -65,17 +66,16 @@ class AGCGUI : InteractionDialogPlugin {
         attributes.options?.clearOptions()
         when (attributes.level) {
             Level.TOP -> displayFleetOptions()
-            Level.SHIP -> displayShipOptions()
+            Level.SHIP -> openShipEditor()
         }
     }
 
-    private fun showModeGUI() {
-        shipView = ShipView(attributes.tagView)
-        shipView?.showShipModes(attributes)
-    }
-
     private fun displayFleetOptions() {
+        pendingShipEditorOpen = false
+        pendingShipEditorDelay = 0f
         clear()
+        attributes.dialog?.showTextPanel()
+        attributes.dialog?.showVisualPanel()
         attributes.dialog?.showFleetMemberPickerDialog("Pick a ship to adjust weapon modes & suffixes for",
             "Confirm",
             "Exit",
@@ -90,7 +90,11 @@ class AGCGUI : InteractionDialogPlugin {
                     selected?.firstOrNull()?.let {
                         attributes.ship = it
                         attributes.level = Level.SHIP
-                        displayOptions()
+                        pendingShipEditorOpen = true
+                        pendingShipEditorDelay = 0.05f
+                        Global.getLogger(AGCGUI::class.java).info(
+                            "[AGC_CAMPAIGN_UI] queued ship editor open ship=${it.shipName} hull=${it.variant?.hullVariantId}"
+                        )
                         return
                     } ?: attributes.dialog?.dismiss()
                 }
@@ -101,12 +105,24 @@ class AGCGUI : InteractionDialogPlugin {
             })
     }
 
-    private fun displayShipOptions() {
+    private fun openShipEditor() {
         clear()
-        showModeGUI()
-        generateShipActions(attributes).forEach {
-            addAction(it)
+        attributes.options?.clearOptions()
+        attributes.dialog?.hideTextPanel()
+        attributes.dialog?.hideVisualPanel()
+        attributes.dialog?.setPromptText("")
+        Global.getLogger(AGCGUI::class.java).info(
+            "[AGC_CAMPAIGN_UI] openShipEditor ship=${attributes.ship?.shipName} hull=${attributes.ship?.variant?.hullVariantId}"
+        )
+        campaignEditorPanel = CampaignShipEditorPanelPlugin(attributes) {
+            attributes.level = Level.TOP
+            displayFleetOptions()
         }
+        attributes.dialog?.showCustomVisualDialog(
+            Global.getSettings().screenWidth.toFloat(),
+            Global.getSettings().screenHeight.toFloat(),
+            CampaignShipEditorDialogDelegate(campaignEditorPanel ?: return)
+        )
     }
 
     private fun clear() {
@@ -116,13 +132,11 @@ class AGCGUI : InteractionDialogPlugin {
 
     override fun optionMousedOver(optionString: String?, optionData: Any?) {}
     override fun advance(p0: Float) {
-        if (shipView?.shouldRegenerate() == true) {
-            showModeGUI()
-        }
-        if(lastModifierKeys != GUIAction.modifierKeys()){
-            displayOptions()
-            lastModifierKeys = GUIAction.modifierKeys()
-        }
+        if (!pendingShipEditorOpen) return
+        pendingShipEditorDelay -= p0
+        if (pendingShipEditorDelay > 0f) return
+        pendingShipEditorOpen = false
+        displayOptions()
     }
 
     override fun backFromEngagement(p0: EngagementResultAPI?) {}

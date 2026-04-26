@@ -9,7 +9,7 @@ abstract class WeaponFilter {
     abstract fun type(): FilterType
     abstract fun name(): String
 
-    enum class FilterType{SIZE, WEAPON_TYPE}
+    enum class FilterType{SIZE, WEAPON_TYPE, FIRE_FORM, RANGE}
 
     fun matches(weapon: String): Boolean{
         return matches(Global.getSettings().getWeaponSpec(weapon))
@@ -49,6 +49,49 @@ abstract class WeaponFilter {
             override fun type(): FilterType = FilterType.SIZE
             override fun name(): String = "Large"
         }
-        public val allFilters = listOf(ballisticsFilter, energyFilter, missileFilter, smallFilter, mediumFilter, largeFilter)
+        object beamFilter : WeaponFilter() {
+            override fun matches(weaponSpec: WeaponSpecAPI): Boolean = weaponSpec.isBeam
+            override fun type(): FilterType = FilterType.FIRE_FORM
+            override fun name(): String = "Beam"
+        }
+        object projectileFilter : WeaponFilter() {
+            override fun matches(weaponSpec: WeaponSpecAPI): Boolean = !weaponSpec.isBeam
+            override fun type(): FilterType = FilterType.FIRE_FORM
+            override fun name(): String = "Projectile"
+        }
+        object range0To500Filter : WeaponFilter() {
+            override fun matches(weaponSpec: WeaponSpecAPI): Boolean = weaponSpec.maxRange in 0f..500f
+            override fun type(): FilterType = FilterType.RANGE
+            override fun name(): String = "Range [0, 500]"
+        }
+        object range500To1000Filter : WeaponFilter() {
+            override fun matches(weaponSpec: WeaponSpecAPI): Boolean = weaponSpec.maxRange in 500f..1000f
+            override fun type(): FilterType = FilterType.RANGE
+            override fun name(): String = "Range [500, 1000]"
+        }
+        object range1000To1500Filter : WeaponFilter() {
+            override fun matches(weaponSpec: WeaponSpecAPI): Boolean = weaponSpec.maxRange in 1000f..1500f
+            override fun type(): FilterType = FilterType.RANGE
+            override fun name(): String = "Range [1000, 1500]"
+        }
+        object range1500PlusFilter : WeaponFilter() {
+            override fun matches(weaponSpec: WeaponSpecAPI): Boolean = weaponSpec.maxRange >= 1500f
+            override fun type(): FilterType = FilterType.RANGE
+            override fun name(): String = "Range [1500+]"
+        }
+        public val allFilters = listOf(
+            ballisticsFilter,
+            energyFilter,
+            missileFilter,
+            smallFilter,
+            mediumFilter,
+            largeFilter,
+            beamFilter,
+            projectileFilter,
+            range0To500Filter,
+            range500To1000Filter,
+            range1000To1500Filter,
+            range1500PlusFilter
+        )
     }
 }

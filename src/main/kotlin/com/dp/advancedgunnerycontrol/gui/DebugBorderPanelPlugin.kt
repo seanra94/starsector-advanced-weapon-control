@@ -1,0 +1,55 @@
+package com.dp.advancedgunnerycontrol.gui
+
+import com.fs.starfarer.api.campaign.BaseCustomUIPanelPlugin
+import com.fs.starfarer.api.ui.PositionAPI
+import org.lwjgl.opengl.GL11
+
+class DebugBorderPanelPlugin(
+    private val containerType: CampaignContainerType,
+    private val lineWidth: Float = 1f,
+) : BaseCustomUIPanelPlugin() {
+    private var position: PositionAPI? = null
+
+    override fun positionChanged(position: PositionAPI?) {
+        this.position = position
+    }
+
+    override fun render(alphaMult: Float) {
+        val mode = campaignBorderModeByType.getValue(containerType)
+        if (mode == CampaignBorderMode.NONE) return
+        val pos = position ?: return
+        GL11.glPushMatrix()
+        GL11.glDisable(GL11.GL_TEXTURE_2D)
+        GL11.glEnable(GL11.GL_BLEND)
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA)
+        GL11.glColor4f(
+            containerType.debugColor.red / 255f,
+            containerType.debugColor.green / 255f,
+            containerType.debugColor.blue / 255f,
+            0.95f * alphaMult
+        )
+        GL11.glBegin(GL11.GL_LINES)
+        GL11.glLineWidth(lineWidth)
+
+        if (mode == CampaignBorderMode.FULL || mode == CampaignBorderMode.SIDES || mode == CampaignBorderMode.SIDES_AND_BOTTOM) {
+            GL11.glVertex2f(pos.x, pos.y + pos.height)
+            GL11.glVertex2f(pos.x, pos.y)
+            GL11.glVertex2f(pos.x + pos.width, pos.y + pos.height)
+            GL11.glVertex2f(pos.x + pos.width, pos.y)
+        }
+
+        if (mode == CampaignBorderMode.FULL) {
+            GL11.glVertex2f(pos.x, pos.y + pos.height)
+            GL11.glVertex2f(pos.x + pos.width, pos.y + pos.height)
+        }
+
+        if (mode == CampaignBorderMode.FULL || mode == CampaignBorderMode.SIDES_AND_BOTTOM) {
+            GL11.glVertex2f(pos.x, pos.y)
+            GL11.glVertex2f(pos.x + pos.width, pos.y)
+            GL11.glVertex2f(pos.x, pos.y)
+        }
+
+        GL11.glEnd()
+        GL11.glPopMatrix()
+    }
+}

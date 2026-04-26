@@ -5,7 +5,7 @@ import com.fs.starfarer.api.combat.CombatEntityAPI
 import com.fs.starfarer.api.combat.ShipAPI
 import com.fs.starfarer.api.combat.WeaponAPI
 
-class NoFightersTag(weapon: WeaponAPI) : WeaponAITagBase(weapon) {
+class NoFighterTag(weapon: WeaponAPI) : WeaponAITagBase(weapon) {
     override fun isValidTarget(entity: CombatEntityAPI): Boolean {
         return super.isValidTarget(entity) && (entity as? ShipAPI)?.isFighter != true
     }

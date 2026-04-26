@@ -53,7 +53,7 @@ fun groupWeaponSpriteNames(group: WeaponGroupSpec, sh: FleetMemberAPI): List<Str
 }
 
 fun isElligibleForPD(groupIndex: Int, sh: FleetMemberAPI): Boolean {
-    val group = sh.variant.weaponGroups[groupIndex]
+    val group = sh.variant.weaponGroups.getOrNull(groupIndex) ?: return false
     val hasIPDA = sh.variant.hasHullMod("pointdefenseai")
     return group.slots.mapNotNull { sh.variant.getWeaponId(it) }.map {
         val weapon = Global.getSettings().getWeaponSpec(it)
@@ -66,12 +66,12 @@ fun isElligibleForPD(groupIndex: Int, sh: FleetMemberAPI): Boolean {
 }
 
 fun isEverythingBlacklisted(groupIndex: Int, sh: FleetMemberAPI): Boolean {
-    val group = sh.variant.weaponGroups[groupIndex]
+    val group = sh.variant.weaponGroups.getOrNull(groupIndex) ?: return false
     return (group.slots.mapNotNull { sh.variant.getWeaponId(it) }.all { Settings.weaponBlacklist.contains(it) })
 }
 
 fun usesAmmo(groupIndex: Int, sh: FleetMemberAPI): Boolean {
-    val group = sh.variant.weaponGroups[groupIndex]
+    val group = sh.variant.weaponGroups.getOrNull(groupIndex) ?: return false
     return group.slots.mapNotNull { Global.getSettings().getWeaponSpec(sh.variant.getWeaponId(it)) }.any {
         it.usesAmmo()
     }

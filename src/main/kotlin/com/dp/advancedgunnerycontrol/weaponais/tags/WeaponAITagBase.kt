@@ -37,6 +37,17 @@ abstract class WeaponAITagBase(protected val weapon: WeaponAPI) {
     }
 
     open fun forceFire(solution: FiringSolution?, baseDecision: Boolean): Boolean = false
+    open fun overrideBaseFireDecision(solution: FiringSolution?, baseDecision: Boolean): Boolean = false
+    open fun overrideFiringSolution(): FiringSolution? = null
+    open fun computeTargetPriorityModifierForGroupTargetChoice(solution: FiringSolution): Float =
+        computeTargetPriorityModifier(solution)
+    open fun observeTargetPriority(solution: FiringSolution, priority: Float) {}
+    open fun isValidSynchronizedTarget(solution: FiringSolution): Boolean =
+        isValidTarget(solution.target) && shouldFire(solution)
+    open fun isSynchronizedReleaseActive(solution: FiringSolution): Boolean = false
+    open fun shouldFireDuringSynchronizedRelease(solution: FiringSolution): Boolean = shouldFire(solution)
+    open fun observeFiringDecision(solution: FiringSolution, baseDecision: Boolean) {}
+    open fun onFireAllowed(solution: FiringSolution) {}
     open fun advance() {}
 
     // Note: if true, advance will be called every frame, even if the weapon group is not set to autofire!

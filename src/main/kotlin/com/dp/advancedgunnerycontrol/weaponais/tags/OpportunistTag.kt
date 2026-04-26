@@ -28,6 +28,13 @@ class OpportunistTag(weapon: WeaponAPI) : WeaponAITagBase(weapon) {
         return isOpportuneTarget(solution, weapon)
     }
 
+    override fun isValidSynchronizedTarget(solution: FiringSolution): Boolean = isValidTarget(solution.target)
+
+    override fun shouldFireDuringSynchronizedRelease(solution: FiringSolution): Boolean {
+        return isValidTarget(solution.target) &&
+                (!isAimable(weapon) || determineIfShotWillHit(solution.aimPoint, effectiveCollRadius(solution.target), weapon))
+    }
+
     override fun isBaseAiOverridable(): Boolean = true
 
     override fun avoidDebris(): Boolean = true
