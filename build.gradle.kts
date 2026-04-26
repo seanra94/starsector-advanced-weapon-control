@@ -241,7 +241,7 @@ tasks {
                    |   # "PD", "NoPD", "NoMissile", "PD(TF>N%)", "PrioPD", "Fighter", "NoFighter", "AvoidShield", "TargetShield",
                    |   # "AvoidShield+", "TargetShield+", "AvoidShield(TF>N%)", "AvoidShield(SF>N%)",
                    |   # "TargetShield(TF>N%)", "TargetShield(SF>N%)", "AvoidArmor(N%)", "AvoidDebris", "ShieldOff",
-                   |   # "Opportunist", "Hold(TF>N%)", "Hold(SF>N%)", "ConserveAmmo", "ConservePDAmmo", "BurstPD(SF>N%)",
+                   |   # "Opportunist", "Hold(TF>N%)", "Hold(SF>N%)", "ConserveAmmo", "ConservePDAmmo", "PD(SF>N%)",
                    |   # "ShipTarget", "AvoidPhased", "TargetPhase", "SyncWindow", "SyncVolley", "Ambush", "IgnoreMinorPD",
                    |   # "BigShip", "SmallShip", "Panic(H<N%)", "AvoidPhased", "Range<N%", "Force(TF<N%)", "Force(SF<N%)",
                    |   # "Overloaded", "Merge", "PrioFighter", "PrioMissile", "PrioShip", "PrioWounded", "PrioHealthy", "CustomAI", "LowRoF(N%)"
@@ -266,7 +266,7 @@ tasks {
                    |                "Fighter", "AvoidDebris",
                    |                "NoMissile", "NoFighter",
                    |                "Opportunist", "Panic(H<25%)", "Range<60%", "Range<80%",
-                   |                "ConserveAmmo", "ConservePDAmmo", "BurstPD(SF>90%)", "IgnoreMinorPD",
+                   |                "ConserveAmmo", "ConservePDAmmo", "PD(SF>90%)", "IgnoreMinorPD",
                    |                "BigShip", "SmallShip",
                    |                "Overloaded", "LowRoF(200%)", "CustomAI", "PrioDense"
                    |                ]  
@@ -280,7 +280,7 @@ tasks {
                    |                "PrioPD", "PrioFighter", "PrioMissile",
                    |                "NoMissile", "NoFighter",
                    |                "Opportunist", "Panic(H<25%)", "Range<60%",
-                   |                "ConserveAmmo", "ConservePDAmmo", "BurstPD(SF>90%)", "IgnoreMinorPD",
+                   |                "ConserveAmmo", "ConservePDAmmo", "PD(SF>90%)", "IgnoreMinorPD",
                    |                "AvoidShield+", "TargetShield+"
                    |                ]  
                    |                

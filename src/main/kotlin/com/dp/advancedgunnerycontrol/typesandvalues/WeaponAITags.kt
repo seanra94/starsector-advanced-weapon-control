@@ -17,7 +17,7 @@ import kotlin.math.roundToInt
 
 // NOTE: Tag names should NOT exceed 13 characters to be able to cleanly fit on buttons!
 
-val pdTags = listOf("PD", "NoPD", "PD(TF>N%)", "BurstPD(SF>N%)", "NoMissile")
+val pdTags = listOf("PD", "NoPD", "PD(TF>N%)", "PD(SF>N%)", "NoMissile")
 val ammoTags = listOf("ConserveAmmo", "ConservePDAmmo")
 
 private const val LEGACY_TOTAL_FLUX_TOKEN = "Fl?u?x?"
@@ -38,7 +38,8 @@ val targetShieldTotalFluxRegex = Regex("TargetShield\\(TF>(\\d+)%\\)")
 val targetShieldSoftFluxRegex = Regex("TargetShield\\(SF>(\\d+)%\\)")
 val targetShieldTotalFluxLegacyRegex = Regex("(?:TgtShldFT|TgtShieldsFT)\\($LEGACY_TOTAL_FLUX_TOKEN<(\\d+)%\\)")
 val targetShieldSoftFluxLegacyRegex = Regex("(?:TgtShldSFT|TgtShieldsSFT)\\($LEGACY_TOTAL_FLUX_TOKEN<(\\d+)%\\)")
-val burstPDSoftFluxRegex = Regex("BurstPD\\(SF>(\\d+)%\\)")
+val pdSoftFluxRegex = Regex("PD\\(SF>(\\d+)%\\)")
+val burstPDSoftFluxAliasRegex = Regex("BurstPD\\(SF>(\\d+)%\\)")
 val burstPDSoftFluxLegacyRegex = Regex("BurstPDSFT\\($LEGACY_TOTAL_FLUX_TOKEN<(\\d+)%\\)")
 val pdTotalFluxRegex = Regex("PD\\(TF>(\\d+)%\\)")
 val pdTotalFluxLegacyRegex = Regex("PD\\($LEGACY_TOTAL_FLUX_TOKEN>(\\d+)%\\)")
@@ -83,8 +84,14 @@ fun shouldTagBeDisabled(groupIndex: Int, sh: FleetMemberAPI, tag: String): Boole
 val priorityBoilerplateText = "\nIncreases priority by a factor of ${Settings.prioXModifier()} (adjustable in Settigs.editme)." +
         "\nCombine multiple Prio-tags to de-prioritize everything else."
 
+private fun pdTargetingRestrictionTooltip(): String = "Restricts targeting to fighters and missiles."
+
+private fun tooltipWithActivationCondition(base: String, condition: String): String {
+    return "$base\nActivation condition: $condition."
+}
+
 val tagTooltips = mapOf(
-    "PD" to "Restricts targeting to fighters and missiles.",
+    "PD" to pdTargetingRestrictionTooltip(),
     "PrioPD" to "Weapon will always prioritize from small to large (Missiles > fighters > small ships > big ships)." +
             if (Settings.strictBigSmall()) "\nRestricts targeting to missiles and ships smaller than cruisers." else "\nNo targeting restrictions.",
     "NoPD" to "Forbids targeting missiles and prioritizes ships over fighters.",
@@ -192,8 +199,9 @@ fun canonicalizeWeaponTagName(tag: String): String {
         targetShieldTotalFluxLegacyRegex.matches(tag) -> "TargetShield(TF>${invertedRegexThresholdAsPercentageString(targetShieldTotalFluxLegacyRegex, tag)})"
         targetShieldSoftFluxRegex.matches(tag) -> tag
         targetShieldSoftFluxLegacyRegex.matches(tag) -> "TargetShield(SF>${invertedRegexThresholdAsPercentageString(targetShieldSoftFluxLegacyRegex, tag)})"
-        burstPDSoftFluxRegex.matches(tag) -> tag
-        burstPDSoftFluxLegacyRegex.matches(tag) -> "BurstPD(SF>${invertedRegexThresholdAsPercentageString(burstPDSoftFluxLegacyRegex, tag)})"
+        pdSoftFluxRegex.matches(tag) -> tag
+        burstPDSoftFluxAliasRegex.matches(tag) -> "PD(SF>${extractRegexThresholdAsPercentageString(burstPDSoftFluxAliasRegex, tag)})"
+        burstPDSoftFluxLegacyRegex.matches(tag) -> "PD(SF>${invertedRegexThresholdAsPercentageString(burstPDSoftFluxLegacyRegex, tag)})"
         pdTotalFluxRegex.matches(tag) -> tag
         pdTotalFluxLegacyRegex.matches(tag) -> "PD(TF>${extractRegexThresholdAsPercentageString(pdTotalFluxLegacyRegex, tag)})"
         avoidArmorRegex.matches(tag) -> "AvoidArmor(${extractRegexThresholdAsPercentageString(avoidArmorRegex, tag)})"
@@ -254,42 +262,34 @@ fun getTagTooltip(tag: String): String {
         } and total flux is below ${(Settings.softFluxTotalFluxCap() * 100f).toInt()}%." +
                 "\nNote: This will not circumvent targeting restrictions, only firing restrictions."
 
-        avoidShieldTotalFluxRegex.matches(canonicalTag) -> "As AvoidShield, but avoids shields while total flux is above ${
-            extractRegexThresholdAsPercentageString(
-                avoidShieldTotalFluxRegex,
-                canonicalTag
-            )
-        }."
+        avoidShieldTotalFluxRegex.matches(canonicalTag) -> tooltipWithActivationCondition(
+            tagTooltips["AvoidShield"] ?: "No description available.",
+            "total flux is greater than ${extractRegexThresholdAsPercentageString(avoidShieldTotalFluxRegex, canonicalTag)}"
+        )
 
-        avoidShieldSoftFluxRegex.matches(canonicalTag) -> "As AvoidShield, but avoids shields while soft flux is above ${
-            extractRegexThresholdAsPercentageString(
-                avoidShieldSoftFluxRegex,
-                canonicalTag
-            )
-        } and total flux is below ${(Settings.softFluxTotalFluxCap() * 100f).toInt()}%."
+        avoidShieldSoftFluxRegex.matches(canonicalTag) -> tooltipWithActivationCondition(
+            tagTooltips["AvoidShield"] ?: "No description available.",
+            "soft flux is greater than ${extractRegexThresholdAsPercentageString(avoidShieldSoftFluxRegex, canonicalTag)} and total flux is below ${(Settings.softFluxTotalFluxCap() * 100f).toInt()}%"
+        )
 
-        targetShieldTotalFluxRegex.matches(canonicalTag) -> "As TargetShield, but targets shields while total flux is above ${
-            extractRegexThresholdAsPercentageString(
-                targetShieldTotalFluxRegex,
-                canonicalTag
-            )
-        }."
+        targetShieldTotalFluxRegex.matches(canonicalTag) -> tooltipWithActivationCondition(
+            tagTooltips["TargetShield"] ?: "No description available.",
+            "total flux is greater than ${extractRegexThresholdAsPercentageString(targetShieldTotalFluxRegex, canonicalTag)}"
+        )
 
-        targetShieldSoftFluxRegex.matches(canonicalTag) -> "As TargetShield, but targets shields while soft flux is above ${
-            extractRegexThresholdAsPercentageString(
-                targetShieldSoftFluxRegex,
-                canonicalTag
-            )
-        } and total flux is below ${(Settings.softFluxTotalFluxCap() * 100f).toInt()}%."
+        targetShieldSoftFluxRegex.matches(canonicalTag) -> tooltipWithActivationCondition(
+            tagTooltips["TargetShield"] ?: "No description available.",
+            "soft flux is greater than ${extractRegexThresholdAsPercentageString(targetShieldSoftFluxRegex, canonicalTag)} and total flux is below ${(Settings.softFluxTotalFluxCap() * 100f).toInt()}%"
+        )
 
-        burstPDSoftFluxRegex.matches(canonicalTag) -> "Weapon acts as PD mode while soft flux is greater than ${
+        pdSoftFluxRegex.matches(canonicalTag) -> "${pdTargetingRestrictionTooltip().removeSuffix(".")} while soft flux is greater than ${
             extractRegexThresholdAsPercentageString(
-                burstPDSoftFluxRegex,
+                pdSoftFluxRegex,
                 canonicalTag
             )
         } and total flux is below ${(Settings.softFluxTotalFluxCap() * 100f).toInt()}%."
 
-        pdTotalFluxRegex.matches(canonicalTag) -> "Weapon will act as PD mode while ship total flux > ${
+        pdTotalFluxRegex.matches(canonicalTag) -> "${pdTargetingRestrictionTooltip().removeSuffix(".")} while total flux is greater than ${
             extractRegexThresholdAsPercentageString(
                 pdTotalFluxRegex,
                 canonicalTag
@@ -353,7 +353,7 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
             weapon,
             extractRegexThreshold(targetShieldSoftFluxRegex, canonicalName)
         )
-        burstPDSoftFluxRegex.matches(canonicalName) -> return BurstPDSoftFluxTag(weapon, extractRegexThreshold(burstPDSoftFluxRegex, canonicalName))
+        pdSoftFluxRegex.matches(canonicalName) -> return BurstPDSoftFluxTag(weapon, extractRegexThreshold(pdSoftFluxRegex, canonicalName))
         pdTotalFluxRegex.matches(canonicalName) -> return PDAtTotalFluxTag(weapon, extractRegexThreshold(pdTotalFluxRegex, canonicalName))
         avoidArmorRegex.matches(canonicalName) -> return AvoidArmorTag(weapon, extractRegexThreshold(avoidArmorRegex, canonicalName))
         panicFireRegex.matches(canonicalName) -> return PanicFireTag(weapon, extractRegexThreshold(panicFireRegex, canonicalName))
@@ -424,7 +424,7 @@ fun tagNameToRegexName(tag: String): String {
         avoidShieldSoftFluxRegex.matches(canonicalTag) -> "AvoidShield(SF>N%)"
         targetShieldTotalFluxRegex.matches(canonicalTag) -> "TargetShield(TF>N%)"
         targetShieldSoftFluxRegex.matches(canonicalTag) -> "TargetShield(SF>N%)"
-        burstPDSoftFluxRegex.matches(canonicalTag) -> "BurstPD(SF>N%)"
+        pdSoftFluxRegex.matches(canonicalTag) -> "PD(SF>N%)"
         pdTotalFluxRegex.matches(canonicalTag) -> "PD(TF>N%)"
         avoidArmorRegex.matches(canonicalTag) -> "AvoidArmor"
         panicFireRegex.matches(canonicalTag) -> "Panic"
@@ -455,7 +455,7 @@ val tagIncompatibility = mapOf(
         "Opportunist",
         "NoPD",
         "PD(TF>N%)",
-        "BurstPD(SF>N%)",
+        "PD(SF>N%)",
         "BigShip",
         "SmallShip",
         "ConservePDAmmo",
@@ -468,13 +468,13 @@ val tagIncompatibility = mapOf(
         "Opportunist",
         "NoPD",
         "PD(TF>N%)",
-        "BurstPD(SF>N%)",
+        "PD(SF>N%)",
         "BigShip",
         "SmallShip",
         "PrioPD",
         "ConservePDAmmo",
     ),
-    "NoPD" to listOf("PD", "Fighter", "PD(TF>N%)", "BurstPD(SF>N%)", "PrioPD", "ConservePDAmmo"),
+    "NoPD" to listOf("PD", "Fighter", "PD(TF>N%)", "PD(SF>N%)", "PrioPD", "ConservePDAmmo"),
     "ShieldOff" to shieldTagIncompatibilities("ShieldOff"),
     "AvoidShield" to shieldTagIncompatibilities("AvoidShield"),
     "TargetShield" to shieldTagIncompatibilities("TargetShield"),
@@ -486,11 +486,11 @@ val tagIncompatibility = mapOf(
     "TargetShield(SF>N%)" to shieldTagIncompatibilities("TargetShield(SF>N%)"),
     "NoFighter" to listOf("Fighter", "Opportunist"),
     "ConservePDAmmo" to listOf("PD", "Fighter", "NoPD"),
-    "Opportunist" to listOf("Fighter", "PD", "NoFighter", "PD(TF>N%)", "BurstPD(SF>N%)", "PrioPD", "ConservePDAmmo", "NoMissile"),
+    "Opportunist" to listOf("Fighter", "PD", "NoFighter", "PD(TF>N%)", "PD(SF>N%)", "PrioPD", "ConservePDAmmo", "NoMissile"),
     "PD(TF>N%)" to listOf("Fighter", "Opportunist", "NoPD", "PD", "BigShip", "SmallShip"),
-    "BurstPD(SF>N%)" to listOf("Fighter", "Opportunist", "NoPD", "PD", "BigShip", "SmallShip"),
-    "SmallShip" to listOf("BigShip", "PD", "Fighter", "PD(TF>N%)", "BurstPD(SF>N%)", "PrioPD"),
-    "BigShip" to listOf("SmallShip", "PD", "Fighter", "PD(TF>N%)", "BurstPD(SF>N%)", "PrioPD"),
+    "PD(SF>N%)" to listOf("Fighter", "Opportunist", "NoPD", "PD", "BigShip", "SmallShip"),
+    "SmallShip" to listOf("BigShip", "PD", "Fighter", "PD(TF>N%)", "PD(SF>N%)", "PrioPD"),
+    "BigShip" to listOf("SmallShip", "PD", "Fighter", "PD(TF>N%)", "PD(SF>N%)", "PrioPD"),
     "NoMissile" to listOf("Opportunist"),
     "TargetPhase" to listOf("AvoidPhased"),
     "AvoidPhased" to listOf("TargetPhase"),
