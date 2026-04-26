@@ -60,7 +60,8 @@ C:\Games\Starsector\starsector-core\starsector.log
 
 - The checked-in Gradle `install-mod` task is disabled.
 - Existing deploy practice has been to package the jar, then copy the repo contents to `C:\Games\Starsector\mods\Advanced-Gunnery-Control-Fork`, excluding `.git`, `.github`, `.gradle`, `.idea`, `.run`, `gradle`, and `build`.
-- Deploy only when changed output must be present in the live game folder for testing.
+- For local testing, always generate the updated jar and deploy/copy the mod to `C:\Games\Starsector\mods\Advanced-Gunnery-Control-Fork` after code changes, unless explicitly told not to.
+- Do not update release/version metadata unless explicitly doing a release/version task.
 - Do not overwrite the original/non-fork AGC mod folder.
 - After deploy, a small useful check is comparing the repo jar and deployed jar SHA-256 and size.
 

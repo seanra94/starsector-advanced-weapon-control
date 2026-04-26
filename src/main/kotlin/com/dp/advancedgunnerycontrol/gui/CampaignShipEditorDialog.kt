@@ -251,10 +251,15 @@ class CampaignShipEditorPanelPlugin(
     ) {
         val isGreen = action.style == CampaignOptionRowStyle.GREEN
         val isRed = action.style == CampaignOptionRowStyle.RED
+        val rowFillColor = when {
+            isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
+            isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
+            else -> CampaignGuiStyle.INACTIVE_ROW_BACKGROUND_COLOR
+        }
         val itemPanel = panel.createCustomPanel(
             width,
             rowHeight,
-            DebugBorderPanelPlugin(CampaignContainerType.ITEM)
+            DebugBorderPanelPlugin(CampaignContainerType.ITEM, fillColor = rowFillColor)
         )
         panel.addComponent(itemPanel)
         itemPanel.position.inTL(

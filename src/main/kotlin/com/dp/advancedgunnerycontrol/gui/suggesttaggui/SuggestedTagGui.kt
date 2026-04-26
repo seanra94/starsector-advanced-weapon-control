@@ -183,7 +183,16 @@ class SuggestedTagGui : InteractionDialogPlugin {
                 val rowHeight = ACTION_ROW_PADDING * 2f + ACTION_LINE_HEIGHT * lineCount
                 val isGreen = action.active || action.style == SuggestedActionStyle.GREEN
                 val isRed = action.style == SuggestedActionStyle.RED
-                val itemPanel = panel.createCustomPanel(width, rowHeight, DebugBorderPanelPlugin(CampaignContainerType.ITEM))
+                val rowFillColor = when {
+                    isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
+                    isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
+                    else -> CampaignGuiStyle.INACTIVE_ROW_BACKGROUND_COLOR
+                }
+                val itemPanel = panel.createCustomPanel(
+                    width,
+                    rowHeight,
+                    DebugBorderPanelPlugin(CampaignContainerType.ITEM, fillColor = rowFillColor)
+                )
                 panel.addComponent(itemPanel)
                 itemPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, currentTop)
 

@@ -78,10 +78,15 @@ class SuggestedTagButton(private val weaponId: String, tag: String, button: Butt
             tags.forEachIndexed { index, tag ->
                 val otherSelectedTags = selectedTags.toMutableList().apply { remove(tag) }
                 val unavailable = !pinned && isIncompatibleWithExistingTags(tag, otherSelectedTags)
+                val rowFillColor = when {
+                    pinned -> Color(190, 175, 95)
+                    unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
+                    else -> CampaignGuiStyle.INACTIVE_ROW_BACKGROUND_COLOR
+                }
                 val itemPanel = panel.createCustomPanel(
                     metrics.itemWidth,
                     metrics.itemHeight,
-                    DebugBorderPanelPlugin(CampaignContainerType.ITEM)
+                    DebugBorderPanelPlugin(CampaignContainerType.ITEM, fillColor = rowFillColor)
                 )
                 panel.addComponent(itemPanel)
                 itemPanel.position.inTL(metrics.xFor(index), metrics.yFor(index))
