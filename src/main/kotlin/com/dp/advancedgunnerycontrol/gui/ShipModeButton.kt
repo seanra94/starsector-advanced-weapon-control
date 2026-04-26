@@ -105,9 +105,9 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
                         inner.addAreaCheckbox(
                             "",
                             mode,
-                            Color(70, 150, 75),
-                            Color(25, 80, 35),
-                            Color(125, 225, 130),
+                            CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR,
+                            CampaignGuiStyle.ACTIVE_GREEN_DARK_COLOR,
+                            CampaignGuiStyle.ACTIVE_GREEN_BRIGHT_COLOR,
                             itemWidth,
                             itemHeight,
                             0f

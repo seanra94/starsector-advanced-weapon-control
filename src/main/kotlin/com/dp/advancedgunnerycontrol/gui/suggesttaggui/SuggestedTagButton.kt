@@ -21,6 +21,7 @@ import java.awt.Color
 import kotlin.math.max
 
 class SuggestedTagButton(private val weaponId: String, tag: String, button: ButtonAPI) : ButtonBase<String>(tag, button, false) {
+    private var unavailable: Boolean = false
     companion object{
         var suggestedTagSelectionVersion = 0
             private set
@@ -93,17 +94,17 @@ class SuggestedTagButton(private val weaponId: String, tag: String, button: Butt
                 val inner = itemPanel.createUIElement(metrics.itemWidth, metrics.itemHeight, false)
                 val baseColor = when {
                     pinned -> Color(190, 175, 95)
-                    unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
+                    unavailable -> CampaignGuiStyle.TRANSPARENT_CHECKBOX_COLOR
                     else -> Misc.getBasePlayerColor()
                 }
                 val darkColor = when {
                     pinned -> Color(95, 85, 35)
-                    unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_DARK_COLOR
+                    unavailable -> CampaignGuiStyle.TRANSPARENT_CHECKBOX_COLOR
                     else -> Misc.getDarkPlayerColor()
                 }
                 val brightColor = when {
                     pinned -> Color(230, 215, 135)
-                    unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_BRIGHT_COLOR
+                    unavailable -> CampaignGuiStyle.TRANSPARENT_CHECKBOX_COLOR
                     else -> Misc.getBrightPlayerColor()
                 }
                 val createdButton = inner.addAreaCheckbox(
@@ -117,6 +118,7 @@ class SuggestedTagButton(private val weaponId: String, tag: String, button: Butt
                     0f
                 )
                 val suggestedButton = SuggestedTagButton(weaponId, tag, createdButton)
+                suggestedButton.unavailable = unavailable
                 toReturn.add(suggestedButton)
                 inner.addTooltipToPrevious(
                     AGCGUI.makeTooltip(getTagTooltip(tag)),
@@ -151,6 +153,15 @@ class SuggestedTagButton(private val weaponId: String, tag: String, button: Butt
         button.isChecked = checked
     }
 
+    private fun setUnavailable(value: Boolean) {
+        unavailable = value
+        button.isEnabled = true
+        if (value) {
+            active = false
+            button.isChecked = false
+        }
+    }
+
     override fun onActivate() {
         val st = Settings.getCurrentSuggestedTags().toMutableMap()
         st[weaponId] = ((st[weaponId] ?: listOf()) + listOf(associatedValue)).toSet().toList()
@@ -168,6 +179,10 @@ class SuggestedTagButton(private val weaponId: String, tag: String, button: Butt
     }
 
     override fun executeCallbackIfChecked() {
+        if (unavailable) {
+            button.isChecked = false
+            return
+        }
         if (!active && button.isChecked) {
             check()
             updateDisabledButtons()
@@ -182,12 +197,12 @@ class SuggestedTagButton(private val weaponId: String, tag: String, button: Butt
 
     private fun updateDisabledButtons(){
         val tags = Settings.getCurrentSuggestedTags()[weaponId] ?: emptyList()
+        val selfOtherTags = tags.toMutableList().apply { remove(associatedValue) }
+        setUnavailable(isIncompatibleWithExistingTags(associatedValue, selfOtherTags))
         sameGroupButtons.forEach {
-            it.enable()
+            val tagButton = it as? SuggestedTagButton ?: return@forEach
             val otherTags = tags.toMutableList().apply { remove(it.associatedValue) }
-            if(isIncompatibleWithExistingTags(it.associatedValue, otherTags)){
-                it.disable()
-            }
+            tagButton.setUnavailable(isIncompatibleWithExistingTags(it.associatedValue, otherTags))
         }
     }
 }

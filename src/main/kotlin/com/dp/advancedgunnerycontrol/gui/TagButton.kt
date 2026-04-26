@@ -17,6 +17,7 @@ import kotlin.math.max
 
 class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: ButtonAPI) :
     ButtonBase<String>(tag, button, false) {
+    private var unavailable: Boolean = false
 
     companion object {
         private var storage = Settings.tagStorage[AGCGUI.storageIndex]
@@ -128,36 +129,36 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
                 val label = truncateLabel(tag, metrics.itemWidth, 22f)
                 val baseColor = when {
                     pinned -> Color(190, 175, 95)
-                    unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
+                    unavailable -> CampaignGuiStyle.TRANSPARENT_CHECKBOX_COLOR
                     else -> Misc.getBasePlayerColor()
                 }
                 val darkColor = when {
                     pinned -> Color(95, 85, 35)
-                    unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_DARK_COLOR
+                    unavailable -> CampaignGuiStyle.TRANSPARENT_CHECKBOX_COLOR
                     else -> Misc.getDarkPlayerColor()
                 }
                 val brightColor = when {
                     pinned -> Color(230, 215, 135)
-                    unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_BRIGHT_COLOR
+                    unavailable -> CampaignGuiStyle.TRANSPARENT_CHECKBOX_COLOR
                     else -> Misc.getBrightPlayerColor()
                 }
-                toReturn.add(
-                    TagButton(
-                        ship,
-                        group,
+                val createdButton = TagButton(
+                    ship,
+                    group,
+                    tag,
+                    inner.addAreaCheckbox(
+                        "",
                         tag,
-                        inner.addAreaCheckbox(
-                            "",
-                            tag,
-                            baseColor,
-                            darkColor,
-                            brightColor,
-                            metrics.itemWidth,
-                            metrics.itemHeight,
-                            0f
-                        )
+                        baseColor,
+                        darkColor,
+                        brightColor,
+                        metrics.itemWidth,
+                        metrics.itemHeight,
+                        0f
                     )
                 )
+                createdButton.unavailable = unavailable
+                toReturn.add(createdButton)
                 inner.addTooltipToPrevious(
                     AGCGUI.makeTooltip(getTagTooltip(tag)),
                     TooltipMakerAPI.TooltipLocation.BELOW
@@ -192,24 +193,39 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
         button.isChecked = checked
     }
 
+    private fun setUnavailable(value: Boolean) {
+        unavailable = value
+        button.isEnabled = true
+        if (value) {
+            active = false
+            button.isChecked = false
+        }
+    }
+
     private fun updateDisabledButtons() {
         val tags = sanitizePersistedTags(ship, group)
+        val selfOtherTags = tags.toMutableList().apply { remove(associatedValue) }
+        setUnavailable(
+            isIncompatibleWithExistingTags(associatedValue, selfOtherTags) ||
+                shouldTagBeDisabled(group, ship, associatedValue)
+        )
         sameGroupButtons.forEach {
-            it.enable()
+            val tagButton = it as? TagButton ?: return@forEach
             val otherTags = tags.toMutableList().apply { remove(it.associatedValue) }
-            if (isIncompatibleWithExistingTags(it.associatedValue, otherTags) || shouldTagBeDisabled(
+            val isUnavailable = isIncompatibleWithExistingTags(it.associatedValue, otherTags) || shouldTagBeDisabled(
                     group,
                     ship,
                     it.associatedValue
                 )
-            ) {
-                it.disable()
-                it.button.isChecked = false
-            }
+            tagButton.setUnavailable(isUnavailable)
         }
     }
 
     override fun executeCallbackIfChecked() {
+        if (unavailable) {
+            button.isChecked = false
+            return
+        }
         if (!active && button.isChecked) {
             check()
             updateDisabledButtons()

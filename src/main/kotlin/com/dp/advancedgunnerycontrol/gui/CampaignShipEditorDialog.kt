@@ -3,6 +3,7 @@ package com.dp.advancedgunnerycontrol.gui
 import com.dp.advancedgunnerycontrol.gui.actions.BackAction
 import com.dp.advancedgunnerycontrol.gui.actions.GUIAction
 import com.dp.advancedgunnerycontrol.gui.actions.GoToSuggestedTagsAction
+import com.dp.advancedgunnerycontrol.gui.actions.ResetAction
 import com.dp.advancedgunnerycontrol.gui.actions.generateShipActions
 import com.dp.advancedgunnerycontrol.settings.Settings
 import com.dp.advancedgunnerycontrol.utils.invokeMethodByName
@@ -40,6 +41,22 @@ class CampaignShipEditorPanelPlugin(
     private val attributes: GUIAttributes,
     private val onBackToPicker: () -> Unit,
 ) : BaseCustomUIPanelPlugin() {
+    private enum class CampaignOptionRowStyle {
+        DEFAULT,
+        GREEN,
+        RED,
+    }
+
+    private data class CampaignOptionRow(
+        val label: String,
+        val tooltip: String,
+        val shortcut: Int? = null,
+        val isBack: Boolean = false,
+        val style: CampaignOptionRowStyle = CampaignOptionRowStyle.DEFAULT,
+        val rebuildAfter: Boolean = true,
+        val callback: () -> Unit,
+    )
+
     companion object {
         private const val SECTION_HEADER_HEIGHT = 20f
         private const val ACTION_LINE_HEIGHT = 14f
@@ -60,8 +77,10 @@ class CampaignShipEditorPanelPlugin(
     private var persistedTagScrollOffsets: Map<Int, Int> = emptyMap()
 
     private var currentActions: List<GUIAction> = emptyList()
-    private val actionButtons = linkedMapOf<ButtonAPI, GUIAction>()
+    private var currentOptionRows: List<CampaignOptionRow> = emptyList()
+    private val actionButtons = linkedMapOf<ButtonAPI, CampaignOptionRow>()
     private var lastModifierKeys = GUIAction.modifierKeys()
+    private var resetConfirmationPending = false
 
     fun init(panel: CustomPanelAPI, callbacks: CustomVisualDialogDelegate.DialogCallbacks) {
         this.panel = panel
@@ -99,13 +118,13 @@ class CampaignShipEditorPanelPlugin(
                 dismissToPicker()
                 return@firstNotNullOfOrNull null
             }
-            currentActions.firstOrNull { it.getShortcut() == event.eventValue }?.also { event.consume() }
+            currentOptionRows.firstOrNull { it.shortcut == event.eventValue }?.also { event.consume() }
         }
-        shortcutAction?.let(::executeAction)
+        shortcutAction?.let(::executeOptionRow)
     }
 
     override fun buttonPressed(buttonId: Any?) {
-        (buttonId as? GUIAction)?.let(::executeAction)
+        (buttonId as? CampaignOptionRow)?.let(::executeOptionRow)
     }
 
     private fun rebuild() {
@@ -117,6 +136,10 @@ class CampaignShipEditorPanelPlugin(
             shipView = null
             actionButtons.clear()
             currentActions = generateShipActions(attributes)
+            if (currentActions.none { it is ResetAction }) {
+                resetConfirmationPending = false
+            }
+            currentOptionRows = buildOptionRows()
 
             val rootWidth = root.position.width
             val rootHeight = root.position.height
@@ -188,33 +211,39 @@ class CampaignShipEditorPanelPlugin(
         header.addSectionHeading("Options", Alignment.MID, 0f)
         headerPanel.addUIElement(header).inTL(0f, 0f)
 
-        val backAction = currentActions.firstOrNull { it is BackAction }
-        val topActions = currentActions.filterNot { it is BackAction }
+        val backRow = currentOptionRows.firstOrNull { it.isBack }
+        val topRows = currentOptionRows.filterNot { it.isBack }
         val bodyTop = CampaignGuiStyle.PANEL_PADDING + SECTION_HEADER_HEIGHT
         var currentTop = bodyTop
-        val backRowHeight = backAction?.let { actionRowHeight(it) } ?: 0f
-        val backRowTop = if (backAction != null) {
-            panel.position.height - CampaignGuiStyle.PANEL_PADDING - backRowHeight
+        val infoHeight = if (resetConfirmationPending) 64f else 46f
+        val infoTop = panel.position.height - CampaignGuiStyle.PANEL_PADDING - infoHeight
+        val backRowHeight = backRow?.let { actionRowHeight(it) } ?: 0f
+        val backRowTop = if (backRow != null) {
+            infoTop - ACTION_ROW_GAP - backRowHeight
         } else {
-            panel.position.height - CampaignGuiStyle.PANEL_PADDING
+            infoTop
         }
-        val minInfoHeight = 38f
-        val topRowsLimit = backRowTop - ACTION_ROW_GAP - minInfoHeight
+        val topRowsLimit = backRowTop - ACTION_ROW_GAP
 
-        topActions.forEach { action ->
-            val rowHeight = actionRowHeight(action)
+        topRows.forEach { row ->
+            val rowHeight = actionRowHeight(row)
             if (currentTop + rowHeight > topRowsLimit) return@forEach
-            renderActionRow(panel, width, action, currentTop, rowHeight)
+            renderActionRow(panel, width, row, currentTop, rowHeight)
             currentTop += rowHeight + ACTION_ROW_GAP
         }
 
-        val infoTop = currentTop + 2f
-        val infoBottom = backRowTop - ACTION_ROW_GAP
         val infoPanel = panel.createUIElement(
             width,
-            max(22f, infoBottom - infoTop),
+            max(22f, panel.position.height - infoTop - CampaignGuiStyle.PANEL_PADDING),
             false
         )
+        if (resetConfirmationPending) {
+            infoPanel.addPara(
+                "Reset is armed. Click Confirm Reset to reset current selections.",
+                Misc.getNegativeHighlightColor(),
+                0f
+            )
+        }
         infoPanel.addPara(
             "MODIFIERS:\n[SHIFT] = FLEET\n[CTRL] = ALL LOADOUTS",
             0f,
@@ -227,12 +256,12 @@ class CampaignShipEditorPanelPlugin(
             infoTop
         )
 
-        if (backAction != null) {
-            renderActionRow(panel, width, backAction, backRowTop, backRowHeight)
+        if (backRow != null) {
+            renderActionRow(panel, width, backRow, backRowTop, backRowHeight)
         }
     }
 
-    private fun actionRowHeight(action: GUIAction): Float {
+    private fun actionRowHeight(action: CampaignOptionRow): Float {
         val lineCount = minOf(ACTION_LABEL_MAX_LINES, buildActionLabel(action).split("\n").size)
         return ACTION_ROW_PADDING * 2f + ACTION_LINE_HEIGHT * lineCount
     }
@@ -240,14 +269,21 @@ class CampaignShipEditorPanelPlugin(
     private fun renderActionRow(
         panel: CustomPanelAPI,
         width: Float,
-        action: GUIAction,
+        action: CampaignOptionRow,
         top: Float,
         rowHeight: Float,
     ) {
+        val isGreen = action.style == CampaignOptionRowStyle.GREEN
+        val isRed = action.style == CampaignOptionRowStyle.RED
+        val fillColor = when {
+            isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
+            isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
+            else -> null
+        }
         val itemPanel = panel.createCustomPanel(
             width,
             rowHeight,
-            DebugBorderPanelPlugin(CampaignContainerType.ITEM)
+            DebugBorderPanelPlugin(CampaignContainerType.ITEM, fillColor = fillColor)
         )
         panel.addComponent(itemPanel)
         itemPanel.position.inTL(
@@ -259,15 +295,15 @@ class CampaignShipEditorPanelPlugin(
         val button = inner.addAreaCheckbox(
             "",
             action,
-            Misc.getBasePlayerColor(),
-            Misc.getDarkPlayerColor(),
-            Misc.getBrightPlayerColor(),
+            if (isGreen || isRed) CampaignGuiStyle.TRANSPARENT_CHECKBOX_COLOR else Misc.getBasePlayerColor(),
+            if (isGreen || isRed) CampaignGuiStyle.TRANSPARENT_CHECKBOX_COLOR else Misc.getDarkPlayerColor(),
+            if (isGreen || isRed) CampaignGuiStyle.TRANSPARENT_CHECKBOX_COLOR else Misc.getBrightPlayerColor(),
             width,
             rowHeight,
             0f
         )
         inner.addTooltipToPrevious(
-            AGCGUI.makeTooltip(action.getTooltip()),
+            AGCGUI.makeTooltip(action.tooltip),
             TooltipMakerAPI.TooltipLocation.BELOW
         )
         bindButton(button)
@@ -278,7 +314,11 @@ class CampaignShipEditorPanelPlugin(
             rowHeight - ACTION_ROW_PADDING - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
             false
         )
-        textPanel.addPara(buildActionLabel(action), 0f)
+        if (isRed) {
+            textPanel.addPara(buildActionLabel(action), CampaignGuiStyle.UNAVAILABLE_TAG_TEXT_COLOR, 0f)
+        } else {
+            textPanel.addPara(buildActionLabel(action), 0f)
+        }
         itemPanel.addUIElement(textPanel).inTL(ACTION_ROW_PADDING, CampaignGuiStyle.ITEM_TEXT_TOP_PADDING)
         actionButtons[button] = action
     }
@@ -308,25 +348,94 @@ class CampaignShipEditorPanelPlugin(
         return wrapped.joinToString("\n")
     }
 
-    private fun buildActionLabel(action: GUIAction): String {
-        val shortcut = action.getShortcut()?.let { " [${Keyboard.getKeyName(it)}]" } ?: ""
-        return wrapActionLine(action.getName() + shortcut, ACTION_LABEL_MAX_CHARS_PER_LINE, ACTION_LABEL_MAX_LINES)
+    private fun buildActionLabel(action: CampaignOptionRow): String {
+        val shortcut = action.shortcut?.let { " [${Keyboard.getKeyName(it)}]" } ?: ""
+        return wrapActionLine(action.label + shortcut, ACTION_LABEL_MAX_CHARS_PER_LINE, ACTION_LABEL_MAX_LINES)
     }
 
     private fun estimateOptionsPanelHeight(): Float {
-        val backAction = currentActions.firstOrNull { it is BackAction }
-        val topActions = currentActions.filterNot { it is BackAction }
-        val topRowsHeight = topActions.sumOf { actionRowHeight(it).toDouble() }.toFloat()
-        val topRowsGaps = max(0, topActions.size - 1) * ACTION_ROW_GAP
-        val backRowsHeight = backAction?.let { ACTION_ROW_GAP + actionRowHeight(it) } ?: 0f
-        val helpHeight = 44f
-        return 2f * CampaignGuiStyle.PANEL_PADDING + SECTION_HEADER_HEIGHT + topRowsHeight + topRowsGaps + backRowsHeight + helpHeight + 4f
+        val backRow = currentOptionRows.firstOrNull { it.isBack }
+        val topRows = currentOptionRows.filterNot { it.isBack }
+        val topRowsHeight = topRows.sumOf { actionRowHeight(it).toDouble() }.toFloat()
+        val topRowsGaps = max(0, topRows.size - 1) * ACTION_ROW_GAP
+        val backRowsHeight = backRow?.let { ACTION_ROW_GAP + actionRowHeight(it) } ?: 0f
+        val infoHeight = if (resetConfirmationPending) 64f else 46f
+        return 2f * CampaignGuiStyle.PANEL_PADDING + SECTION_HEADER_HEIGHT + topRowsHeight + topRowsGaps + backRowsHeight + infoHeight + 4f
     }
 
     private fun bindButton(button: ButtonAPI) {
         button.setShowTooltipWhileInactive(true)
         buttonListenerPanel?.let {
             invokeMethodByName("setListener", button, it, narrativeContext = "Bind AGC campaign action button")
+        }
+    }
+
+    private fun buildOptionRows(): List<CampaignOptionRow> {
+        val rows = mutableListOf<CampaignOptionRow>()
+        currentActions.forEach { action ->
+            when (action) {
+                is BackAction -> rows.add(
+                    CampaignOptionRow(
+                        label = action.getName(),
+                        tooltip = action.getTooltip(),
+                        shortcut = action.getShortcut(),
+                        isBack = true,
+                        rebuildAfter = false,
+                        callback = { executeAction(action) }
+                    )
+                )
+
+                is ResetAction -> {
+                    if (resetConfirmationPending) {
+                        rows.add(
+                            CampaignOptionRow(
+                                label = "Confirm Reset",
+                                tooltip = action.getTooltip(),
+                                style = CampaignOptionRowStyle.GREEN,
+                                callback = {
+                                    action.execute()
+                                    resetConfirmationPending = false
+                                }
+                            )
+                        )
+                        rows.add(
+                            CampaignOptionRow(
+                                label = "Cancel Reset",
+                                tooltip = "Do not reset current settings.",
+                                style = CampaignOptionRowStyle.RED,
+                                callback = { resetConfirmationPending = false }
+                            )
+                        )
+                    } else {
+                        rows.add(
+                            CampaignOptionRow(
+                                label = action.getName(),
+                                tooltip = action.getTooltip(),
+                                shortcut = action.getShortcut(),
+                                callback = { resetConfirmationPending = true }
+                            )
+                        )
+                    }
+                }
+
+                else -> rows.add(
+                    CampaignOptionRow(
+                        label = action.getName(),
+                        tooltip = action.getTooltip(),
+                        shortcut = action.getShortcut(),
+                        rebuildAfter = false,
+                        callback = { executeAction(action) }
+                    )
+                )
+            }
+        }
+        return rows
+    }
+
+    private fun executeOptionRow(action: CampaignOptionRow) {
+        action.callback()
+        if (action.rebuildAfter) {
+            rebuild()
         }
     }
 

@@ -181,26 +181,32 @@ class SuggestedTagGui : InteractionDialogPlugin {
                 val label = buildActionLabel(action)
                 val lineCount = minOf(ACTION_LABEL_MAX_LINES, label.split("\n").size)
                 val rowHeight = ACTION_ROW_PADDING * 2f + ACTION_LINE_HEIGHT * lineCount
-                val itemPanel = panel.createCustomPanel(width, rowHeight, DebugBorderPanelPlugin(CampaignContainerType.ITEM))
+                val isGreen = action.active || action.style == SuggestedActionStyle.GREEN
+                val isRed = action.style == SuggestedActionStyle.RED
+                val rowFill = when {
+                    isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
+                    isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
+                    else -> null
+                }
+                val itemPanel = panel.createCustomPanel(
+                    width,
+                    rowHeight,
+                    DebugBorderPanelPlugin(CampaignContainerType.ITEM, fillColor = rowFill)
+                )
                 panel.addComponent(itemPanel)
                 itemPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, currentTop)
 
                 val inner = itemPanel.createUIElement(width, rowHeight, false)
-                val isGreen = action.active || action.style == SuggestedActionStyle.GREEN
-                val isRed = action.style == SuggestedActionStyle.RED
                 val baseColor = when {
-                    isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
-                    isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
+                    isRed || isGreen -> CampaignGuiStyle.TRANSPARENT_CHECKBOX_COLOR
                     else -> Misc.getBasePlayerColor()
                 }
                 val darkColor = when {
-                    isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_DARK_COLOR
-                    isGreen -> CampaignGuiStyle.ACTIVE_GREEN_DARK_COLOR
+                    isRed || isGreen -> CampaignGuiStyle.TRANSPARENT_CHECKBOX_COLOR
                     else -> Misc.getDarkPlayerColor()
                 }
                 val brightColor = when {
-                    isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BRIGHT_COLOR
-                    isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BRIGHT_COLOR
+                    isRed || isGreen -> CampaignGuiStyle.TRANSPARENT_CHECKBOX_COLOR
                     else -> Misc.getBrightPlayerColor()
                 }
                 val button = inner.addAreaCheckbox(
@@ -226,7 +232,11 @@ class SuggestedTagGui : InteractionDialogPlugin {
                     rowHeight - ACTION_ROW_PADDING - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
                     false
                 )
-                textPanel.addPara(label, 0f)
+                if (isRed) {
+                    textPanel.addPara(label, CampaignGuiStyle.UNAVAILABLE_TAG_TEXT_COLOR, 0f)
+                } else {
+                    textPanel.addPara(label, 0f)
+                }
                 itemPanel.addUIElement(textPanel).inTL(ACTION_ROW_PADDING, CampaignGuiStyle.ITEM_TEXT_TOP_PADDING)
                 actionButtons[button] = action
                 currentTop += rowHeight + ACTION_ROW_GAP

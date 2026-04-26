@@ -38,13 +38,14 @@ val campaignBorderModeByType = mapOf(
 
 object CampaignGuiStyle {
     val TOOLTIP_TEXT_COLOR: Color = Color(245, 230, 150)
-    val UNAVAILABLE_TAG_BACKGROUND_COLOR: Color = Color(160, 45, 40, 230)
-    val UNAVAILABLE_TAG_DARK_COLOR: Color = Color(120, 30, 28, 230)
-    val UNAVAILABLE_TAG_BRIGHT_COLOR: Color = Color(220, 95, 88, 230)
+    val UNAVAILABLE_TAG_BACKGROUND_COLOR: Color = Color(220, 70, 60, 230)
+    val UNAVAILABLE_TAG_DARK_COLOR: Color = Color(185, 55, 48, 230)
+    val UNAVAILABLE_TAG_BRIGHT_COLOR: Color = Color(245, 125, 115, 230)
     val UNAVAILABLE_TAG_TEXT_COLOR: Color = Color.WHITE
     val ACTIVE_GREEN_BACKGROUND_COLOR: Color = Color(70, 150, 75)
     val ACTIVE_GREEN_DARK_COLOR: Color = Color(25, 80, 35)
     val ACTIVE_GREEN_BRIGHT_COLOR: Color = Color(125, 225, 130)
+    val TRANSPARENT_CHECKBOX_COLOR: Color = Color(0, 0, 0, 0)
     data class TagKeywordColor(val keyword: String, val color: Color)
     data class TagTextSegment(val text: String, val color: Color?)
     val TAG_KEYWORD_COLORS: List<TagKeywordColor> = listOf(
@@ -245,7 +246,7 @@ fun renderColoredTagLabel(
         val remainingWidth = width - (cursor - x)
         if (remainingWidth <= 0f) return@forEach
         val textWidth = max(1f, measuringElement.computeStringWidth(segment.text))
-        val renderWidth = min(remainingWidth, textWidth + 1f)
+        val renderWidth = min(remainingWidth, textWidth + 8f)
         val element = panel.createUIElement(renderWidth, height, false)
         if (segment.color == null) {
             if (textColor == null) {
