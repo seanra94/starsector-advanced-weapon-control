@@ -42,6 +42,8 @@ The best recent campaign baseline uses forwarded `InputEventAPI` wheel handling,
 
 - Confirm or reject the suspected `saveShipModesInShip()` custom-data key mismatch in `ShipModes.kt`.
 - Continue campaign/suggested GUI polish only from concrete in-game regressions.
+- Fix and validate literal threshold semantics for soft/total flux weapon tags: `TargetShield(SF>N%)`, `AvoidShield(SF>N%)`, `TargetShield(TF>N%)`, `AvoidShield(TF>N%)`, `BurstPD(SF>N%)`, and verify `Force(SF<N%)` / `IgnoreMinorPD`. For `SF>N%`, activation means soft flux greater than N and total flux below the configured cap.
+- Improve `IgnoreMinorPD` effective durability estimation if compile-safe: use remaining shield buffer rather than current flux for fighter shield contribution, while preserving hull/armor/missile behavior.
 
 ## Plan
 

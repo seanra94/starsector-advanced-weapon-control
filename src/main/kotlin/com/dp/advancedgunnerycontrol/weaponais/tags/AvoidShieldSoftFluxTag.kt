@@ -1,7 +1,7 @@
 package com.dp.advancedgunnerycontrol.weaponais.tags
 
 import com.dp.advancedgunnerycontrol.settings.Settings
-import com.dp.advancedgunnerycontrol.utils.softFluxBelowThreshold
+import com.dp.advancedgunnerycontrol.utils.softFluxAboveThresholdAndTotalFluxBelowCap
 import com.dp.advancedgunnerycontrol.weaponais.FiringSolution
 import com.dp.advancedgunnerycontrol.weaponais.computeShieldFactor
 import com.dp.advancedgunnerycontrol.weaponais.computeTimeToTravel
@@ -15,10 +15,10 @@ class AvoidShieldSoftFluxTag(
     private val shieldThreshold: Float = Settings.avoidShieldThreshold()
 ) : WeaponAITagBase(weapon) {
     override fun isBaseAiValid(entity: CombatEntityAPI): Boolean {
-        return if (weapon.ship?.softFluxBelowThreshold(freeFireSoftFluxThreshold) ?: true) {
-            true
-        } else {
+        return if (weapon.ship?.softFluxAboveThresholdAndTotalFluxBelowCap(freeFireSoftFluxThreshold) ?: false) {
             computeShieldFactor(entity, weapon) < shieldThreshold
+        } else {
+            true
         }
     }
 
@@ -27,17 +27,19 @@ class AvoidShieldSoftFluxTag(
     }
 
     override fun shouldFire(solution: FiringSolution): Boolean {
-        return if (weapon.ship?.softFluxBelowThreshold(freeFireSoftFluxThreshold) ?: true) {
-            true
-        } else if (solution.target is ShipAPI) {
-            if (Settings.ignoreFighterShield() && solution.target.isFighter) {
-                true
+        return if (weapon.ship?.softFluxAboveThresholdAndTotalFluxBelowCap(freeFireSoftFluxThreshold) ?: false) {
+            if (solution.target is ShipAPI) {
+                if (Settings.ignoreFighterShield() && solution.target.isFighter) {
+                    true
+                } else {
+                    val timeToTravel = computeTimeToTravel(weapon, solution.aimPoint)
+                    computeShieldFactor(solution.target, weapon, timeToTravel) < shieldThreshold
+                }
             } else {
-                val timeToTravel = computeTimeToTravel(weapon, solution.aimPoint)
-                computeShieldFactor(solution.target, weapon, timeToTravel) < shieldThreshold
+                false
             }
         } else {
-            false
+            true
         }
     }
 

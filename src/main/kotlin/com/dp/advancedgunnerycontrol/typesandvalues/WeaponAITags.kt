@@ -282,9 +282,12 @@ fun getTagTooltip(tag: String): String {
             )
         } and total flux is below ${(Settings.softFluxTotalFluxCap() * 100f).toInt()}%."
 
-        burstPDSoftFluxRegex.matches(canonicalTag) -> "Weapon fires normally while soft flux is below ${
-            "${thresholdAsPercent(invertThreshold(extractRegexThreshold(burstPDSoftFluxRegex, canonicalTag)))}%"
-        } and total flux is below ${(Settings.softFluxTotalFluxCap() * 100f).toInt()}%; above that, it only fires at PD targets."
+        burstPDSoftFluxRegex.matches(canonicalTag) -> "Weapon acts as PD mode while soft flux is greater than ${
+            extractRegexThresholdAsPercentageString(
+                burstPDSoftFluxRegex,
+                canonicalTag
+            )
+        } and total flux is below ${(Settings.softFluxTotalFluxCap() * 100f).toInt()}%."
 
         pdTotalFluxRegex.matches(canonicalTag) -> "Weapon will act as PD mode while ship total flux > ${
             extractRegexThresholdAsPercentageString(
@@ -339,7 +342,7 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
         forceFireSoftFluxLegacyRegex.matches(name) -> return ForceFireSoftFluxTag(weapon, extractRegexThreshold(forceFireSoftFluxLegacyRegex, name))
         avoidShieldTotalFluxRegex.matches(name) -> return AvoidShieldTotalFluxTag(
             weapon,
-            invertedRegexThreshold(avoidShieldTotalFluxRegex, name)
+            extractRegexThreshold(avoidShieldTotalFluxRegex, name)
         )
         avoidShieldTotalFluxLegacyRegex.matches(name) -> return AvoidShieldTotalFluxTag(
             weapon,
@@ -347,7 +350,7 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
         )
         avoidShieldSoftFluxRegex.matches(name) -> return AvoidShieldSoftFluxTag(
             weapon,
-            invertedRegexThreshold(avoidShieldSoftFluxRegex, name)
+            extractRegexThreshold(avoidShieldSoftFluxRegex, name)
         )
         avoidShieldSoftFluxLegacyRegex.matches(name) -> return AvoidShieldSoftFluxTag(
             weapon,
@@ -355,7 +358,7 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
         )
         targetShieldTotalFluxRegex.matches(name) -> return TargetShieldTotalFluxTag(
             weapon,
-            invertedRegexThreshold(targetShieldTotalFluxRegex, name)
+            extractRegexThreshold(targetShieldTotalFluxRegex, name)
         )
         targetShieldTotalFluxLegacyRegex.matches(name) -> return TargetShieldTotalFluxTag(
             weapon,
@@ -363,13 +366,13 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
         )
         targetShieldSoftFluxRegex.matches(name) -> return TargetShieldSoftFluxTag(
             weapon,
-            invertedRegexThreshold(targetShieldSoftFluxRegex, name)
+            extractRegexThreshold(targetShieldSoftFluxRegex, name)
         )
         targetShieldSoftFluxLegacyRegex.matches(name) -> return TargetShieldSoftFluxTag(
             weapon,
             extractRegexThreshold(targetShieldSoftFluxLegacyRegex, name)
         )
-        burstPDSoftFluxRegex.matches(name) -> return BurstPDSoftFluxTag(weapon, invertedRegexThreshold(burstPDSoftFluxRegex, name))
+        burstPDSoftFluxRegex.matches(name) -> return BurstPDSoftFluxTag(weapon, extractRegexThreshold(burstPDSoftFluxRegex, name))
         burstPDSoftFluxLegacyRegex.matches(name) -> return BurstPDSoftFluxTag(weapon, extractRegexThreshold(burstPDSoftFluxLegacyRegex, name))
         pdTotalFluxRegex.matches(name) -> return PDAtTotalFluxTag(weapon, extractRegexThreshold(pdTotalFluxRegex, name))
         pdTotalFluxLegacyRegex.matches(name) -> return PDAtTotalFluxTag(weapon, extractRegexThreshold(pdTotalFluxLegacyRegex, name))

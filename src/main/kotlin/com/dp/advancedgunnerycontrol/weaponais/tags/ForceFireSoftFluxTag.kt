@@ -1,6 +1,6 @@
 package com.dp.advancedgunnerycontrol.weaponais.tags
 
-import com.dp.advancedgunnerycontrol.utils.softFluxBelowThreshold
+import com.dp.advancedgunnerycontrol.utils.softFluxBelowThresholdAndTotalFluxBelowCap
 import com.dp.advancedgunnerycontrol.weaponais.FiringSolution
 import com.fs.starfarer.api.combat.WeaponAPI
 
@@ -14,6 +14,6 @@ class ForceFireSoftFluxTag(weapon: WeaponAPI, private val softFluxThreshold: Flo
     override fun avoidDebris(): Boolean = false
 
     override fun forceFire(solution: FiringSolution?, baseDecision: Boolean): Boolean {
-        return baseDecision && (weapon.ship?.softFluxBelowThreshold(softFluxThreshold) ?: true)
+        return baseDecision && (weapon.ship?.softFluxBelowThresholdAndTotalFluxBelowCap(softFluxThreshold) ?: true)
     }
 }
