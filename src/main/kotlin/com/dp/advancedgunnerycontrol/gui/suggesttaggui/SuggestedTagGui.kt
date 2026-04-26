@@ -5,7 +5,8 @@ import com.dp.advancedgunnerycontrol.gui.CampaignContainerType
 import com.dp.advancedgunnerycontrol.gui.CampaignGuiStyle
 import com.dp.advancedgunnerycontrol.gui.DebugBorderPanelPlugin
 import com.dp.advancedgunnerycontrol.gui.GUIShower
-import com.dp.advancedgunnerycontrol.gui.truncateLabelByLength
+import com.dp.advancedgunnerycontrol.gui.WrappedLabelLayout
+import com.dp.advancedgunnerycontrol.gui.computeWrappedLabelLayout
 import com.dp.advancedgunnerycontrol.settings.LunaSettingHandler
 import com.dp.advancedgunnerycontrol.settings.Settings
 import com.dp.advancedgunnerycontrol.typesandvalues.Values
@@ -37,10 +38,10 @@ class SuggestedTagGui : InteractionDialogPlugin {
 
     companion object {
         private const val SECTION_HEADER_HEIGHT = 20f
-        private const val ACTION_LINE_HEIGHT = 14f
         private const val ACTION_ROW_GAP = 2f
         private const val ACTION_ROW_PADDING = 4f
-        private const val ACTION_LABEL_MAX_CHARS_PER_LINE = 36
+        private const val ACTION_LABEL_APPROX_CHAR_WIDTH = 6.8f
+        private const val ACTION_LABEL_LINE_HEIGHT = 15f
         private const val ACTION_LABEL_MAX_LINES = 2
         private val ACTION_SHORTCUT_HIGHLIGHTS = listOf(
             "[TAB]",
@@ -190,9 +191,9 @@ class SuggestedTagGui : InteractionDialogPlugin {
 
             var currentTop = CampaignGuiStyle.PANEL_PADDING + SECTION_HEADER_HEIGHT
             currentActions.forEach { action ->
-                val label = buildActionLabel(action)
-                val lineCount = minOf(ACTION_LABEL_MAX_LINES, label.split("\n").size)
-                val rowHeight = ACTION_ROW_PADDING * 2f + ACTION_LINE_HEIGHT * lineCount
+                val labelLayout = actionLabelLayout(action, width)
+                val label = labelLayout.wrappedText
+                val rowHeight = labelLayout.rowHeight
                 val isGreen = action.active || action.style == SuggestedActionStyle.GREEN
                 val isRed = action.style == SuggestedActionStyle.RED
                 val rowFillColor = when {
@@ -244,7 +245,7 @@ class SuggestedTagGui : InteractionDialogPlugin {
 
                 val textPanel = itemPanel.createUIElement(
                     width - 2f * ACTION_ROW_PADDING,
-                    rowHeight - ACTION_ROW_PADDING - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+                    rowHeight - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
                     false
                 )
                 val labelText = label
@@ -266,35 +267,19 @@ class SuggestedTagGui : InteractionDialogPlugin {
             panel.addUIElement(infoPanel).inTL(CampaignGuiStyle.PANEL_PADDING, currentTop)
         }
 
-        private fun wrapActionLine(line: String, maxChars: Int, maxLines: Int): String {
-            if (line.length <= maxChars || !line.contains(" ")) return line
-            val wrapped = mutableListOf<String>()
-            var current = ""
-            line.split(" ").forEach { word ->
-                if (current.isBlank()) {
-                    current = word
-                } else if ((current.length + 1 + word.length) <= maxChars) {
-                    current += " $word"
-                } else {
-                    wrapped.add(current)
-                    current = word
-                }
-            }
-            if (current.isNotBlank()) wrapped.add(current)
-            if (wrapped.size > maxLines) {
-                val visible = wrapped.take(maxLines).toMutableList()
-                val lastIndex = visible.lastIndex
-                val joinedRemainder = wrapped.drop(maxLines - 1).joinToString(" ")
-                visible[lastIndex] = truncateLabelByLength(joinedRemainder, maxChars)
-                return visible.joinToString("\n")
-            }
-            return wrapped.joinToString("\n")
-        }
-
-        private fun buildActionLabel(action: SuggestedGuiAction): String {
+        private fun actionLabelLayout(action: SuggestedGuiAction, width: Float): WrappedLabelLayout {
             val shortcutText = action.shortcuts.joinToString("") { "[${Keyboard.getKeyName(it)}]" }
             val suffix = if (shortcutText.isBlank()) "" else " $shortcutText"
-            return wrapActionLine(action.name + suffix, ACTION_LABEL_MAX_CHARS_PER_LINE, ACTION_LABEL_MAX_LINES)
+            return computeWrappedLabelLayout(
+                text = action.name + suffix,
+                rowWidth = width - 2f * ACTION_ROW_PADDING,
+                minButtonHeight = 18f,
+                horizontalPadding = 2f * ACTION_ROW_PADDING,
+                verticalPadding = 2f * ACTION_ROW_PADDING,
+                approxCharWidthPx = ACTION_LABEL_APPROX_CHAR_WIDTH,
+                lineHeightPx = ACTION_LABEL_LINE_HEIGHT,
+                maxLines = ACTION_LABEL_MAX_LINES
+            )
         }
 
         private fun addActionLabel(

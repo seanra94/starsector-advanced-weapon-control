@@ -92,12 +92,22 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
             storage = Settings.tagStorage[AGCGUI.storageIndex]
             val tags = visibleTags
             val sanitizedTags = sanitizePersistedTags(ship, group)
+            val itemHeight = tags.map { tag ->
+                computeWrappedLabelLayout(
+                    text = tag,
+                    rowWidth = panel.position.width - 2f * CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
+                    minButtonHeight = CampaignGuiStyle.TAG_ITEM_HEIGHT,
+                    horizontalPadding = 2f * CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
+                    verticalPadding = 2f * CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+                    maxLines = 1
+                ).rowHeight
+            }.maxOrNull() ?: CampaignGuiStyle.TAG_ITEM_HEIGHT
             val metrics = computeWrapGridMetrics(
                 itemCount = max(tags.size, 1),
                 availableWidth = panel.position.width,
                 availableHeight = panel.position.height,
                 minItemWidth = CampaignGuiStyle.TAG_ITEM_MIN_WIDTH,
-                itemHeight = CampaignGuiStyle.TAG_ITEM_HEIGHT,
+                itemHeight = itemHeight,
                 horizontalGap = CampaignGuiStyle.TAG_ITEM_HGAP,
                 verticalGap = CampaignGuiStyle.TAG_ITEM_VGAP,
                 maxColumns = 1

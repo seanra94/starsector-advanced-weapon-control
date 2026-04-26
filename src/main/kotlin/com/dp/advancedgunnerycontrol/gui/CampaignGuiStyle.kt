@@ -113,6 +113,12 @@ data class WrapGridMetrics(
     fun yFor(index: Int): Float = (index / columns) * (itemHeight + verticalGap)
 }
 
+data class WrappedLabelLayout(
+    val wrappedText: String,
+    val lineCount: Int,
+    val rowHeight: Float,
+)
+
 fun computeWrapGridMetrics(
     itemCount: Int,
     availableWidth: Float,
@@ -167,6 +173,83 @@ fun truncateLabelByLength(text: String, maxVisibleLength: Int): String {
     if (maxVisibleLength <= 3) return text.take(max(0, maxVisibleLength))
     if (text.length <= maxVisibleLength) return text
     return text.take(maxVisibleLength - 3) + "..."
+}
+
+private fun wrapLongToken(token: String, maxCharsPerLine: Int): List<String> {
+    if (token.length <= maxCharsPerLine) return listOf(token)
+    if (maxCharsPerLine <= 1) return token.map { it.toString() }
+    val chunks = mutableListOf<String>()
+    var index = 0
+    while (index < token.length) {
+        val end = min(token.length, index + maxCharsPerLine)
+        chunks.add(token.substring(index, end))
+        index = end
+    }
+    return chunks
+}
+
+private fun wrapTextLineWordAware(line: String, maxCharsPerLine: Int): List<String> {
+    if (line.isBlank()) return listOf("")
+    if (!line.contains(" ")) return wrapLongToken(line, maxCharsPerLine)
+
+    val wrapped = mutableListOf<String>()
+    var current = ""
+    line.split(Regex("\\s+")).filter { it.isNotBlank() }.forEach { word ->
+        val segments = if (word.length > maxCharsPerLine) wrapLongToken(word, maxCharsPerLine) else listOf(word)
+        segments.forEachIndexed { segmentIndex, segment ->
+            if (current.isBlank()) {
+                current = segment
+            } else if ((current.length + 1 + segment.length) <= maxCharsPerLine) {
+                current += " $segment"
+            } else {
+                wrapped.add(current)
+                current = segment
+            }
+            if (segmentIndex < segments.lastIndex) {
+                wrapped.add(current)
+                current = ""
+            }
+        }
+    }
+    if (current.isNotBlank()) wrapped.add(current)
+    return if (wrapped.isEmpty()) listOf("") else wrapped
+}
+
+fun computeWrappedLabelLayout(
+    text: String,
+    rowWidth: Float,
+    minButtonHeight: Float = 18f,
+    horizontalPadding: Float = 8f,
+    verticalPadding: Float = 8f,
+    approxCharWidthPx: Float = 6.8f,
+    lineHeightPx: Float = 15f,
+    maxLines: Int = 3,
+): WrappedLabelLayout {
+    val safeMaxLines = max(1, maxLines)
+    val effectiveTextWidth = max(8f, rowWidth - horizontalPadding)
+    val maxCharsPerLine = max(1, (effectiveTextWidth / max(1f, approxCharWidthPx)).toInt())
+
+    val wrappedLines = mutableListOf<String>()
+    text.split("\n").forEach { explicitLine ->
+        wrappedLines.addAll(wrapTextLineWordAware(explicitLine, maxCharsPerLine))
+    }
+    if (wrappedLines.isEmpty()) wrappedLines.add("")
+
+    val cappedLines = if (wrappedLines.size > safeMaxLines) {
+        val visible = wrappedLines.take(safeMaxLines).toMutableList()
+        val overflow = wrappedLines.drop(safeMaxLines - 1).joinToString(" ")
+        visible[visible.lastIndex] = truncateLabelByLength(overflow, maxCharsPerLine)
+        visible
+    } else {
+        wrappedLines
+    }
+    val lineCount = max(1, cappedLines.size)
+    val rowHeight = max(minButtonHeight, verticalPadding + lineCount * lineHeightPx)
+    return WrappedLabelLayout(
+        wrappedText = cappedLines.joinToString("\n"),
+        lineCount = lineCount,
+        rowHeight = rowHeight,
+    )
 }
 
 fun TooltipMakerAPI.addTagLabelPara(text: String, pad: Float = 0f) {

@@ -71,11 +71,22 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
             val itemWidth =
                 (panel.position.width - CampaignGuiStyle.SHIP_MODE_ITEM_HGAP * (columns - 1)) / columns
             val rows = max(1, ceil(max(modes.size, 1).toFloat() / columns.toFloat()).toInt())
+            val requiredItemHeight = modes.map { mode ->
+                val label = truncateLabel(shipModeToString[mode] ?: defaultShipMode, itemWidth, 24f)
+                computeWrappedLabelLayout(
+                    text = label,
+                    rowWidth = itemWidth - 2f * CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
+                    minButtonHeight = CampaignGuiStyle.SHIP_MODE_ITEM_HEIGHT,
+                    horizontalPadding = 2f * CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
+                    verticalPadding = 2f * CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+                    maxLines = 1
+                ).rowHeight
+            }.maxOrNull() ?: CampaignGuiStyle.SHIP_MODE_ITEM_HEIGHT
             val itemHeight = if (rows <= 0) {
-                CampaignGuiStyle.SHIP_MODE_ITEM_HEIGHT
+                requiredItemHeight
             } else {
                 minOf(
-                    CampaignGuiStyle.SHIP_MODE_ITEM_HEIGHT,
+                    requiredItemHeight,
                     (panel.position.height - CampaignGuiStyle.SHIP_MODE_ITEM_VGAP * (rows - 1)) / rows
                 )
             }

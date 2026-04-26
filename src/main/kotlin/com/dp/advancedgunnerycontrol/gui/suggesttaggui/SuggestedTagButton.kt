@@ -5,6 +5,7 @@ import com.dp.advancedgunnerycontrol.gui.ButtonBase
 import com.dp.advancedgunnerycontrol.gui.CampaignContainerType
 import com.dp.advancedgunnerycontrol.gui.CampaignGuiStyle
 import com.dp.advancedgunnerycontrol.gui.DebugBorderPanelPlugin
+import com.dp.advancedgunnerycontrol.gui.computeWrappedLabelLayout
 import com.dp.advancedgunnerycontrol.gui.computeWrapGridMetrics
 import com.dp.advancedgunnerycontrol.gui.renderColoredTagLabel
 import com.dp.advancedgunnerycontrol.settings.Settings
@@ -61,12 +62,22 @@ class SuggestedTagButton(private val weaponId: String, tag: String, button: Butt
             pinned: Boolean = false,
         ): List<SuggestedTagButton> {
             val tags = visibleTags
+            val itemHeight = tags.map { tag ->
+                computeWrappedLabelLayout(
+                    text = tag,
+                    rowWidth = panel.position.width - 2f * CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
+                    minButtonHeight = CampaignGuiStyle.TAG_ITEM_HEIGHT,
+                    horizontalPadding = 2f * CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
+                    verticalPadding = 2f * CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+                    maxLines = 1
+                ).rowHeight
+            }.maxOrNull() ?: CampaignGuiStyle.TAG_ITEM_HEIGHT
             val metrics = computeWrapGridMetrics(
                 itemCount = max(tags.size, 1),
                 availableWidth = panel.position.width,
                 availableHeight = panel.position.height,
                 minItemWidth = CampaignGuiStyle.TAG_ITEM_MIN_WIDTH,
-                itemHeight = CampaignGuiStyle.TAG_ITEM_HEIGHT,
+                itemHeight = itemHeight,
                 horizontalGap = CampaignGuiStyle.TAG_ITEM_HGAP,
                 verticalGap = CampaignGuiStyle.TAG_ITEM_VGAP,
                 maxColumns = 1

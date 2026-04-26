@@ -58,12 +58,10 @@ class CampaignShipEditorPanelPlugin(
 
     companion object {
         private const val SECTION_HEADER_HEIGHT = 20f
-        private const val ACTION_LINE_HEIGHT = 17f
         private const val ACTION_ROW_GAP = 2f
         private const val ACTION_ROW_PADDING = 4f
-        private const val ACTION_LABEL_FALLBACK_MAX_CHARS_PER_LINE = 30
-        private const val ACTION_LABEL_MIN_CHARS_PER_LINE = 20
-        private const val ACTION_LABEL_ESTIMATED_CHAR_WIDTH = 5.4f
+        private const val ACTION_LABEL_APPROX_CHAR_WIDTH = 6.8f
+        private const val ACTION_LABEL_LINE_HEIGHT = 15f
         private const val ACTION_LABEL_MAX_LINES = 3
         private const val OPTIONS_WIDTH_ESTIMATE = 176f
         private val ACTION_SHORTCUT_HIGHLIGHTS = listOf(
@@ -231,10 +229,9 @@ class CampaignShipEditorPanelPlugin(
         var currentTop = bodyTop
 
         currentOptionRows.forEach { row ->
-            val labelText = buildActionLabel(row, width)
-            val rowHeight = actionRowHeight(labelText)
-            renderActionRow(panel, width, row, labelText, currentTop, rowHeight)
-            currentTop += rowHeight + ACTION_ROW_GAP
+            val layout = actionLabelLayout(row, width)
+            renderActionRow(panel, width, row, layout.wrappedText, currentTop, layout.rowHeight)
+            currentTop += layout.rowHeight + ACTION_ROW_GAP
         }
 
         val infoPanel = panel.createUIElement(
@@ -253,11 +250,6 @@ class CampaignShipEditorPanelPlugin(
             CampaignGuiStyle.PANEL_PADDING,
             currentTop
         )
-    }
-
-    private fun actionRowHeight(labelText: String): Float {
-        val lineCount = minOf(ACTION_LABEL_MAX_LINES, labelText.split("\n").size)
-        return ACTION_ROW_PADDING * 2f + ACTION_LINE_HEIGHT * lineCount
     }
 
     private fun renderActionRow(
@@ -330,6 +322,20 @@ class CampaignShipEditorPanelPlugin(
         actionButtons[button] = action
     }
 
+    private fun actionLabelLayout(action: CampaignOptionRow, width: Float): WrappedLabelLayout {
+        val shortcut = action.shortcut?.let { " [${Keyboard.getKeyName(it)}]" } ?: ""
+        return computeWrappedLabelLayout(
+            text = action.label + shortcut,
+            rowWidth = width - 2f * ACTION_ROW_PADDING,
+            minButtonHeight = 18f,
+            horizontalPadding = 2f * ACTION_ROW_PADDING,
+            verticalPadding = 2f * ACTION_ROW_PADDING,
+            approxCharWidthPx = ACTION_LABEL_APPROX_CHAR_WIDTH,
+            lineHeightPx = ACTION_LABEL_LINE_HEIGHT,
+            maxLines = ACTION_LABEL_MAX_LINES
+        )
+    }
+
     private fun addActionLabel(
         panel: TooltipMakerAPI,
         labelText: String,
@@ -347,52 +353,9 @@ class CampaignShipEditorPanelPlugin(
         }
     }
 
-    private fun wrapActionLine(line: String, maxChars: Int, maxLines: Int): String {
-        if (line.length <= maxChars || !line.contains(" ")) return line
-        val wrapped = mutableListOf<String>()
-        var current = ""
-        line.split(" ").forEach { word ->
-            if (current.isBlank()) {
-                current = word
-            } else if ((current.length + 1 + word.length) <= maxChars) {
-                current += " $word"
-            } else {
-                wrapped.add(current)
-                current = word
-            }
-        }
-        if (current.isNotBlank()) wrapped.add(current)
-        if (wrapped.size > maxLines) {
-            val visible = wrapped.take(maxLines).toMutableList()
-            val lastIndex = visible.lastIndex
-            val joinedRemainder = wrapped.drop(maxLines - 1).joinToString(" ")
-            visible[lastIndex] = truncateLabelByLength(joinedRemainder, maxChars)
-            return visible.joinToString("\n")
-        }
-        return wrapped.joinToString("\n")
-    }
-
-    private fun actionLabelMaxCharsPerLine(width: Float): Int {
-        if (width <= 0f) return ACTION_LABEL_FALLBACK_MAX_CHARS_PER_LINE
-        val contentWidth = max(80f, width - 2f * ACTION_ROW_PADDING)
-        return max(
-            ACTION_LABEL_MIN_CHARS_PER_LINE,
-            (contentWidth / ACTION_LABEL_ESTIMATED_CHAR_WIDTH).toInt()
-        )
-    }
-
-    private fun buildActionLabel(action: CampaignOptionRow, width: Float = 0f): String {
-        val shortcut = action.shortcut?.let { " [${Keyboard.getKeyName(it)}]" } ?: ""
-        return wrapActionLine(
-            action.label + shortcut,
-            actionLabelMaxCharsPerLine(width),
-            ACTION_LABEL_MAX_LINES
-        )
-    }
-
     private fun estimateOptionsPanelHeight(): Float {
         val rowsHeight = currentOptionRows.sumOf {
-            actionRowHeight(buildActionLabel(it, OPTIONS_WIDTH_ESTIMATE)).toDouble()
+            actionLabelLayout(it, OPTIONS_WIDTH_ESTIMATE).rowHeight.toDouble()
         }.toFloat()
         val rowGaps = max(0, currentOptionRows.size - 1) * ACTION_ROW_GAP
         val infoHeight = 46f
