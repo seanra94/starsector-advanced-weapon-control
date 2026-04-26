@@ -14,7 +14,7 @@ enum class CampaignBorderMode {
     SIDES_AND_BOTTOM,
 }
 
-enum class CampaignContainerType(val debugColor: Color) {
+enum class CampaignContainerType(val outlineColor: Color) {
     MAIN(Color(0, 220, 120)),
     MISC(Color.GRAY),
     WEAPON_GROUPS(Color(70, 220, 220)),
@@ -51,37 +51,6 @@ object CampaignGuiStyle {
     val ACTIVE_GREEN_BACKGROUND_COLOR: Color = Color(86, 145, 92)
     val ACTIVE_GREEN_DARK_COLOR: Color = Color(48, 92, 54)
     val ACTIVE_GREEN_BRIGHT_COLOR: Color = Color(140, 205, 145)
-    data class TagKeywordColor(val keyword: String, val color: Color)
-    data class TagTextSegment(val text: String, val color: Color?)
-    val TAG_KEYWORD_COLORS: List<TagKeywordColor> = listOf(
-        TagKeywordColor("shielding", Color(95, 160, 255)),
-        TagKeywordColor("shielded", Color(95, 160, 255)),
-        TagKeywordColor("shields", Color(95, 160, 255)),
-        TagKeywordColor("shield", Color(95, 160, 255)),
-        TagKeywordColor("phasing", Color(190, 120, 255)),
-        TagKeywordColor("phased", Color(190, 120, 255)),
-        TagKeywordColor("phase", Color(190, 120, 255)),
-        TagKeywordColor("fighters", Color(90, 220, 110)),
-        TagKeywordColor("fighter", Color(90, 220, 110)),
-        TagKeywordColor("missiles", Color(90, 220, 110)),
-        TagKeywordColor("missile", Color(90, 220, 110)),
-        TagKeywordColor("pd", Color(90, 220, 110)),
-        TagKeywordColor("armoured", Color(235, 90, 80)),
-        TagKeywordColor("armored", Color(235, 90, 80)),
-        TagKeywordColor("amoured", Color(235, 90, 80)),
-        TagKeywordColor("armour", Color(235, 90, 80)),
-        TagKeywordColor("armor", Color(235, 90, 80)),
-        TagKeywordColor("amour", Color(235, 90, 80)),
-        TagKeywordColor("ammunition", Color(245, 220, 80)),
-        TagKeywordColor("opportunist", Color(245, 220, 80)),
-        TagKeywordColor("ammo", Color(245, 220, 80)),
-        TagKeywordColor("holding", Color(255, 135, 205)),
-        TagKeywordColor("held", Color(255, 135, 205)),
-        TagKeywordColor("hold", Color(255, 135, 205)),
-        TagKeywordColor("forcing", Color(255, 155, 65)),
-        TagKeywordColor("forced", Color(255, 155, 65)),
-        TagKeywordColor("force", Color(255, 155, 65)),
-    ).sortedByDescending { it.keyword.length }
 
     const val MAIN_PADDING = 0f
     const val PANEL_PADDING = 4f
@@ -256,45 +225,7 @@ fun TooltipMakerAPI.addTagLabelPara(text: String, pad: Float = 0f) {
     addPara(text, pad)
 }
 
-fun splitTagLabelSegments(text: String): List<CampaignGuiStyle.TagTextSegment> {
-    val segments = mutableListOf<CampaignGuiStyle.TagTextSegment>()
-    var index = 0
-    while (index < text.length) {
-        val match = CampaignGuiStyle.TAG_KEYWORD_COLORS.firstOrNull {
-            text.regionMatches(index, it.keyword, 0, it.keyword.length, ignoreCase = true)
-        }
-        if (match == null) {
-            val start = index
-            while (index < text.length && CampaignGuiStyle.TAG_KEYWORD_COLORS.none {
-                    text.regionMatches(index, it.keyword, 0, it.keyword.length, ignoreCase = true)
-                }) {
-                index++
-            }
-            segments.add(CampaignGuiStyle.TagTextSegment(text.substring(start, index), null))
-        } else {
-            segments.add(
-                CampaignGuiStyle.TagTextSegment(
-                    text.substring(index, index + match.keyword.length),
-                    match.color
-                )
-            )
-            index += match.keyword.length
-        }
-    }
-    return segments
-}
-
-fun TooltipMakerAPI.addColoredTagLabel(text: String, pad: Float = 0f) {
-    val label = addPara(text, pad)
-    val highlighted = splitTagLabelSegments(text)
-        .filter { it.color != null }
-    if (highlighted.isNotEmpty()) {
-        label.setHighlight(*highlighted.map { it.text }.toTypedArray())
-        label.setHighlightColors(*highlighted.map { it.color }.toTypedArray())
-    }
-}
-
-fun renderColoredTagLabel(
+fun renderTagLabel(
     panel: com.fs.starfarer.api.ui.CustomPanelAPI,
     text: String,
     width: Float,
@@ -302,7 +233,6 @@ fun renderColoredTagLabel(
     x: Float,
     y: Float,
     textColor: Color? = null,
-    enableKeywordColors: Boolean = true,
 ) {
     val element = panel.createUIElement(width, height, false)
     if (textColor == null) {

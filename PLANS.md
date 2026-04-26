@@ -19,8 +19,8 @@ The prior agent moved the campaign and suggested-tags workflows into custom full
 - [ ] Campaign seven-column weapon-group layout remains readable at the user's target scales, with empty groups handled cleanly.
 - [ ] Per-column tag scrolling affects only the hovered column and selected pinned tags update immediately.
 - [ ] Suggested-tags GUI opens, paginates, filters, pins selected tags, scrolls per weapon column, and returns to AGC safely.
-- [ ] Colored tag labels render correctly in-game without clipping, formatter crashes, or visible markup tokens.
-- [ ] Temporary scroll-test tags and sync debug logging are removed or intentionally retained with a documented reason.
+- [ ] Plain tag labels render correctly in-game without clipping, formatter crashes, or visible markup tokens.
+- [x] Temporary scroll-test tags and sync debug logging are removed or intentionally retained with a documented reason.
 - [ ] `compileKotlin` passes before pushing.
 
 ## Constraints
@@ -36,13 +36,12 @@ The prior agent moved the campaign and suggested-tags workflows into custom full
 
 The current GUI work is centered on `CampaignShipEditorDialog.kt`, `ShipView.kt`, `CampaignGuiStyle.kt`, `TagButton.kt`, `ShipModeButton.kt`, `SuggestedTagGui.kt`, `SuggestedTagGuiView.kt`, `SuggestedTagButton.kt`, and `WeaponFilter.kt`.
 
-The best recent campaign baseline uses forwarded `InputEventAPI` wheel handling, pinned selected tags, no duplicate selected tags in normal rows, seven fixed weapon-group columns, full-width item rows, ASCII scroll indicators, direct colored text segments, and fallback error panels for failed custom UI builds.
+The best recent campaign baseline uses forwarded `InputEventAPI` wheel handling, pinned selected tags, no duplicate selected tags in normal rows, seven fixed weapon-group columns, full-width item rows, ASCII scroll indicators, plain single-label tag text, dynamic wrapped action-row sizing, and fallback error panels for failed custom UI builds.
 
 ## Near-term queue
 
 - Confirm or reject the suspected `saveShipModesInShip()` custom-data key mismatch in `ShipModes.kt`.
-- Finish campaign GUI row/background polish: consistent inactive grey rows, matching confirm/cancel text brightness, grey scroll rows, and brighter incompatible-tag red.
-- Rename `PrioritisePD` to canonical `PrioPD` while preserving legacy `PrioritisePD` loading compatibility.
+- Continue campaign/suggested GUI polish only from concrete in-game regressions.
 
 ## Plan
 
@@ -51,8 +50,8 @@ The best recent campaign baseline uses forwarded `InputEventAPI` wheel handling,
 - [ ] Make the smallest local GUI change in the owning file.
 - [ ] Re-run `compileKotlin`.
 - [ ] Package/deploy only when the user needs to test in Starsector.
-- [ ] After GUI behavior is validated, remove `completeListScrollTestTags` if no longer needed.
-- [ ] After sync testing is complete, set `DEBUG_SYNC` false unless the user wants ongoing diagnostics.
+- [x] Remove `completeListScrollTestTags` once scroll validation is no longer needed.
+- [x] Set `DEBUG_SYNC` false unless the user wants ongoing diagnostics.
 - [ ] Commit and push the confirmed scope to GitHub.
 
 ## Verification needed
@@ -76,9 +75,7 @@ Then copy to `C:\Games\Starsector\mods\Advanced-Gunnery-Control-Fork` using the 
 ## Risks and open questions
 
 - Runtime UI behavior cannot be fully proven by compile alone because Starsector custom UI layout has engine-specific quirks.
-- Existing `Settings.kt` scroll-test tags are selectable real tags and should not ship unintentionally.
-- Existing sync debug logs can add noise to user testing and should not ship unintentionally.
-- Suggested-tags direct colored text segments still need in-game confirmation after the clipping fix.
+- Suggested-tags plain labels still need in-game confirmation after the clipping fix.
 
 ## Current status
 

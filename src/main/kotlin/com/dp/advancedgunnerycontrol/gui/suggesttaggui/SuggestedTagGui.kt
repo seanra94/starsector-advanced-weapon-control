@@ -3,7 +3,7 @@ package com.dp.advancedgunnerycontrol.gui.suggesttaggui
 import com.dp.advancedgunnerycontrol.gui.AGCGUI
 import com.dp.advancedgunnerycontrol.gui.CampaignContainerType
 import com.dp.advancedgunnerycontrol.gui.CampaignGuiStyle
-import com.dp.advancedgunnerycontrol.gui.DebugBorderPanelPlugin
+import com.dp.advancedgunnerycontrol.gui.CampaignPanelPlugin
 import com.dp.advancedgunnerycontrol.gui.GUIShower
 import com.dp.advancedgunnerycontrol.gui.WrappedLabelLayout
 import com.dp.advancedgunnerycontrol.gui.computeWrappedLabelLayout
@@ -165,7 +165,7 @@ class SuggestedTagGui : InteractionDialogPlugin {
 
             val width = max(500f, root.position.width - 2f * CampaignGuiStyle.MAIN_PADDING)
             val height = 220f
-            val fallback = root.createCustomPanel(width, height, DebugBorderPanelPlugin(CampaignContainerType.OPTIONS))
+            val fallback = root.createCustomPanel(width, height, CampaignPanelPlugin(CampaignContainerType.OPTIONS))
             root.addComponent(fallback).inTL(CampaignGuiStyle.MAIN_PADDING, CampaignGuiStyle.MAIN_PADDING)
 
             val element = fallback.createUIElement(width - 16f, height - 16f, false)
@@ -182,7 +182,7 @@ class SuggestedTagGui : InteractionDialogPlugin {
 
         private fun buildOptionsPanel(panel: CustomPanelAPI) {
             val width = panel.position.width - 2f * CampaignGuiStyle.PANEL_PADDING
-            val headerPanel = panel.createCustomPanel(width, SECTION_HEADER_HEIGHT, DebugBorderPanelPlugin(CampaignContainerType.HEADER))
+            val headerPanel = panel.createCustomPanel(width, SECTION_HEADER_HEIGHT, CampaignPanelPlugin(CampaignContainerType.HEADER))
             panel.addComponent(headerPanel)
             headerPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, CampaignGuiStyle.PANEL_PADDING)
             val header = headerPanel.createUIElement(width, SECTION_HEADER_HEIGHT, false)
@@ -204,7 +204,7 @@ class SuggestedTagGui : InteractionDialogPlugin {
                 val itemPanel = panel.createCustomPanel(
                     width,
                     rowHeight,
-                    DebugBorderPanelPlugin(CampaignContainerType.ITEM, fillColor = rowFillColor)
+                    CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = rowFillColor)
                 )
                 panel.addComponent(itemPanel)
                 itemPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, currentTop)

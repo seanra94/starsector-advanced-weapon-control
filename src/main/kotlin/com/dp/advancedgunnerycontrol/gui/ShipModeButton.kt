@@ -96,7 +96,7 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
                 val itemPanel = panel.createCustomPanel(
                     itemWidth,
                     itemHeight,
-                    DebugBorderPanelPlugin(CampaignContainerType.ITEM)
+                    CampaignPanelPlugin(CampaignContainerType.ITEM)
                 )
                 panel.addComponent(itemPanel)
                 itemPanel.position.inTL(

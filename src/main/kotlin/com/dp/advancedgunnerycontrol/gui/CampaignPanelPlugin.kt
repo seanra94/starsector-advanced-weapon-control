@@ -5,7 +5,7 @@ import com.fs.starfarer.api.ui.PositionAPI
 import java.awt.Color
 import org.lwjgl.opengl.GL11
 
-class DebugBorderPanelPlugin(
+class CampaignPanelPlugin(
     private val containerType: CampaignContainerType,
     private val lineWidth: Float = 1f,
     private val fillColor: Color? = null,
@@ -43,7 +43,7 @@ class DebugBorderPanelPlugin(
         val mode = campaignBorderModeByType.getValue(containerType)
         if (mode == CampaignBorderMode.NONE) return
         val pos = position ?: return
-        val outline = borderColor ?: containerType.debugColor
+        val outline = borderColor ?: containerType.outlineColor
         GL11.glPushMatrix()
         GL11.glDisable(GL11.GL_TEXTURE_2D)
         GL11.glEnable(GL11.GL_BLEND)

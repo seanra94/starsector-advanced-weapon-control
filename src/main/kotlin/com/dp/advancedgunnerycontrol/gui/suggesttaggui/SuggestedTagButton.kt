@@ -4,10 +4,10 @@ import com.dp.advancedgunnerycontrol.gui.AGCGUI
 import com.dp.advancedgunnerycontrol.gui.ButtonBase
 import com.dp.advancedgunnerycontrol.gui.CampaignContainerType
 import com.dp.advancedgunnerycontrol.gui.CampaignGuiStyle
-import com.dp.advancedgunnerycontrol.gui.DebugBorderPanelPlugin
+import com.dp.advancedgunnerycontrol.gui.CampaignPanelPlugin
 import com.dp.advancedgunnerycontrol.gui.computeWrappedLabelLayout
 import com.dp.advancedgunnerycontrol.gui.computeWrapGridMetrics
-import com.dp.advancedgunnerycontrol.gui.renderColoredTagLabel
+import com.dp.advancedgunnerycontrol.gui.renderTagLabel
 import com.dp.advancedgunnerycontrol.settings.Settings
 import com.dp.advancedgunnerycontrol.typesandvalues.TagListView
 import com.dp.advancedgunnerycontrol.typesandvalues.getSuggestedModesForWeaponId
@@ -96,7 +96,7 @@ class SuggestedTagButton(private val weaponId: String, tag: String, button: Butt
                 val itemPanel = panel.createCustomPanel(
                     metrics.itemWidth,
                     metrics.itemHeight,
-                    DebugBorderPanelPlugin(
+                    CampaignPanelPlugin(
                         CampaignContainerType.ITEM,
                         fillColor = rowFillColor,
                         borderColor = if (unavailable) CampaignGuiStyle.DISABLED_TAG_BORDER_COLOR else null
@@ -139,15 +139,14 @@ class SuggestedTagButton(private val weaponId: String, tag: String, button: Butt
                 )
                 itemPanel.addUIElement(inner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
 
-                renderColoredTagLabel(
+                renderTagLabel(
                     itemPanel,
                     tag,
                     metrics.itemWidth - 2f * CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
                     metrics.itemHeight - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
                     CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
                     CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
-                    textColor = if (unavailable) CampaignGuiStyle.DISABLED_TAG_TEXT_COLOR else null,
-                    enableKeywordColors = !unavailable
+                    textColor = if (unavailable) CampaignGuiStyle.DISABLED_TAG_TEXT_COLOR else null
                 )
 
                 if (selectedTags.contains(tag)) {

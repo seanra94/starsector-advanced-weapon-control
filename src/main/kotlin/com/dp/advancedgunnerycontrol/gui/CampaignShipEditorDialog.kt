@@ -199,7 +199,7 @@ class CampaignShipEditorPanelPlugin(
 
         val width = max(500f, root.position.width - 2f * CampaignGuiStyle.MAIN_PADDING)
         val height = 220f
-        val fallback = root.createCustomPanel(width, height, DebugBorderPanelPlugin(CampaignContainerType.OPTIONS))
+        val fallback = root.createCustomPanel(width, height, CampaignPanelPlugin(CampaignContainerType.OPTIONS))
         root.addComponent(fallback).inTL(CampaignGuiStyle.MAIN_PADDING, CampaignGuiStyle.MAIN_PADDING)
 
         val element = fallback.createUIElement(width - 16f, height - 16f, false)
@@ -225,7 +225,7 @@ class CampaignShipEditorPanelPlugin(
         val headerPanel = panel.createCustomPanel(
             width,
             SECTION_HEADER_HEIGHT,
-            DebugBorderPanelPlugin(CampaignContainerType.HEADER)
+            CampaignPanelPlugin(CampaignContainerType.HEADER)
         )
         panel.addComponent(headerPanel)
         headerPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, CampaignGuiStyle.PANEL_PADDING)
@@ -280,7 +280,7 @@ class CampaignShipEditorPanelPlugin(
         val itemPanel = panel.createCustomPanel(
             width,
             rowHeight,
-            DebugBorderPanelPlugin(CampaignContainerType.ITEM, fillColor = rowFillColor)
+            CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = rowFillColor)
         )
         panel.addComponent(itemPanel)
         itemPanel.position.inTL(

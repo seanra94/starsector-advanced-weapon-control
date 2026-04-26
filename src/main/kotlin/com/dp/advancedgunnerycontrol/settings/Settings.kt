@@ -16,7 +16,6 @@ import kotlin.math.max
 import kotlin.math.min
 
 object Settings : SettingsDefinition() {
-    private val completeListScrollTestTags = (10..19).map { "Hold(TF>$it%)" }
     private val classicTagList = addSetting<List<String>>("classicTagList", listOf(), false)
     private val noviceTagList = addSetting<List<String>>("noviceTagList", listOf(), false)
     private val completeTagList = addSetting<List<String>>("completeTagList", listOf(), false)
@@ -125,7 +124,7 @@ object Settings : SettingsDefinition() {
             when(listVariant()){
                 "classic" -> classicTagList()
                 "novice" -> noviceTagList()
-                "complete" -> completeTagList() + completeListScrollTestTags
+                "complete" -> completeTagList()
                 else -> noviceTagList()
             }
 

@@ -127,7 +127,7 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
                 val itemPanel = panel.createCustomPanel(
                     metrics.itemWidth,
                     metrics.itemHeight,
-                    DebugBorderPanelPlugin(
+                    CampaignPanelPlugin(
                         CampaignContainerType.ITEM,
                         fillColor = rowFillColor,
                         borderColor = if (unavailable) CampaignGuiStyle.DISABLED_TAG_BORDER_COLOR else null
@@ -177,15 +177,14 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
                     TooltipMakerAPI.TooltipLocation.BELOW
                 )
                 itemPanel.addUIElement(inner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
-                renderColoredTagLabel(
+                renderTagLabel(
                     itemPanel,
                     tag,
                     metrics.itemWidth - 2f * CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
                     metrics.itemHeight - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
                     CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
                     CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
-                    textColor = if (unavailable) CampaignGuiStyle.DISABLED_TAG_TEXT_COLOR else null,
-                    enableKeywordColors = !unavailable
+                    textColor = if (unavailable) CampaignGuiStyle.DISABLED_TAG_TEXT_COLOR else null
                 )
                 if (sanitizedTags.contains(tag)) {
                     toReturn.last().setCheckedFromPersistence(true)

@@ -28,7 +28,8 @@ Advanced Gunnery Control Fork is a Starsector utility mod derived from Advanced 
 - `AGCGUI.kt` opens the campaign fleet picker and then the custom campaign ship editor dialog.
 - `CampaignShipEditorDialog.kt` owns the full-screen custom visual campaign editor shell, action rail, fallback error panel, and forwarded input routing.
 - `ShipView.kt` owns the campaign ship editor body layout: misc column, ship picture/details, options insertion point, ship modes, seven weapon-group columns, weapon entries, tag lists, pinned selected tags, and per-column scroll regions.
-- `CampaignGuiStyle.kt` centralizes campaign/suggested GUI dimensions, debug-border modes, label truncation helpers, and colored tag-label segment rendering.
+- `CampaignGuiStyle.kt` centralizes campaign/suggested GUI dimensions, border modes, label truncation helpers, and wrapped label sizing.
+- `CampaignPanelPlugin.kt` draws the production row/container fills and outlines used by campaign and suggested-tag custom panels.
 - `TagButton.kt`, `ShipModeButton.kt`, and `SuggestedTagButton.kt` build campaign-style item controls over Starsector area checkboxes while rendering visible text separately.
 - `src/main/kotlin/com/dp/advancedgunnerycontrol/gui/suggesttaggui/` contains the suggested-tags screen. `SuggestedTagGui.kt` owns the custom dialog/action rail; `SuggestedTagGuiView.kt` owns the seven-column weapon grid; `WeaponFilter.kt` defines type/size/fire-form/range filters.
 - `src/main/kotlin/com/dp/advancedgunnerycontrol/weaponais/tags/` contains weapon AI tag implementations, including the fork's sync/ambush work.
@@ -73,7 +74,7 @@ C:\Games\Starsector\starsector-core\starsector.log
 - Sync readiness should be group-level and target-convergent: participants must be mechanically ready, in effective range, aligned on their predicted aim solution, and able to join the shared release target.
 - Campaign tag scrolling should use the single forwarded `InputEventAPI` wheel path with explicit event consumption. Do not reintroduce direct LWJGL mouse polling unless coordinate logs prove it is needed.
 - Campaign selected tags are pinned at the top of each tag column, removed from the normal scroll slice while pinned, and use pale yellow selected backgrounds.
-- Campaign/suggested colored tag labels should use direct adjacent text segments with explicit `Color` values. Avoid `addParaWithMarkup()` or custom markup keys for tag cells because they leaked literal markup text in-game.
+- Campaign/suggested tag labels currently render as plain single-label text. Avoid `addParaWithMarkup()`, highlighted `addPara(...)` overloads, or segmented text for tag cells because earlier attempts leaked literal markup, crashed on `%`, or clipped characters in-game.
 - Section headings such as `Ship`, `Options`, `Ship Modes`, and group headings should remain Starsector `addSectionHeading(...)` bars.
 - Empty weapon groups keep their seven-column layout footprint; recent behavior shows the group heading but leaves the rest blank.
 - Suggested-tags GUI mirrors campaign tag behavior: forwarded wheel scrolling, pinned selected tags, selected tags removed from normal rows, and colored tag-label segments.
@@ -95,12 +96,10 @@ C:\Games\Starsector\starsector-core\starsector.log
 - Direct LWJGL mouse coordinates previously routed wheel input to the wrong tag columns after rebuilds. Preserve forwarded input routing unless there is new evidence.
 - Rebuilds reset scroll state unless `captureTagScrollOffsets()` is preserved and passed back as `initialTagScrollOffsets`.
 - MagicLib combat/refit buttons are narrow and do not clip long text. Widening combat/refit tag buttons reduces visible tag capacity on 1080p and is a poor default tradeoff.
-- `Settings.getCurrentWeaponTagList()` currently appends `completeListScrollTestTags` (`Hold(TF>10%)` through `Hold(TF>19%)`) only for the complete list to force scroll overflow during GUI testing. Remove once scroll validation is finished.
-- `SynchronizedFireTag.kt` currently has `DEBUG_SYNC = true`, producing `[AGC_SYNC_DEBUG]` log lines for interesting sync weapons. Turn it off before a normal release if diagnostics are no longer needed.
+- Temporary complete-list scroll-test tags were removed from `Settings.getCurrentWeaponTagList()` after GUI scroll validation.
+- `SynchronizedFireTag.kt` has `DEBUG_SYNC = false` by default. Turn it on only for focused runtime sync diagnostics.
 
 ## Open questions
 
-- Confirm in-game that the latest campaign/suggested colored-segment labels no longer clip or leak markup text.
+- Confirm in-game that the latest campaign/suggested plain tag labels still render without clipping.
 - Confirm suggested-tags reset flow, filter actions, page controls, and Esc/back behavior in-game.
-- Decide whether the temporary complete-list scroll-test tags are still needed.
-- Decide whether sync debug logging should remain enabled during the next runtime test.

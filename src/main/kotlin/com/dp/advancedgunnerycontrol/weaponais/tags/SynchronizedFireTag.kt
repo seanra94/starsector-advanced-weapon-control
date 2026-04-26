@@ -40,7 +40,7 @@ private const val AIM_POINT_ALIGNMENT_MAX_DEGREES = 3.00f
 private const val CONVERGENCE_TARGET_PRIORITY_MULTIPLIER = 0.001f
 private const val NON_CONVERGENCE_TARGET_PRIORITY_MULTIPLIER = 1000f
 private const val CONVERGENCE_TARGET_SWITCH_SCORE_RATIO = 0.85f
-private const val DEBUG_SYNC = true
+private const val DEBUG_SYNC = false
 private const val DEBUG_SYNC_INTERVAL_SECONDS = 0.25f
 
 private data class SyncParticipant(

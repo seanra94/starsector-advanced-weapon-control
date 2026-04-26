@@ -4,7 +4,7 @@ import com.dp.advancedgunnerycontrol.gui.ButtonBase
 import com.dp.advancedgunnerycontrol.gui.CampaignContainerType
 import com.dp.advancedgunnerycontrol.gui.CampaignGuiStyle
 import com.dp.advancedgunnerycontrol.gui.CustomView
-import com.dp.advancedgunnerycontrol.gui.DebugBorderPanelPlugin
+import com.dp.advancedgunnerycontrol.gui.CampaignPanelPlugin
 import com.dp.advancedgunnerycontrol.settings.Settings
 import com.dp.advancedgunnerycontrol.typesandvalues.getSuggestedModesForWeaponId
 import com.fs.starfarer.api.Global
@@ -96,7 +96,7 @@ class SuggestedTagGuiView(
         val headerPanel = panel.createCustomPanel(
             panel.position.width - 2f * CampaignGuiStyle.PANEL_PADDING,
             SECTION_HEADER_HEIGHT,
-            DebugBorderPanelPlugin(CampaignContainerType.HEADER)
+            CampaignPanelPlugin(CampaignContainerType.HEADER)
         )
         panel.addComponent(headerPanel)
         headerPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, top)
@@ -172,7 +172,7 @@ class SuggestedTagGuiView(
         val indicator = panel.createCustomPanel(
             panel.position.width,
             TAG_ELLIPSIS_HEIGHT,
-            DebugBorderPanelPlugin(CampaignContainerType.ITEM)
+            CampaignPanelPlugin(CampaignContainerType.ITEM)
         )
         panel.addComponent(indicator)
         indicator.position.inTL(0f, top)
@@ -291,7 +291,7 @@ class SuggestedTagGuiView(
         val infoPanel = panel.createCustomPanel(
             panel.position.width,
             WEAPON_INFO_HEIGHT,
-            DebugBorderPanelPlugin(CampaignContainerType.WEAPON_LIST)
+            CampaignPanelPlugin(CampaignContainerType.WEAPON_LIST)
         )
         panel.addComponent(infoPanel)
         infoPanel.position.inTL(0f, 0f)
@@ -302,7 +302,7 @@ class SuggestedTagGuiView(
         val tagPanel = panel.createCustomPanel(
             panel.position.width,
             tagHeight,
-            DebugBorderPanelPlugin(CampaignContainerType.TAG_LIST)
+            CampaignPanelPlugin(CampaignContainerType.TAG_LIST)
         )
         panel.addComponent(tagPanel)
         tagPanel.position.inTL(0f, tagTop)
@@ -326,7 +326,7 @@ class SuggestedTagGuiView(
             val column = panel.createCustomPanel(
                 effectiveWidth,
                 panel.position.height,
-                DebugBorderPanelPlugin(CampaignContainerType.WEAPON_GROUP)
+                CampaignPanelPlugin(CampaignContainerType.WEAPON_GROUP)
             )
             panel.addComponent(column)
             column.position.inTL(index * cardWidth, 0f)
@@ -354,7 +354,7 @@ class SuggestedTagGuiView(
         val miscPanel = panel.createCustomPanel(
             miscWidth,
             panel.position.height,
-            DebugBorderPanelPlugin(CampaignContainerType.MISC)
+            CampaignPanelPlugin(CampaignContainerType.MISC)
         )
         panel.addComponent(miscPanel)
         miscPanel.position.inTL(0f, 0f)
@@ -363,7 +363,7 @@ class SuggestedTagGuiView(
         val columnsPanel = panel.createCustomPanel(
             columnsWidth,
             panel.position.height,
-            DebugBorderPanelPlugin(CampaignContainerType.WEAPON_GROUPS)
+            CampaignPanelPlugin(CampaignContainerType.WEAPON_GROUPS)
         )
         panel.addComponent(columnsPanel)
         columnsPanel.position.rightOfTop(miscPanel, 0f)

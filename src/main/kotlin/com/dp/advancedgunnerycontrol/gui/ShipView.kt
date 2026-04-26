@@ -143,7 +143,7 @@ class ShipView(
         val headerPanel = panel.createCustomPanel(
             panel.position.width - 2f * CampaignGuiStyle.PANEL_PADDING,
             SECTION_HEADER_HEIGHT,
-            DebugBorderPanelPlugin(CampaignContainerType.HEADER)
+            CampaignPanelPlugin(CampaignContainerType.HEADER)
         )
         panel.addComponent(headerPanel)
         headerPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, yOffset)
@@ -273,7 +273,7 @@ class ShipView(
         val indicator = panel.createCustomPanel(
             panel.position.width,
             TAG_ELLIPSIS_HEIGHT,
-            DebugBorderPanelPlugin(CampaignContainerType.ITEM)
+            CampaignPanelPlugin(CampaignContainerType.ITEM)
         )
         panel.addComponent(indicator)
         indicator.position.inTL(0f, top)
@@ -356,7 +356,7 @@ class ShipView(
         val entryPanel = panel.createCustomPanel(
             panel.position.width,
             WEAPON_ENTRY_HEIGHT,
-            DebugBorderPanelPlugin(CampaignContainerType.WEAPON_ENTRY)
+            CampaignPanelPlugin(CampaignContainerType.WEAPON_ENTRY)
         )
         panel.addComponent(entryPanel)
         entryPanel.position.inTL(0f, top)
@@ -561,7 +561,7 @@ class ShipView(
         val weaponContainer = panel.createCustomPanel(
             innerWidth,
             weaponContainerHeight,
-            DebugBorderPanelPlugin(CampaignContainerType.WEAPON_LIST)
+            CampaignPanelPlugin(CampaignContainerType.WEAPON_LIST)
         )
         panel.addComponent(weaponContainer)
         weaponContainer.position.inTL(CampaignGuiStyle.PANEL_PADDING, topContent)
@@ -573,7 +573,7 @@ class ShipView(
         val tagContainer = panel.createCustomPanel(
             innerWidth,
             tagContainerHeight,
-            DebugBorderPanelPlugin(CampaignContainerType.TAG_LIST)
+            CampaignPanelPlugin(CampaignContainerType.TAG_LIST)
         )
         panel.addComponent(tagContainer)
         tagContainer.position.inTL(CampaignGuiStyle.PANEL_PADDING, tagContainerTop)
@@ -606,7 +606,7 @@ class ShipView(
             val groupPanel = panel.createCustomPanel(
                 effectiveWidth,
                 innerHeight,
-                DebugBorderPanelPlugin(CampaignContainerType.WEAPON_GROUP)
+                CampaignPanelPlugin(CampaignContainerType.WEAPON_GROUP)
             )
             panel.addComponent(groupPanel)
             groupPanel.position.inTL(
@@ -655,7 +655,7 @@ class ShipView(
         val miscPanel = panel.createCustomPanel(
             miscWidth,
             panel.position.height,
-            DebugBorderPanelPlugin(CampaignContainerType.MISC)
+            CampaignPanelPlugin(CampaignContainerType.MISC)
         )
         panel.addComponent(miscPanel)
         miscPanel.position.inTL(0f, 0f)
@@ -663,7 +663,7 @@ class ShipView(
         val picturePanel = miscPanel.createCustomPanel(
             miscWidth,
             pictureHeight,
-            DebugBorderPanelPlugin(CampaignContainerType.PICTURE)
+            CampaignPanelPlugin(CampaignContainerType.PICTURE)
         )
         miscPanel.addComponent(picturePanel)
         picturePanel.position.inTL(0f, 0f)
@@ -672,7 +672,7 @@ class ShipView(
         val optionsPanel = miscPanel.createCustomPanel(
             miscWidth,
             optionsHeight,
-            DebugBorderPanelPlugin(CampaignContainerType.OPTIONS)
+            CampaignPanelPlugin(CampaignContainerType.OPTIONS)
         )
         miscPanel.addComponent(optionsPanel)
         optionsPanel.position.belowLeft(picturePanel, 0f)
@@ -681,7 +681,7 @@ class ShipView(
         val shipModePanel = miscPanel.createCustomPanel(
             miscWidth,
             shipModeHeight,
-            DebugBorderPanelPlugin(CampaignContainerType.SHIP_MODE)
+            CampaignPanelPlugin(CampaignContainerType.SHIP_MODE)
         )
         miscPanel.addComponent(shipModePanel)
         shipModePanel.position.belowLeft(optionsPanel, 0f)
@@ -690,7 +690,7 @@ class ShipView(
         val weaponGroupsPanel = panel.createCustomPanel(
             weaponGroupsWidth,
             panel.position.height,
-            DebugBorderPanelPlugin(CampaignContainerType.WEAPON_GROUPS)
+            CampaignPanelPlugin(CampaignContainerType.WEAPON_GROUPS)
         )
         panel.addComponent(weaponGroupsPanel)
         weaponGroupsPanel.position.rightOfTop(miscPanel, 0f)
