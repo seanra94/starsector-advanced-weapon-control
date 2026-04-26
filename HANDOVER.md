@@ -79,6 +79,7 @@ C:\Games\Starsector\starsector-core\starsector.log
 - `IgnoreMinorPD` should account for hull, armor, and shield durability. Prefer remaining shield buffer over current flux when estimating fighter shield contribution, if the Starsector API exposes a compile-safe max-flux/shield-efficiency path.
 - User-facing tag names and tooltips should be standardized by behavior family. Conditional variants should reuse the same baseline wording as the plain tag and only add the flux activation condition.
 - `BurstPD(SF>N%)` should become canonical `PD(SF>N%)`, while old `BurstPD...` strings remain legacy aliases for saved/settings/loadout compatibility.
+- When preserving legacy `BurstPD(SF>N%)` compatibility, verify whether the old parser inverted the threshold. If so, old `BurstPD(SF>90%)` should normalize to canonical `PD(SF>10%)`, while new canonical `PD(SF>10%)` remains literal.
 - A generic flux-condition parser/helper may be useful later, but broad tag-class refactors should be staged separately from naming/tooltip standardization.
 - Campaign tag scrolling should use the single forwarded `InputEventAPI` wheel path with explicit event consumption. Do not reintroduce direct LWJGL mouse polling unless coordinate logs prove it is needed.
 - Campaign selected tags are pinned at the top of each tag column, removed from the normal scroll slice while pinned, and use pale yellow selected backgrounds.

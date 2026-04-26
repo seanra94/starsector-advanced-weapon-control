@@ -200,7 +200,7 @@ fun canonicalizeWeaponTagName(tag: String): String {
         targetShieldSoftFluxRegex.matches(tag) -> tag
         targetShieldSoftFluxLegacyRegex.matches(tag) -> "TargetShield(SF>${invertedRegexThresholdAsPercentageString(targetShieldSoftFluxLegacyRegex, tag)})"
         pdSoftFluxRegex.matches(tag) -> tag
-        burstPDSoftFluxAliasRegex.matches(tag) -> "PD(SF>${extractRegexThresholdAsPercentageString(burstPDSoftFluxAliasRegex, tag)})"
+        burstPDSoftFluxAliasRegex.matches(tag) -> "PD(SF>${invertedRegexThresholdAsPercentageString(burstPDSoftFluxAliasRegex, tag)})"
         burstPDSoftFluxLegacyRegex.matches(tag) -> "PD(SF>${invertedRegexThresholdAsPercentageString(burstPDSoftFluxLegacyRegex, tag)})"
         pdTotalFluxRegex.matches(tag) -> tag
         pdTotalFluxLegacyRegex.matches(tag) -> "PD(TF>${extractRegexThresholdAsPercentageString(pdTotalFluxLegacyRegex, tag)})"

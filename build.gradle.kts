@@ -266,7 +266,7 @@ tasks {
                    |                "Fighter", "AvoidDebris",
                    |                "NoMissile", "NoFighter",
                    |                "Opportunist", "Panic(H<25%)", "Range<60%", "Range<80%",
-                   |                "ConserveAmmo", "ConservePDAmmo", "PD(SF>90%)", "IgnoreMinorPD",
+                   |                "ConserveAmmo", "ConservePDAmmo", "PD(SF>10%)", "IgnoreMinorPD",
                    |                "BigShip", "SmallShip",
                    |                "Overloaded", "LowRoF(200%)", "CustomAI", "PrioDense"
                    |                ]  
@@ -280,7 +280,7 @@ tasks {
                    |                "PrioPD", "PrioFighter", "PrioMissile",
                    |                "NoMissile", "NoFighter",
                    |                "Opportunist", "Panic(H<25%)", "Range<60%",
-                   |                "ConserveAmmo", "ConservePDAmmo", "PD(SF>90%)", "IgnoreMinorPD",
+                   |                "ConserveAmmo", "ConservePDAmmo", "PD(SF>10%)", "IgnoreMinorPD",
                    |                "AvoidShield+", "TargetShield+"
                    |                ]  
                    |                
