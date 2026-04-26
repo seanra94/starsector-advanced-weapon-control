@@ -17,7 +17,6 @@ import kotlin.math.max
 
 class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: ButtonAPI) :
     ButtonBase<String>(tag, button, false) {
-    private var unavailable: Boolean = false
 
     companion object {
         private var storage = Settings.tagStorage[AGCGUI.storageIndex]
@@ -114,10 +113,7 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
                 val itemPanel = panel.createCustomPanel(
                     metrics.itemWidth,
                     metrics.itemHeight,
-                    DebugBorderPanelPlugin(
-                        CampaignContainerType.ITEM,
-                        fillColor = if (unavailable) CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR else null
-                    )
+                    DebugBorderPanelPlugin(CampaignContainerType.ITEM)
                 )
                 panel.addComponent(itemPanel)
                 itemPanel.position.inTL(metrics.xFor(index), metrics.yFor(index))
@@ -126,39 +122,38 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
                     metrics.itemHeight,
                     false
                 )
-                val label = truncateLabel(tag, metrics.itemWidth, 22f)
                 val baseColor = when {
                     pinned -> Color(190, 175, 95)
-                    unavailable -> CampaignGuiStyle.TRANSPARENT_CHECKBOX_COLOR
+                    unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
                     else -> Misc.getBasePlayerColor()
                 }
                 val darkColor = when {
                     pinned -> Color(95, 85, 35)
-                    unavailable -> CampaignGuiStyle.TRANSPARENT_CHECKBOX_COLOR
+                    unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_DARK_COLOR
                     else -> Misc.getDarkPlayerColor()
                 }
                 val brightColor = when {
                     pinned -> Color(230, 215, 135)
-                    unavailable -> CampaignGuiStyle.TRANSPARENT_CHECKBOX_COLOR
+                    unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_BRIGHT_COLOR
                     else -> Misc.getBrightPlayerColor()
                 }
-                val createdButton = TagButton(
-                    ship,
-                    group,
-                    tag,
-                    inner.addAreaCheckbox(
-                        "",
+                toReturn.add(
+                    TagButton(
+                        ship,
+                        group,
                         tag,
-                        baseColor,
-                        darkColor,
-                        brightColor,
-                        metrics.itemWidth,
-                        metrics.itemHeight,
-                        0f
+                        inner.addAreaCheckbox(
+                            "",
+                            tag,
+                            baseColor,
+                            darkColor,
+                            brightColor,
+                            metrics.itemWidth,
+                            metrics.itemHeight,
+                            0f
+                        )
                     )
                 )
-                createdButton.unavailable = unavailable
-                toReturn.add(createdButton)
                 inner.addTooltipToPrevious(
                     AGCGUI.makeTooltip(getTagTooltip(tag)),
                     TooltipMakerAPI.TooltipLocation.BELOW
@@ -166,7 +161,7 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
                 itemPanel.addUIElement(inner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
                 renderColoredTagLabel(
                     itemPanel,
-                    label,
+                    tag,
                     metrics.itemWidth - 2f * CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
                     metrics.itemHeight - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
                     CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
@@ -193,39 +188,34 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
         button.isChecked = checked
     }
 
-    private fun setUnavailable(value: Boolean) {
-        unavailable = value
-        button.isEnabled = true
-        if (value) {
-            active = false
-            button.isChecked = false
-        }
-    }
-
     private fun updateDisabledButtons() {
         val tags = sanitizePersistedTags(ship, group)
+        enable()
         val selfOtherTags = tags.toMutableList().apply { remove(associatedValue) }
-        setUnavailable(
-            isIncompatibleWithExistingTags(associatedValue, selfOtherTags) ||
-                shouldTagBeDisabled(group, ship, associatedValue)
-        )
+        if (isIncompatibleWithExistingTags(associatedValue, selfOtherTags) || shouldTagBeDisabled(group, ship, associatedValue)) {
+            // TODO: If Starsector exposes a stable disabled-click sound API, trigger it when unavailable tags are clicked.
+            disable()
+            button.isChecked = false
+            active = false
+        }
         sameGroupButtons.forEach {
             val tagButton = it as? TagButton ?: return@forEach
             val otherTags = tags.toMutableList().apply { remove(it.associatedValue) }
-            val isUnavailable = isIncompatibleWithExistingTags(it.associatedValue, otherTags) || shouldTagBeDisabled(
+            tagButton.enable()
+            if (isIncompatibleWithExistingTags(it.associatedValue, otherTags) || shouldTagBeDisabled(
                     group,
                     ship,
                     it.associatedValue
                 )
-            tagButton.setUnavailable(isUnavailable)
+            ) {
+                tagButton.disable()
+                tagButton.button.isChecked = false
+                tagButton.active = false
+            }
         }
     }
 
     override fun executeCallbackIfChecked() {
-        if (unavailable) {
-            button.isChecked = false
-            return
-        }
         if (!active && button.isChecked) {
             check()
             updateDisabledButtons()

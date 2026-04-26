@@ -183,30 +183,24 @@ class SuggestedTagGui : InteractionDialogPlugin {
                 val rowHeight = ACTION_ROW_PADDING * 2f + ACTION_LINE_HEIGHT * lineCount
                 val isGreen = action.active || action.style == SuggestedActionStyle.GREEN
                 val isRed = action.style == SuggestedActionStyle.RED
-                val rowFill = when {
-                    isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
-                    isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
-                    else -> null
-                }
-                val itemPanel = panel.createCustomPanel(
-                    width,
-                    rowHeight,
-                    DebugBorderPanelPlugin(CampaignContainerType.ITEM, fillColor = rowFill)
-                )
+                val itemPanel = panel.createCustomPanel(width, rowHeight, DebugBorderPanelPlugin(CampaignContainerType.ITEM))
                 panel.addComponent(itemPanel)
                 itemPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, currentTop)
 
                 val inner = itemPanel.createUIElement(width, rowHeight, false)
                 val baseColor = when {
-                    isRed || isGreen -> CampaignGuiStyle.TRANSPARENT_CHECKBOX_COLOR
+                    isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
+                    isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
                     else -> Misc.getBasePlayerColor()
                 }
                 val darkColor = when {
-                    isRed || isGreen -> CampaignGuiStyle.TRANSPARENT_CHECKBOX_COLOR
+                    isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_DARK_COLOR
+                    isGreen -> CampaignGuiStyle.ACTIVE_GREEN_DARK_COLOR
                     else -> Misc.getDarkPlayerColor()
                 }
                 val brightColor = when {
-                    isRed || isGreen -> CampaignGuiStyle.TRANSPARENT_CHECKBOX_COLOR
+                    isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BRIGHT_COLOR
+                    isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BRIGHT_COLOR
                     else -> Misc.getBrightPlayerColor()
                 }
                 val button = inner.addAreaCheckbox(

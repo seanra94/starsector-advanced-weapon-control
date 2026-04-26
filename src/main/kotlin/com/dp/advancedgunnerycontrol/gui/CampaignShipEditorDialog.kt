@@ -51,7 +51,6 @@ class CampaignShipEditorPanelPlugin(
         val label: String,
         val tooltip: String,
         val shortcut: Int? = null,
-        val isBack: Boolean = false,
         val style: CampaignOptionRowStyle = CampaignOptionRowStyle.DEFAULT,
         val rebuildAfter: Boolean = true,
         val callback: () -> Unit,
@@ -211,39 +210,20 @@ class CampaignShipEditorPanelPlugin(
         header.addSectionHeading("Options", Alignment.MID, 0f)
         headerPanel.addUIElement(header).inTL(0f, 0f)
 
-        val backRow = currentOptionRows.firstOrNull { it.isBack }
-        val topRows = currentOptionRows.filterNot { it.isBack }
         val bodyTop = CampaignGuiStyle.PANEL_PADDING + SECTION_HEADER_HEIGHT
         var currentTop = bodyTop
-        val infoHeight = if (resetConfirmationPending) 64f else 46f
-        val infoTop = panel.position.height - CampaignGuiStyle.PANEL_PADDING - infoHeight
-        val backRowHeight = backRow?.let { actionRowHeight(it) } ?: 0f
-        val backRowTop = if (backRow != null) {
-            infoTop - ACTION_ROW_GAP - backRowHeight
-        } else {
-            infoTop
-        }
-        val topRowsLimit = backRowTop - ACTION_ROW_GAP
 
-        topRows.forEach { row ->
+        currentOptionRows.forEach { row ->
             val rowHeight = actionRowHeight(row)
-            if (currentTop + rowHeight > topRowsLimit) return@forEach
             renderActionRow(panel, width, row, currentTop, rowHeight)
             currentTop += rowHeight + ACTION_ROW_GAP
         }
 
         val infoPanel = panel.createUIElement(
             width,
-            max(22f, panel.position.height - infoTop - CampaignGuiStyle.PANEL_PADDING),
+            max(22f, panel.position.height - currentTop - CampaignGuiStyle.PANEL_PADDING),
             false
         )
-        if (resetConfirmationPending) {
-            infoPanel.addPara(
-                "Reset is armed. Click Confirm Reset to reset current selections.",
-                Misc.getNegativeHighlightColor(),
-                0f
-            )
-        }
         infoPanel.addPara(
             "MODIFIERS:\n[SHIFT] = FLEET\n[CTRL] = ALL LOADOUTS",
             0f,
@@ -253,12 +233,8 @@ class CampaignShipEditorPanelPlugin(
         )
         panel.addUIElement(infoPanel).inTL(
             CampaignGuiStyle.PANEL_PADDING,
-            infoTop
+            currentTop
         )
-
-        if (backRow != null) {
-            renderActionRow(panel, width, backRow, backRowTop, backRowHeight)
-        }
     }
 
     private fun actionRowHeight(action: CampaignOptionRow): Float {
@@ -275,15 +251,10 @@ class CampaignShipEditorPanelPlugin(
     ) {
         val isGreen = action.style == CampaignOptionRowStyle.GREEN
         val isRed = action.style == CampaignOptionRowStyle.RED
-        val fillColor = when {
-            isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
-            isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
-            else -> null
-        }
         val itemPanel = panel.createCustomPanel(
             width,
             rowHeight,
-            DebugBorderPanelPlugin(CampaignContainerType.ITEM, fillColor = fillColor)
+            DebugBorderPanelPlugin(CampaignContainerType.ITEM)
         )
         panel.addComponent(itemPanel)
         itemPanel.position.inTL(
@@ -295,9 +266,21 @@ class CampaignShipEditorPanelPlugin(
         val button = inner.addAreaCheckbox(
             "",
             action,
-            if (isGreen || isRed) CampaignGuiStyle.TRANSPARENT_CHECKBOX_COLOR else Misc.getBasePlayerColor(),
-            if (isGreen || isRed) CampaignGuiStyle.TRANSPARENT_CHECKBOX_COLOR else Misc.getDarkPlayerColor(),
-            if (isGreen || isRed) CampaignGuiStyle.TRANSPARENT_CHECKBOX_COLOR else Misc.getBrightPlayerColor(),
+            when {
+                isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
+                isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
+                else -> Misc.getBasePlayerColor()
+            },
+            when {
+                isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_DARK_COLOR
+                isGreen -> CampaignGuiStyle.ACTIVE_GREEN_DARK_COLOR
+                else -> Misc.getDarkPlayerColor()
+            },
+            when {
+                isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BRIGHT_COLOR
+                isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BRIGHT_COLOR
+                else -> Misc.getBrightPlayerColor()
+            },
             width,
             rowHeight,
             0f
@@ -354,13 +337,10 @@ class CampaignShipEditorPanelPlugin(
     }
 
     private fun estimateOptionsPanelHeight(): Float {
-        val backRow = currentOptionRows.firstOrNull { it.isBack }
-        val topRows = currentOptionRows.filterNot { it.isBack }
-        val topRowsHeight = topRows.sumOf { actionRowHeight(it).toDouble() }.toFloat()
-        val topRowsGaps = max(0, topRows.size - 1) * ACTION_ROW_GAP
-        val backRowsHeight = backRow?.let { ACTION_ROW_GAP + actionRowHeight(it) } ?: 0f
-        val infoHeight = if (resetConfirmationPending) 64f else 46f
-        return 2f * CampaignGuiStyle.PANEL_PADDING + SECTION_HEADER_HEIGHT + topRowsHeight + topRowsGaps + backRowsHeight + infoHeight + 4f
+        val rowsHeight = currentOptionRows.sumOf { actionRowHeight(it).toDouble() }.toFloat()
+        val rowGaps = max(0, currentOptionRows.size - 1) * ACTION_ROW_GAP
+        val infoHeight = 46f
+        return 2f * CampaignGuiStyle.PANEL_PADDING + SECTION_HEADER_HEIGHT + rowsHeight + rowGaps + infoHeight + 4f
     }
 
     private fun bindButton(button: ButtonAPI) {
@@ -372,19 +352,10 @@ class CampaignShipEditorPanelPlugin(
 
     private fun buildOptionRows(): List<CampaignOptionRow> {
         val rows = mutableListOf<CampaignOptionRow>()
-        currentActions.forEach { action ->
+        val backAction = currentActions.firstOrNull { it is BackAction }
+        val normalActions = currentActions.filterNot { it is BackAction }
+        normalActions.forEach { action ->
             when (action) {
-                is BackAction -> rows.add(
-                    CampaignOptionRow(
-                        label = action.getName(),
-                        tooltip = action.getTooltip(),
-                        shortcut = action.getShortcut(),
-                        isBack = true,
-                        rebuildAfter = false,
-                        callback = { executeAction(action) }
-                    )
-                )
-
                 is ResetAction -> {
                     if (resetConfirmationPending) {
                         rows.add(
@@ -428,6 +399,17 @@ class CampaignShipEditorPanelPlugin(
                     )
                 )
             }
+        }
+        if (backAction != null) {
+            rows.add(
+                CampaignOptionRow(
+                    label = backAction.getName(),
+                    tooltip = backAction.getTooltip(),
+                    shortcut = backAction.getShortcut(),
+                    rebuildAfter = false,
+                    callback = { executeAction(backAction) }
+                )
+            )
         }
         return rows
     }

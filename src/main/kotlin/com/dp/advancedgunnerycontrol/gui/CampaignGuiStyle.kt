@@ -38,14 +38,13 @@ val campaignBorderModeByType = mapOf(
 
 object CampaignGuiStyle {
     val TOOLTIP_TEXT_COLOR: Color = Color(245, 230, 150)
-    val UNAVAILABLE_TAG_BACKGROUND_COLOR: Color = Color(220, 70, 60, 230)
-    val UNAVAILABLE_TAG_DARK_COLOR: Color = Color(185, 55, 48, 230)
-    val UNAVAILABLE_TAG_BRIGHT_COLOR: Color = Color(245, 125, 115, 230)
+    val UNAVAILABLE_TAG_BACKGROUND_COLOR: Color = Color(255, 0, 0)
+    val UNAVAILABLE_TAG_DARK_COLOR: Color = Color(170, 0, 0)
+    val UNAVAILABLE_TAG_BRIGHT_COLOR: Color = Color(255, 90, 90)
     val UNAVAILABLE_TAG_TEXT_COLOR: Color = Color.WHITE
     val ACTIVE_GREEN_BACKGROUND_COLOR: Color = Color(70, 150, 75)
     val ACTIVE_GREEN_DARK_COLOR: Color = Color(25, 80, 35)
     val ACTIVE_GREEN_BRIGHT_COLOR: Color = Color(125, 225, 130)
-    val TRANSPARENT_CHECKBOX_COLOR: Color = Color(0, 0, 0, 0)
     data class TagKeywordColor(val keyword: String, val color: Color)
     data class TagTextSegment(val text: String, val color: Color?)
     val TAG_KEYWORD_COLORS: List<TagKeywordColor> = listOf(
@@ -216,48 +215,11 @@ fun renderColoredTagLabel(
     textColor: Color? = null,
     enableKeywordColors: Boolean = true,
 ) {
-    if (!enableKeywordColors) {
-        val element = panel.createUIElement(width, height, false)
-        if (textColor == null) {
-            element.addPara(text, 0f)
-        } else {
-            element.addPara(text, textColor, 0f)
-        }
-        panel.addUIElement(element).inTL(x, y)
-        return
+    val element = panel.createUIElement(width, height, false)
+    if (textColor == null) {
+        element.addPara(text, 0f)
+    } else {
+        element.addPara(text, textColor, 0f)
     }
-
-    val segments = splitTagLabelSegments(text)
-    if (segments.none { it.color != null }) {
-        val element = panel.createUIElement(width, height, false)
-        if (textColor == null) {
-            element.addPara(text, 0f)
-        } else {
-            element.addPara(text, textColor, 0f)
-        }
-        panel.addUIElement(element).inTL(x, y)
-        return
-    }
-
-    val measuringElement = panel.createUIElement(width, height, false)
-    var cursor = x
-    segments.forEach { segment ->
-        if (segment.text.isEmpty()) return@forEach
-        val remainingWidth = width - (cursor - x)
-        if (remainingWidth <= 0f) return@forEach
-        val textWidth = max(1f, measuringElement.computeStringWidth(segment.text))
-        val renderWidth = min(remainingWidth, textWidth + 8f)
-        val element = panel.createUIElement(renderWidth, height, false)
-        if (segment.color == null) {
-            if (textColor == null) {
-                element.addPara(segment.text, 0f)
-            } else {
-                element.addPara(segment.text, textColor, 0f)
-            }
-        } else {
-            element.addPara(segment.text, segment.color, 0f)
-        }
-        panel.addUIElement(element).inTL(cursor, y)
-        cursor += textWidth
-    }
+    panel.addUIElement(element).inTL(x, y)
 }
