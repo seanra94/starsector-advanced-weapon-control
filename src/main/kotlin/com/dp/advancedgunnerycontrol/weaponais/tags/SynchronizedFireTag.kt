@@ -14,6 +14,7 @@ import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.combat.CombatEntityAPI
 import com.fs.starfarer.api.combat.WeaponAPI
 import com.fs.starfarer.api.loading.WeaponSpecAPI
+import java.util.IdentityHashMap
 import java.util.Locale
 import kotlin.math.PI
 
@@ -58,6 +59,9 @@ private data class SyncTargetCandidate(
     val priority: Float,
     val timestamp: Float
 )
+
+private val burstDelayCacheBySpec = IdentityHashMap<WeaponSpecAPI, Float>()
+private val autoChargeCacheBySpec = IdentityHashMap<WeaponSpecAPI, Boolean>()
 
 private fun now(): Float = Global.getCombatEngine()?.getTotalElapsedTime(false) ?: 0f
 
@@ -205,17 +209,21 @@ private fun WeaponAPI.isContinuousBeamForSync(): Boolean {
 }
 
 private fun WeaponSpecAPI.burstDelayForSync(): Float {
-    return runCatching {
-        val method = javaClass.getMethod("getBurstDelay")
-        (method.invoke(this) as? Number)?.toFloat() ?: 0f
-    }.getOrDefault(0f)
+    return burstDelayCacheBySpec.getOrPut(this) {
+        runCatching {
+            val method = javaClass.getMethod("getBurstDelay")
+            (method.invoke(this) as? Number)?.toFloat() ?: 0f
+        }.getOrDefault(0f)
+    }
 }
 
 private fun WeaponSpecAPI.isAutoChargeForSync(): Boolean {
-    return runCatching {
-        val method = javaClass.getMethod("isAutoCharge")
-        method.invoke(this) == true
-    }.getOrDefault(false)
+    return autoChargeCacheBySpec.getOrPut(this) {
+        runCatching {
+            val method = javaClass.getMethod("isAutoCharge")
+            method.invoke(this) == true
+        }.getOrDefault(false)
+    }
 }
 
 private fun WeaponAPI.isAutoChargeProjectileForSync(): Boolean {
@@ -472,30 +480,47 @@ class SynchronizedFireTag(
         return created
     }
 
+    // Sync lifecycle:
+    // 1. observeTargetPriority records fresh per-weapon target candidates.
+    // 2. evaluate converges on a shared target, then waits briefly for it to settle.
+    // 3. openReleaseWindow snapshots the settled release target and firing solutions.
+    // 4. allowFire marks released weapons while the release window is open.
+    // 5. started weapons are protected until their burst/charge sequence is complete.
+    // 6. the coordinator waits for all participants to become ready before the next cycle.
     private class SyncGroupCoordinator {
+        // Current weapons participating in this group/mode cycle.
         private var participantIds: Set<Int> = emptySet()
+        // Weapons with the longest predicted release window; window mode uses them to keep the window open.
         private var anchorIds: Set<Int> = emptySet()
         private var releaseStartedAt = 0f
         private var releaseWindowSeconds = MIN_RELEASE_WINDOW_SECONDS
+        // Target selected for the currently open release window.
         private var releaseTargetId = 0
         private var releaseTarget: CombatEntityAPI? = null
         private val releaseSolutionsByWeapon = mutableMapOf<Int, FiringSolution>()
+        // Best shared target during the pre-release convergence phase.
         private var convergenceTargetId = 0
         private var convergenceTarget: CombatEntityAPI? = null
         private var convergenceTargetScore = Float.POSITIVE_INFINITY
         private var pendingReleaseTargetId = 0
         private var pendingReleaseReadySince = 0f
+        // True after a release closes; prevents a new cycle until all participants are safely ready again.
         private var waitingForCycle = false
         private var anchorActivityObserved = false
         private var lastAnchorActivityAt = 0f
         private var cycleResetAt = -1f
         private var nextDebugAt = 0f
         private val nextDecisionDebugByWeapon = mutableMapOf<Int, Float>()
+        // Per-weapon candidates observed from target-priority evaluation; stale entries are pruned by time.
         private val targetCandidatesByWeapon = mutableMapOf<Int, MutableMap<Int, SyncTargetCandidate>>()
+        // Weapons permitted to fire in the current window.
         private val releasedWeaponIds = mutableSetOf<Int>()
+        // Released weapons whose firing/charge/burst sequence has visibly started.
         private val releasedWeaponStartedIds = mutableSetOf<Int>()
+        // Time-based protection end for each started sequence.
         private val releasedWeaponProtectionEnds = mutableMapOf<Int, Float>()
 
+        // True only while the coordinator is allowing the group to fire at releaseTarget.
         var releaseOpen = false
             private set
 
@@ -516,6 +541,8 @@ class SynchronizedFireTag(
         }
 
         fun evaluate(participants: List<WeaponAPI>, mode: SyncFireMode, rangeFactor: Float) {
+            // TagBasedAI calls this from several hooks in one frame. A broad per-frame cache is risky because
+            // those hooks can observe new candidates, firing starts, and protected-sequence transitions.
             syncParticipants(participants, mode, rangeFactor)
             updateReleasedStarts(participants)
             updateOpenRelease(participants, mode)
