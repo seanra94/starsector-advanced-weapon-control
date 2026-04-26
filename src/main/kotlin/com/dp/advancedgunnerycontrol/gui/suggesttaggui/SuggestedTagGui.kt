@@ -29,6 +29,12 @@ import java.awt.Color
 import kotlin.math.max
 
 class SuggestedTagGui : InteractionDialogPlugin {
+    private enum class SuggestedActionStyle {
+        DEFAULT,
+        GREEN,
+        RED,
+    }
+
     companion object {
         private const val SECTION_HEADER_HEIGHT = 20f
         private const val ACTION_LINE_HEIGHT = 14f
@@ -44,6 +50,7 @@ class SuggestedTagGui : InteractionDialogPlugin {
         val tooltip: String = "",
         val rebuildAfter: Boolean = true,
         val active: Boolean = false,
+        val style: SuggestedActionStyle = SuggestedActionStyle.DEFAULT,
         val callback: () -> Unit,
     )
 
@@ -179,9 +186,23 @@ class SuggestedTagGui : InteractionDialogPlugin {
                 itemPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, currentTop)
 
                 val inner = itemPanel.createUIElement(width, rowHeight, false)
-                val baseColor = if (action.active) Color(70, 150, 75) else Misc.getBasePlayerColor()
-                val darkColor = if (action.active) Color(25, 80, 35) else Misc.getDarkPlayerColor()
-                val brightColor = if (action.active) Color(125, 225, 130) else Misc.getBrightPlayerColor()
+                val isGreen = action.active || action.style == SuggestedActionStyle.GREEN
+                val isRed = action.style == SuggestedActionStyle.RED
+                val baseColor = when {
+                    isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
+                    isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
+                    else -> Misc.getBasePlayerColor()
+                }
+                val darkColor = when {
+                    isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_DARK_COLOR
+                    isGreen -> CampaignGuiStyle.ACTIVE_GREEN_DARK_COLOR
+                    else -> Misc.getDarkPlayerColor()
+                }
+                val brightColor = when {
+                    isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BRIGHT_COLOR
+                    isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BRIGHT_COLOR
+                    else -> Misc.getBrightPlayerColor()
+                }
                 val button = inner.addAreaCheckbox(
                     "",
                     action,
@@ -323,13 +344,20 @@ class SuggestedTagGui : InteractionDialogPlugin {
             actions.add(
                 SuggestedGuiAction(
                     "Confirm Reset",
-                    tooltip = "This will replace all custom suggested weapon tags with the defaults."
+                    tooltip = "This will replace all custom suggested weapon tags with the defaults.",
+                    style = SuggestedActionStyle.GREEN
                 ) {
                     Settings.customSuggestedTags = Settings.defaultSuggestedTags
                     resetConfirmationPending = false
                 }
             )
-            actions.add(SuggestedGuiAction("Cancel Reset", tooltip = "Do not reset suggested tags.") { resetConfirmationPending = false })
+            actions.add(
+                SuggestedGuiAction(
+                    "Cancel Reset",
+                    tooltip = "Do not reset suggested tags.",
+                    style = SuggestedActionStyle.RED
+                ) { resetConfirmationPending = false }
+            )
         } else {
             actions.add(SuggestedGuiAction("Reset", tooltip = "Show confirmation before resetting all suggested tags back to defaults.") {
                 resetConfirmationPending = true

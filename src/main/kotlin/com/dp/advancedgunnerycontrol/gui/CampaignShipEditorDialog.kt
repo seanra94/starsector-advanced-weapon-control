@@ -188,55 +188,31 @@ class CampaignShipEditorPanelPlugin(
         header.addSectionHeading("Options", Alignment.MID, 0f)
         headerPanel.addUIElement(header).inTL(0f, 0f)
 
+        val backAction = currentActions.firstOrNull { it is BackAction }
+        val topActions = currentActions.filterNot { it is BackAction }
         val bodyTop = CampaignGuiStyle.PANEL_PADDING + SECTION_HEADER_HEIGHT
         var currentTop = bodyTop
-        currentActions.forEachIndexed { index, action ->
-            val label = buildActionLabel(action)
-            val lineCount = minOf(ACTION_LABEL_MAX_LINES, label.split("\n").size)
-            val rowHeight = ACTION_ROW_PADDING * 2f + ACTION_LINE_HEIGHT * lineCount
-            val itemPanel = panel.createCustomPanel(
-                width,
-                rowHeight,
-                DebugBorderPanelPlugin(CampaignContainerType.ITEM)
-            )
-            panel.addComponent(itemPanel)
-            itemPanel.position.inTL(
-                CampaignGuiStyle.PANEL_PADDING,
-                currentTop
-            )
+        val backRowHeight = backAction?.let { actionRowHeight(it) } ?: 0f
+        val backRowTop = if (backAction != null) {
+            panel.position.height - CampaignGuiStyle.PANEL_PADDING - backRowHeight
+        } else {
+            panel.position.height - CampaignGuiStyle.PANEL_PADDING
+        }
+        val minInfoHeight = 38f
+        val topRowsLimit = backRowTop - ACTION_ROW_GAP - minInfoHeight
 
-            val inner = itemPanel.createUIElement(width, rowHeight, false)
-            val button = inner.addAreaCheckbox(
-                "",
-                action,
-                Misc.getBasePlayerColor(),
-                Misc.getDarkPlayerColor(),
-                Misc.getBrightPlayerColor(),
-                width,
-                rowHeight,
-                0f
-            )
-            inner.addTooltipToPrevious(
-                AGCGUI.makeTooltip(action.getTooltip()),
-                TooltipMakerAPI.TooltipLocation.BELOW
-            )
-            bindButton(button)
-            itemPanel.addUIElement(inner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
-
-            val textPanel = itemPanel.createUIElement(
-                width - 2f * ACTION_ROW_PADDING,
-                rowHeight - ACTION_ROW_PADDING - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
-                false
-            )
-            textPanel.addPara(label, 0f)
-            itemPanel.addUIElement(textPanel).inTL(ACTION_ROW_PADDING, CampaignGuiStyle.ITEM_TEXT_TOP_PADDING)
-            actionButtons[button] = action
+        topActions.forEach { action ->
+            val rowHeight = actionRowHeight(action)
+            if (currentTop + rowHeight > topRowsLimit) return@forEach
+            renderActionRow(panel, width, action, currentTop, rowHeight)
             currentTop += rowHeight + ACTION_ROW_GAP
         }
 
+        val infoTop = currentTop + 2f
+        val infoBottom = backRowTop - ACTION_ROW_GAP
         val infoPanel = panel.createUIElement(
             width,
-            max(40f, panel.position.height - currentTop - CampaignGuiStyle.PANEL_PADDING),
+            max(22f, infoBottom - infoTop),
             false
         )
         infoPanel.addPara(
@@ -248,8 +224,63 @@ class CampaignShipEditorPanelPlugin(
         )
         panel.addUIElement(infoPanel).inTL(
             CampaignGuiStyle.PANEL_PADDING,
-            currentTop + 2f
+            infoTop
         )
+
+        if (backAction != null) {
+            renderActionRow(panel, width, backAction, backRowTop, backRowHeight)
+        }
+    }
+
+    private fun actionRowHeight(action: GUIAction): Float {
+        val lineCount = minOf(ACTION_LABEL_MAX_LINES, buildActionLabel(action).split("\n").size)
+        return ACTION_ROW_PADDING * 2f + ACTION_LINE_HEIGHT * lineCount
+    }
+
+    private fun renderActionRow(
+        panel: CustomPanelAPI,
+        width: Float,
+        action: GUIAction,
+        top: Float,
+        rowHeight: Float,
+    ) {
+        val itemPanel = panel.createCustomPanel(
+            width,
+            rowHeight,
+            DebugBorderPanelPlugin(CampaignContainerType.ITEM)
+        )
+        panel.addComponent(itemPanel)
+        itemPanel.position.inTL(
+            CampaignGuiStyle.PANEL_PADDING,
+            top
+        )
+
+        val inner = itemPanel.createUIElement(width, rowHeight, false)
+        val button = inner.addAreaCheckbox(
+            "",
+            action,
+            Misc.getBasePlayerColor(),
+            Misc.getDarkPlayerColor(),
+            Misc.getBrightPlayerColor(),
+            width,
+            rowHeight,
+            0f
+        )
+        inner.addTooltipToPrevious(
+            AGCGUI.makeTooltip(action.getTooltip()),
+            TooltipMakerAPI.TooltipLocation.BELOW
+        )
+        bindButton(button)
+        itemPanel.addUIElement(inner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
+
+        val textPanel = itemPanel.createUIElement(
+            width - 2f * ACTION_ROW_PADDING,
+            rowHeight - ACTION_ROW_PADDING - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+            false
+        )
+        textPanel.addPara(buildActionLabel(action), 0f)
+        itemPanel.addUIElement(textPanel).inTL(ACTION_ROW_PADDING, CampaignGuiStyle.ITEM_TEXT_TOP_PADDING)
+        actionButtons[button] = action
     }
 
     private fun wrapActionLine(line: String, maxChars: Int, maxLines: Int): String {
@@ -283,12 +314,13 @@ class CampaignShipEditorPanelPlugin(
     }
 
     private fun estimateOptionsPanelHeight(): Float {
-        val actionsHeight = currentActions.sumOf { action ->
-            val lineCount = minOf(ACTION_LABEL_MAX_LINES, buildActionLabel(action).split("\n").size)
-            (ACTION_ROW_PADDING * 2f + ACTION_LINE_HEIGHT * lineCount).toDouble()
-        }.toFloat() + max(0, currentActions.size - 1) * ACTION_ROW_GAP
-        val helpHeight = 48f
-        return 2f * CampaignGuiStyle.PANEL_PADDING + SECTION_HEADER_HEIGHT + actionsHeight + helpHeight + 4f
+        val backAction = currentActions.firstOrNull { it is BackAction }
+        val topActions = currentActions.filterNot { it is BackAction }
+        val topRowsHeight = topActions.sumOf { actionRowHeight(it).toDouble() }.toFloat()
+        val topRowsGaps = max(0, topActions.size - 1) * ACTION_ROW_GAP
+        val backRowsHeight = backAction?.let { ACTION_ROW_GAP + actionRowHeight(it) } ?: 0f
+        val helpHeight = 44f
+        return 2f * CampaignGuiStyle.PANEL_PADDING + SECTION_HEADER_HEIGHT + topRowsHeight + topRowsGaps + backRowsHeight + helpHeight + 4f
     }
 
     private fun bindButton(button: ButtonAPI) {

@@ -27,9 +27,9 @@ class ShipView(
         private const val MISC_WIDTH_FRACTION = 0.1667f
         private const val MISC_WIDTH_MIN = 185f
         private const val MISC_WIDTH_MAX = 240f
-        private const val PICTURE_HEIGHT_FRACTION = 0.28f
-        private const val PICTURE_HEIGHT_MIN = 242f
-        private const val PICTURE_HEIGHT_MAX = 255f
+        private const val PICTURE_HEIGHT_FRACTION = 0.245f
+        private const val PICTURE_HEIGHT_MIN = 220f
+        private const val PICTURE_HEIGHT_MAX = 240f
         private const val SHIP_MODE_HEIGHT_MIN = 96f
         private const val SHIP_MODE_HEIGHT_MAX = 176f
         private const val SHIP_MODE_SPARE_ROWS = 1
@@ -45,10 +45,10 @@ class ShipView(
         private const val WEAPON_TO_TAG_GAP = 2f
         private const val TAG_ELLIPSIS_HEIGHT = CampaignGuiStyle.TAG_ITEM_HEIGHT
         private const val TAG_SCROLL_STEP = 1
-        private const val PICTURE_INFO_ROW_HEIGHT = 38f
-        private const val PICTURE_BOTTOM_PADDING = 12f
+        private const val PICTURE_INFO_ROW_HEIGHT = 32f
+        private const val PICTURE_BOTTOM_PADDING = 8f
         private const val PICTURE_IMAGE_TOP_GAP = 2f
-        private const val PICTURE_IMAGE_BOTTOM_GAP = 7f
+        private const val PICTURE_IMAGE_BOTTOM_GAP = 5f
     }
 
     private data class WeaponEntry(
@@ -246,7 +246,7 @@ class ShipView(
 
         val bodyTop = CampaignGuiStyle.PANEL_PADDING + SECTION_HEADER_HEIGHT + PICTURE_IMAGE_TOP_GAP
         val innerWidth = panel.position.width - 2f * CampaignGuiStyle.PANEL_PADDING
-        val spriteSize = min(innerWidth - 12f, 100f)
+        val spriteSize = min(innerWidth - 12f, 84f)
 
         val imagePanel = panel.createUIElement(spriteSize, spriteSize, false)
         imagePanel.addImage(ship.hullSpec.spriteName, spriteSize, spriteSize, 0f)
