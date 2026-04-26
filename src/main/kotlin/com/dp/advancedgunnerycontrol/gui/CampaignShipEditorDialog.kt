@@ -56,6 +56,12 @@ class CampaignShipEditorPanelPlugin(
         val callback: () -> Unit,
     )
 
+    private data class CampaignOptionsLayout(
+        val rows: List<Pair<CampaignOptionRow, WrappedLabelLayout>>,
+        val modifiersLayout: WrappedLabelLayout,
+        val requiredHeight: Float,
+    )
+
     companion object {
         private const val SECTION_HEADER_HEIGHT = 20f
         private const val ACTION_ROW_GAP = 2f
@@ -63,7 +69,9 @@ class CampaignShipEditorPanelPlugin(
         private const val ACTION_LABEL_APPROX_CHAR_WIDTH = 6.8f
         private const val ACTION_LABEL_LINE_HEIGHT = 15f
         private const val ACTION_LABEL_MAX_LINES = 3
-        private const val OPTIONS_WIDTH_ESTIMATE = 176f
+        private const val MODIFIERS_MAX_LINES = 6
+        private const val MODIFIERS_TOP_GAP = 2f
+        private const val MODIFIERS_TEXT = "MODIFIERS:\n[SHIFT] = FLEET\n[CTRL] = ALL LOADOUTS"
         private val ACTION_SHORTCUT_HIGHLIGHTS = listOf(
             "[TAB]",
             "[DELETE]",
@@ -175,7 +183,7 @@ class CampaignShipEditorPanelPlugin(
             contentPanel = content
             shipView = content.plugin as? ShipView
             attributes.ship?.let { ship ->
-                shipView?.buildIn(content, ship, ::buildOptionsPanel, estimateOptionsPanelHeight())
+                shipView?.buildIn(content, ship, ::buildOptionsPanel, ::estimateOptionsPanelHeight)
             }
         } catch (ex: Throwable) {
             log.error("[AGC_CAMPAIGN_UI] rebuild failed", ex)
@@ -227,20 +235,22 @@ class CampaignShipEditorPanelPlugin(
 
         val bodyTop = CampaignGuiStyle.PANEL_PADDING + SECTION_HEADER_HEIGHT
         var currentTop = bodyTop
+        val layout = computeOptionsLayout(width)
 
-        currentOptionRows.forEach { row ->
-            val layout = actionLabelLayout(row, width)
-            renderActionRow(panel, width, row, layout.wrappedText, currentTop, layout.rowHeight)
-            currentTop += layout.rowHeight + ACTION_ROW_GAP
+        layout.rows.forEachIndexed { index, (row, rowLayout) ->
+            renderActionRow(panel, width, row, rowLayout.wrappedText, currentTop, rowLayout.rowHeight)
+            currentTop += rowLayout.rowHeight
+            if (index < layout.rows.lastIndex) {
+                currentTop += ACTION_ROW_GAP
+            }
+        }
+        if (layout.rows.isNotEmpty()) {
+            currentTop += MODIFIERS_TOP_GAP
         }
 
-        val infoPanel = panel.createUIElement(
-            width,
-            max(22f, panel.position.height - currentTop - CampaignGuiStyle.PANEL_PADDING),
-            false
-        )
+        val infoPanel = panel.createUIElement(width, layout.modifiersLayout.rowHeight, false)
         infoPanel.addPara(
-            "MODIFIERS:\n[SHIFT] = FLEET\n[CTRL] = ALL LOADOUTS",
+            MODIFIERS_TEXT,
             0f,
             Misc.getHighlightColor(),
             "[SHIFT]",
@@ -336,6 +346,40 @@ class CampaignShipEditorPanelPlugin(
         )
     }
 
+    private fun modifiersLabelLayout(width: Float): WrappedLabelLayout {
+        return computeWrappedLabelLayout(
+            text = MODIFIERS_TEXT,
+            rowWidth = width,
+            minButtonHeight = 0f,
+            horizontalPadding = 0f,
+            verticalPadding = 0f,
+            approxCharWidthPx = ACTION_LABEL_APPROX_CHAR_WIDTH,
+            lineHeightPx = ACTION_LABEL_LINE_HEIGHT,
+            maxLines = MODIFIERS_MAX_LINES
+        )
+    }
+
+    private fun computeOptionsLayout(width: Float): CampaignOptionsLayout {
+        val rowLayouts = currentOptionRows.map { row -> row to actionLabelLayout(row, width) }
+        val rowsHeight = rowLayouts.sumOf { (_, layout) -> layout.rowHeight.toDouble() }.toFloat()
+        val rowGapsHeight = max(0, rowLayouts.size - 1) * ACTION_ROW_GAP
+        val modifiersTopGap = if (rowLayouts.isEmpty()) 0f else MODIFIERS_TOP_GAP
+        val modifiersLayout = modifiersLabelLayout(width)
+        val requiredHeight =
+            CampaignGuiStyle.PANEL_PADDING +
+                SECTION_HEADER_HEIGHT +
+                rowsHeight +
+                rowGapsHeight +
+                modifiersTopGap +
+                modifiersLayout.rowHeight +
+                CampaignGuiStyle.PANEL_PADDING
+        return CampaignOptionsLayout(
+            rows = rowLayouts,
+            modifiersLayout = modifiersLayout,
+            requiredHeight = requiredHeight
+        )
+    }
+
     private fun addActionLabel(
         panel: TooltipMakerAPI,
         labelText: String,
@@ -353,13 +397,8 @@ class CampaignShipEditorPanelPlugin(
         }
     }
 
-    private fun estimateOptionsPanelHeight(): Float {
-        val rowsHeight = currentOptionRows.sumOf {
-            actionLabelLayout(it, OPTIONS_WIDTH_ESTIMATE).rowHeight.toDouble()
-        }.toFloat()
-        val rowGaps = max(0, currentOptionRows.size - 1) * ACTION_ROW_GAP
-        val infoHeight = 46f
-        return 2f * CampaignGuiStyle.PANEL_PADDING + SECTION_HEADER_HEIGHT + rowsHeight + rowGaps + infoHeight + 4f
+    private fun estimateOptionsPanelHeight(width: Float): Float {
+        return computeOptionsLayout(width).requiredHeight
     }
 
     private fun bindButton(button: ButtonAPI) {

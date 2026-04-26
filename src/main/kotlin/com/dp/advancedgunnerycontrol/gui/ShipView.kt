@@ -628,7 +628,7 @@ class ShipView(
         panel: CustomPanelAPI,
         ship: FleetMemberAPI,
         buildOptionsPanel: ((CustomPanelAPI) -> Unit)? = null,
-        optionsPreferredHeight: Float? = null,
+        optionsPreferredHeightProvider: ((Float) -> Float)? = null,
     ) {
         buttons.clear()
         tagScrollRegions.clear()
@@ -640,7 +640,10 @@ class ShipView(
         val weaponGroupsWidth = panel.position.width - miscWidth
         val pictureHeight = min(PICTURE_HEIGHT_MAX, max(PICTURE_HEIGHT_MIN, panel.position.height * PICTURE_HEIGHT_FRACTION))
         val minimumShipModeHeight = estimateShipModePanelHeight(miscWidth)
-        val desiredOptionsHeight = optionsPreferredHeight ?: max(120f, panel.position.height - pictureHeight - minimumShipModeHeight)
+        val optionsContentWidth = miscWidth - 2f * CampaignGuiStyle.PANEL_PADDING
+        val desiredOptionsHeight =
+            optionsPreferredHeightProvider?.invoke(optionsContentWidth)
+                ?: max(120f, panel.position.height - pictureHeight - minimumShipModeHeight)
         val optionsHeight = min(desiredOptionsHeight, panel.position.height - pictureHeight - minimumShipModeHeight)
         val shipModeHeight = max(minimumShipModeHeight, panel.position.height - pictureHeight - optionsHeight)
 
