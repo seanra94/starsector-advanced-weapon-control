@@ -63,6 +63,16 @@ class CampaignShipEditorPanelPlugin(
         private const val ACTION_ROW_PADDING = 4f
         private const val ACTION_LABEL_MAX_CHARS_PER_LINE = 36
         private const val ACTION_LABEL_MAX_LINES = 2
+        private val ACTION_SHORTCUT_HIGHLIGHTS = listOf(
+            "[TAB]",
+            "[DELETE]",
+            "[ESCAPE]",
+            "[LEFT]",
+            "[D]",
+            "[A]",
+            "[RIGHT]",
+            "[F]",
+        )
     }
 
     private val log = Global.getLogger(CampaignShipEditorPanelPlugin::class.java)
@@ -302,13 +312,31 @@ class CampaignShipEditorPanelPlugin(
             rowHeight - ACTION_ROW_PADDING - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
             false
         )
+        val labelText = buildActionLabel(action)
         if (isRed || isGreen) {
-            textPanel.addPara(buildActionLabel(action), CampaignGuiStyle.UNAVAILABLE_TAG_TEXT_COLOR, 0f)
+            addActionLabel(textPanel, labelText, CampaignGuiStyle.UNAVAILABLE_TAG_TEXT_COLOR)
         } else {
-            textPanel.addPara(buildActionLabel(action), 0f)
+            addActionLabel(textPanel, labelText)
         }
         itemPanel.addUIElement(textPanel).inTL(ACTION_ROW_PADDING, CampaignGuiStyle.ITEM_TEXT_TOP_PADDING)
         actionButtons[button] = action
+    }
+
+    private fun addActionLabel(
+        panel: TooltipMakerAPI,
+        labelText: String,
+        baseColor: java.awt.Color? = null,
+    ) {
+        val label = if (baseColor == null) {
+            panel.addPara(labelText, 0f)
+        } else {
+            panel.addPara(labelText, baseColor, 0f)
+        }
+        val highlights = ACTION_SHORTCUT_HIGHLIGHTS.filter { labelText.contains(it) }
+        if (highlights.isNotEmpty()) {
+            label.setHighlight(*highlights.toTypedArray())
+            label.setHighlightColors(*Array(highlights.size) { Misc.getHighlightColor() })
+        }
     }
 
     private fun wrapActionLine(line: String, maxChars: Int, maxLines: Int): String {

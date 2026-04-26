@@ -48,9 +48,9 @@ object CampaignGuiStyle {
     val UNAVAILABLE_TAG_DARK_COLOR: Color = Color(205, 70, 65)
     val UNAVAILABLE_TAG_BRIGHT_COLOR: Color = Color(255, 155, 145)
     val UNAVAILABLE_TAG_TEXT_COLOR: Color = Color(220, 220, 220)
-    val ACTIVE_GREEN_BACKGROUND_COLOR: Color = Color(70, 150, 75)
-    val ACTIVE_GREEN_DARK_COLOR: Color = Color(25, 80, 35)
-    val ACTIVE_GREEN_BRIGHT_COLOR: Color = Color(125, 225, 130)
+    val ACTIVE_GREEN_BACKGROUND_COLOR: Color = Color(86, 145, 92)
+    val ACTIVE_GREEN_DARK_COLOR: Color = Color(48, 92, 54)
+    val ACTIVE_GREEN_BRIGHT_COLOR: Color = Color(140, 205, 145)
     data class TagKeywordColor(val keyword: String, val color: Color)
     data class TagTextSegment(val text: String, val color: Color?)
     val TAG_KEYWORD_COLORS: List<TagKeywordColor> = listOf(
