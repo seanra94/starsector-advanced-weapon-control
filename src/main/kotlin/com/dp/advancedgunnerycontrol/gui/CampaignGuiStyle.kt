@@ -38,13 +38,16 @@ val campaignBorderModeByType = mapOf(
 
 object CampaignGuiStyle {
     val TOOLTIP_TEXT_COLOR: Color = Color(245, 230, 150)
-    val UNAVAILABLE_TAG_BACKGROUND_COLOR: Color = Color(255, 0, 0)
-    val UNAVAILABLE_TAG_DARK_COLOR: Color = Color(170, 0, 0)
-    val UNAVAILABLE_TAG_BRIGHT_COLOR: Color = Color(255, 90, 90)
+    val NORMAL_TAG_BACKGROUND_COLOR: Color = Color(110, 110, 110)
+    val NORMAL_TAG_DARK_COLOR: Color = Color(78, 78, 78)
+    val NORMAL_TAG_BRIGHT_COLOR: Color = Color(165, 165, 165)
+    val UNAVAILABLE_TAG_BACKGROUND_COLOR: Color = Color(230, 70, 60)
+    val UNAVAILABLE_TAG_DARK_COLOR: Color = Color(185, 45, 40)
+    val UNAVAILABLE_TAG_BRIGHT_COLOR: Color = Color(255, 125, 115)
     val UNAVAILABLE_TAG_TEXT_COLOR: Color = Color.WHITE
-    val ACTIVE_GREEN_BACKGROUND_COLOR: Color = Color(70, 150, 75)
-    val ACTIVE_GREEN_DARK_COLOR: Color = Color(25, 80, 35)
-    val ACTIVE_GREEN_BRIGHT_COLOR: Color = Color(125, 225, 130)
+    val ACTIVE_GREEN_BACKGROUND_COLOR: Color = Color(90, 175, 95)
+    val ACTIVE_GREEN_DARK_COLOR: Color = Color(55, 130, 65)
+    val ACTIVE_GREEN_BRIGHT_COLOR: Color = Color(140, 235, 145)
     data class TagKeywordColor(val keyword: String, val color: Color)
     data class TagTextSegment(val text: String, val color: Color?)
     val TAG_KEYWORD_COLORS: List<TagKeywordColor> = listOf(

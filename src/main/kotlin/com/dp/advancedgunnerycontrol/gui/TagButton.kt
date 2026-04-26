@@ -125,17 +125,17 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
                 val baseColor = when {
                     pinned -> Color(190, 175, 95)
                     unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
-                    else -> Misc.getBasePlayerColor()
+                    else -> CampaignGuiStyle.NORMAL_TAG_BACKGROUND_COLOR
                 }
                 val darkColor = when {
                     pinned -> Color(95, 85, 35)
                     unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_DARK_COLOR
-                    else -> Misc.getDarkPlayerColor()
+                    else -> CampaignGuiStyle.NORMAL_TAG_DARK_COLOR
                 }
                 val brightColor = when {
                     pinned -> Color(230, 215, 135)
                     unavailable -> CampaignGuiStyle.UNAVAILABLE_TAG_BRIGHT_COLOR
-                    else -> Misc.getBrightPlayerColor()
+                    else -> CampaignGuiStyle.NORMAL_TAG_BRIGHT_COLOR
                 }
                 toReturn.add(
                     TagButton(
