@@ -1,6 +1,7 @@
 package com.dp.advancedgunnerycontrol.weaponais.tags
 
 import com.dp.advancedgunnerycontrol.settings.Settings
+import com.dp.advancedgunnerycontrol.utils.totalFluxAtOrBelowThreshold
 import com.dp.advancedgunnerycontrol.weaponais.FiringSolution
 import com.dp.advancedgunnerycontrol.weaponais.computeShieldFactor
 import com.dp.advancedgunnerycontrol.weaponais.computeTimeToTravel
@@ -16,7 +17,7 @@ class TargetShieldAtTotalFluxTag(
 ) : WeaponAITagBase(weapon) {
 
     override fun isBaseAiValid(entity: CombatEntityAPI): Boolean {
-        return if (weapon.ship.fluxLevel <= fluxThreshold) {
+        return if (weapon.ship.totalFluxAtOrBelowThreshold(fluxThreshold)) {
             true
         } else {
             computeShieldFactor(entity, weapon) > shieldThreshold
@@ -29,7 +30,7 @@ class TargetShieldAtTotalFluxTag(
     }
 
     override fun shouldFire(solution: FiringSolution): Boolean {
-        return if (weapon.ship.fluxLevel <= fluxThreshold) {
+        return if (weapon.ship.totalFluxAtOrBelowThreshold(fluxThreshold)) {
             true
         } else if (solution.target is ShipAPI) {
             if (Settings.ignoreFighterShield() && solution.target.isFighter) {

@@ -1,5 +1,6 @@
 package com.dp.advancedgunnerycontrol.weaponais.tags
 
+import com.dp.advancedgunnerycontrol.utils.totalFluxBelowThreshold
 import com.dp.advancedgunnerycontrol.weaponais.FiringSolution
 import com.fs.starfarer.api.combat.WeaponAPI
 
@@ -13,6 +14,6 @@ class ForceFireTotalFluxTag(weapon: WeaponAPI, private val totalFluxThreshold: F
     override fun avoidDebris(): Boolean = false
 
     override fun forceFire(solution: FiringSolution?, baseDecision: Boolean): Boolean {
-        return baseDecision && (weapon.ship?.fluxTracker?.fluxLevel ?: 0.0f) < totalFluxThreshold
+        return baseDecision && (weapon.ship?.totalFluxBelowThreshold(totalFluxThreshold) ?: true)
     }
 }

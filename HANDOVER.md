@@ -81,6 +81,12 @@ C:\Games\Starsector\starsector-core\starsector.log
 - `BurstPD(SF>N%)` should become canonical `PD(SF>N%)`, while old `BurstPD...` strings remain legacy aliases for saved/settings/loadout compatibility.
 - When preserving legacy `BurstPD(SF>N%)` compatibility, verify whether the old parser inverted the threshold. If so, old `BurstPD(SF>90%)` should normalize to canonical `PD(SF>10%)`, while new canonical `PD(SF>10%)` remains literal.
 - A generic flux-condition parser/helper may be useful later, but broad tag-class refactors should be staged separately from naming/tooltip standardization.
+- The `completeTagList` baseline/coverage pass is complete; treat the current canonical list in `build.gradle.kts` as the user-facing ordering baseline.
+- The next preferred implementation task is a narrow backend helper pass for existing TF/SF conditional tags only: centralize parsing/canonicalization/tooltip-condition/evaluation helpers while preserving current tag classes, canonical names, legacy alias behavior, and gameplay behavior.
+- Immediate follow-up feature phase after helper consolidation: `IgnoreMinorPD(H<...)`, `ConserveAmmo(A<...)`, `ConservePDAmmo(A<...)`, HF support where TF/SF currently exist, and LunaSettings exposure of the soft-flux total-flux cap.
+- Naming/review wave should be staged after behavior/plumbing work: incompatibility audit, tooltip accuracy audit, README/examples, text consistency sweep, `PrioPD -> PrioSmall` review, `BigShip/SmallShip -> TargetBig/TargetSmall` review, `TargetPhase -> PrioPhase` review, and adding `PrioBig`.
+- `IgnoreMinorPD(H<...)` should be documented as effective durability (combined durability concept), not literal hull.
+- The user requested `PrioBig` twice in backlog discussion; track it once.
 - Campaign tag scrolling should use the single forwarded `InputEventAPI` wheel path with explicit event consumption. Do not reintroduce direct LWJGL mouse polling unless coordinate logs prove it is needed.
 - Campaign selected tags are pinned at the top of each tag column, removed from the normal scroll slice while pinned, and use pale yellow selected backgrounds.
 - Campaign/suggested tag labels currently render as plain single-label text. Avoid `addParaWithMarkup()`, highlighted `addPara(...)` overloads, or segmented text for tag cells because earlier attempts leaked literal markup, crashed on `%`, or clipped characters in-game.

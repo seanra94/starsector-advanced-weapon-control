@@ -74,6 +74,31 @@ private fun settingAsActivationThreshold(settingValue: Float): String {
     return "${thresholdAsPercent(invertThreshold(settingValue))}%"
 }
 
+private fun canonicalizeThresholdTag(
+    inputTag: String,
+    canonicalRegex: Regex,
+    legacyRegex: Regex,
+    canonicalPrefix: String,
+    invertLegacyThreshold: Boolean = false
+): String? {
+    if (canonicalRegex.matches(inputTag)) return inputTag
+    if (!legacyRegex.matches(inputTag)) return null
+    val threshold = if (invertLegacyThreshold) {
+        invertedRegexThresholdAsPercentageString(legacyRegex, inputTag)
+    } else {
+        extractRegexThresholdAsPercentageString(legacyRegex, inputTag)
+    }
+    return "$canonicalPrefix$threshold)"
+}
+
+private fun totalFluxGreaterThanCondition(regex: Regex, canonicalTag: String): String {
+    return "total flux is greater than ${extractRegexThresholdAsPercentageString(regex, canonicalTag)}"
+}
+
+private fun softFluxGreaterThanConditionWithCap(regex: Regex, canonicalTag: String): String {
+    return "soft flux is greater than ${extractRegexThresholdAsPercentageString(regex, canonicalTag)} and total flux is below ${(Settings.softFluxTotalFluxCap() * 100f).toInt()}%"
+}
+
 fun shouldTagBeDisabled(groupIndex: Int, sh: FleetMemberAPI, tag: String): Boolean {
     val modTag = tagNameToRegexName(tag)
     if (pdTags.contains(modTag) && !isElligibleForPD(groupIndex, sh)) return true
@@ -182,28 +207,20 @@ val tagTooltips = mapOf(
 )
 
 fun canonicalizeWeaponTagName(tag: String): String {
+    canonicalizeThresholdTag(tag, holdTotalFluxRegex, holdTotalFluxLegacyRegex, "Hold(TF>")?.let { return it }
+    canonicalizeThresholdTag(tag, holdSoftFluxRegex, holdSoftFluxLegacyRegex, "Hold(SF>")?.let { return it }
+    canonicalizeThresholdTag(tag, forceFireTotalFluxRegex, forceFireTotalFluxLegacyRegex, "Force(TF<")?.let { return it }
+    canonicalizeThresholdTag(tag, forceFireSoftFluxRegex, forceFireSoftFluxLegacyRegex, "Force(SF<")?.let { return it }
+    canonicalizeThresholdTag(tag, avoidShieldTotalFluxRegex, avoidShieldTotalFluxLegacyRegex, "AvoidShield(TF>", invertLegacyThreshold = true)?.let { return it }
+    canonicalizeThresholdTag(tag, avoidShieldSoftFluxRegex, avoidShieldSoftFluxLegacyRegex, "AvoidShield(SF>", invertLegacyThreshold = true)?.let { return it }
+    canonicalizeThresholdTag(tag, targetShieldTotalFluxRegex, targetShieldTotalFluxLegacyRegex, "TargetShield(TF>", invertLegacyThreshold = true)?.let { return it }
+    canonicalizeThresholdTag(tag, targetShieldSoftFluxRegex, targetShieldSoftFluxLegacyRegex, "TargetShield(SF>", invertLegacyThreshold = true)?.let { return it }
+    canonicalizeThresholdTag(tag, pdSoftFluxRegex, burstPDSoftFluxLegacyRegex, "PD(SF>", invertLegacyThreshold = true)?.let { return it }
+    canonicalizeThresholdTag(tag, pdTotalFluxRegex, pdTotalFluxLegacyRegex, "PD(TF>")?.let { return it }
+
     return when {
-        holdTotalFluxRegex.matches(tag) -> tag
-        holdTotalFluxLegacyRegex.matches(tag) -> "Hold(TF>${extractRegexThresholdAsPercentageString(holdTotalFluxLegacyRegex, tag)})"
-        holdSoftFluxRegex.matches(tag) -> tag
-        holdSoftFluxLegacyRegex.matches(tag) -> "Hold(SF>${extractRegexThresholdAsPercentageString(holdSoftFluxLegacyRegex, tag)})"
-        forceFireTotalFluxRegex.matches(tag) -> tag
-        forceFireTotalFluxLegacyRegex.matches(tag) -> "Force(TF<${extractRegexThresholdAsPercentageString(forceFireTotalFluxLegacyRegex, tag)})"
-        forceFireSoftFluxRegex.matches(tag) -> tag
-        forceFireSoftFluxLegacyRegex.matches(tag) -> "Force(SF<${extractRegexThresholdAsPercentageString(forceFireSoftFluxLegacyRegex, tag)})"
-        avoidShieldTotalFluxRegex.matches(tag) -> tag
-        avoidShieldTotalFluxLegacyRegex.matches(tag) -> "AvoidShield(TF>${invertedRegexThresholdAsPercentageString(avoidShieldTotalFluxLegacyRegex, tag)})"
-        avoidShieldSoftFluxRegex.matches(tag) -> tag
-        avoidShieldSoftFluxLegacyRegex.matches(tag) -> "AvoidShield(SF>${invertedRegexThresholdAsPercentageString(avoidShieldSoftFluxLegacyRegex, tag)})"
-        targetShieldTotalFluxRegex.matches(tag) -> tag
-        targetShieldTotalFluxLegacyRegex.matches(tag) -> "TargetShield(TF>${invertedRegexThresholdAsPercentageString(targetShieldTotalFluxLegacyRegex, tag)})"
-        targetShieldSoftFluxRegex.matches(tag) -> tag
-        targetShieldSoftFluxLegacyRegex.matches(tag) -> "TargetShield(SF>${invertedRegexThresholdAsPercentageString(targetShieldSoftFluxLegacyRegex, tag)})"
-        pdSoftFluxRegex.matches(tag) -> tag
         burstPDSoftFluxAliasRegex.matches(tag) -> "PD(SF>${invertedRegexThresholdAsPercentageString(burstPDSoftFluxAliasRegex, tag)})"
-        burstPDSoftFluxLegacyRegex.matches(tag) -> "PD(SF>${invertedRegexThresholdAsPercentageString(burstPDSoftFluxLegacyRegex, tag)})"
-        pdTotalFluxRegex.matches(tag) -> tag
-        pdTotalFluxLegacyRegex.matches(tag) -> "PD(TF>${extractRegexThresholdAsPercentageString(pdTotalFluxLegacyRegex, tag)})"
+        pdSoftFluxRegex.matches(tag) -> tag
         avoidArmorRegex.matches(tag) -> "AvoidArmor(${extractRegexThresholdAsPercentageString(avoidArmorRegex, tag)})"
         tag == "PrioritisePD" -> "PrioPD"
         tag == "PrioritizePD" -> "PrioPD"
@@ -264,22 +281,22 @@ fun getTagTooltip(tag: String): String {
 
         avoidShieldTotalFluxRegex.matches(canonicalTag) -> tooltipWithActivationCondition(
             tagTooltips["AvoidShield"] ?: "No description available.",
-            "total flux is greater than ${extractRegexThresholdAsPercentageString(avoidShieldTotalFluxRegex, canonicalTag)}"
+            totalFluxGreaterThanCondition(avoidShieldTotalFluxRegex, canonicalTag)
         )
 
         avoidShieldSoftFluxRegex.matches(canonicalTag) -> tooltipWithActivationCondition(
             tagTooltips["AvoidShield"] ?: "No description available.",
-            "soft flux is greater than ${extractRegexThresholdAsPercentageString(avoidShieldSoftFluxRegex, canonicalTag)} and total flux is below ${(Settings.softFluxTotalFluxCap() * 100f).toInt()}%"
+            softFluxGreaterThanConditionWithCap(avoidShieldSoftFluxRegex, canonicalTag)
         )
 
         targetShieldTotalFluxRegex.matches(canonicalTag) -> tooltipWithActivationCondition(
             tagTooltips["TargetShield"] ?: "No description available.",
-            "total flux is greater than ${extractRegexThresholdAsPercentageString(targetShieldTotalFluxRegex, canonicalTag)}"
+            totalFluxGreaterThanCondition(targetShieldTotalFluxRegex, canonicalTag)
         )
 
         targetShieldSoftFluxRegex.matches(canonicalTag) -> tooltipWithActivationCondition(
             tagTooltips["TargetShield"] ?: "No description available.",
-            "soft flux is greater than ${extractRegexThresholdAsPercentageString(targetShieldSoftFluxRegex, canonicalTag)} and total flux is below ${(Settings.softFluxTotalFluxCap() * 100f).toInt()}%"
+            softFluxGreaterThanConditionWithCap(targetShieldSoftFluxRegex, canonicalTag)
         )
 
         pdSoftFluxRegex.matches(canonicalTag) -> "${pdTargetingRestrictionTooltip().removeSuffix(".")} while soft flux is greater than ${

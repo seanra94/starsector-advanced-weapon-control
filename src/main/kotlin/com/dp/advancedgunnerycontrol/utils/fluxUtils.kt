@@ -5,13 +5,19 @@ import com.fs.starfarer.api.combat.ShipAPI
 
 fun ShipAPI.softFluxLevel(): Float = fluxLevel - hardFluxLevel
 
+fun ShipAPI.totalFluxAtOrBelowThreshold(totalFluxLimit: Float): Boolean = fluxLevel <= totalFluxLimit
+
+fun ShipAPI.totalFluxBelowThreshold(totalFluxLimit: Float): Boolean = fluxLevel < totalFluxLimit
+
+fun ShipAPI.totalFluxAboveThreshold(totalFluxLimit: Float): Boolean = fluxLevel > totalFluxLimit
+
 fun ShipAPI.softFluxBelowThresholdAndTotalFluxBelowCap(softFluxLimit: Float): Boolean {
-    if (fluxLevel >= Settings.softFluxTotalFluxCap()) return false
+    if (!totalFluxBelowThreshold(Settings.softFluxTotalFluxCap())) return false
     return softFluxLevel() < softFluxLimit
 }
 
 fun ShipAPI.softFluxAboveThresholdAndTotalFluxBelowCap(softFluxLimit: Float): Boolean {
-    if (fluxLevel >= Settings.softFluxTotalFluxCap()) return false
+    if (!totalFluxBelowThreshold(Settings.softFluxTotalFluxCap())) return false
     return softFluxLevel() > softFluxLimit
 }
 

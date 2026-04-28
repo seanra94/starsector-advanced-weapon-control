@@ -1,5 +1,6 @@
 package com.dp.advancedgunnerycontrol.weaponais.tags
 
+import com.dp.advancedgunnerycontrol.utils.totalFluxAtOrBelowThreshold
 import com.dp.advancedgunnerycontrol.weaponais.FiringSolution
 import com.dp.advancedgunnerycontrol.weaponais.isPD
 import com.fs.starfarer.api.combat.CombatEntityAPI
@@ -9,7 +10,7 @@ import com.fs.starfarer.api.combat.WeaponAPI
 
 class PDAtTotalFluxTag(weapon: WeaponAPI, private val threshold: Float) : WeaponAITagBase(weapon) {
     override fun isValidTarget(entity: CombatEntityAPI): Boolean {
-        if (weapon.ship.fluxLevel <= threshold) return super.isValidTarget(entity)
+        if (weapon.ship.totalFluxAtOrBelowThreshold(threshold)) return super.isValidTarget(entity)
         return (entity as? MissileAPI) != null || (entity as? ShipAPI)?.isFighter == true
     }
 

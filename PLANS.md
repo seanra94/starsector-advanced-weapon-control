@@ -2,23 +2,25 @@
 
 ## Active task
 
-Tag-system baseline and standardization.
-Status: active completeTagList validity/coverage pass.
+Tag-system standardization.
+Status: baseline completeTagList pass done; next is narrow TF/SF helper consolidation.
 
 ## Goal
 
-Make `completeTagList` a stable canonical baseline: valid against current parser/canonicalizer support, ordered intentionally, and complete enough to represent active tag families without changing gameplay behavior.
+Stage the tag-system roadmap cleanly: baseline list is canonicalized, next reduce TF/SF duplication with behavior preservation, then add parameterized thresholds, and only after that do broader naming/review waves.
 
 ## Why this task matters
 
-The tag list itself is now part of user-facing configuration UX and influences discoverability. A stale or inconsistent baseline causes confusion, hidden features, and invalid/stale examples in generated settings.
+The baseline pass fixed immediate list drift, but remaining TF/SF conditional plumbing is still duplicated and brittle. Consolidating that narrowly first reduces regression risk before adding new parameterized tags and later renames.
 
 ## Acceptance criteria
 
-- [ ] `completeTagList` is canonical and parses cleanly against current tag support.
-- [ ] Obvious stale/legacy names are normalized to canonical equivalents.
-- [ ] Supported tag families have representation in baseline unless intentionally excluded.
-- [ ] Allowed-values comment block in generated settings source reflects current support.
+- [x] `completeTagList` is canonical and parses cleanly against current tag support.
+- [x] Obvious stale/legacy names are normalized to canonical equivalents.
+- [x] Supported tag families have representation in baseline unless intentionally excluded.
+- [x] Allowed-values comment block in generated settings source reflects current support.
+- [ ] TF/SF conditional parsing/canonicalization/tooltip-condition/evaluation duplication is reduced via narrow helper abstractions without changing behavior.
+- [ ] Parameterized threshold backlog is explicitly staged for follow-up.
 - [ ] `compileKotlin` passes before push.
 
 ## Constraints
@@ -32,31 +34,40 @@ The tag list itself is now part of user-facing configuration UX and influences d
 
 ## Current understanding
 
-Current canonical names are defined in `WeaponAITags.kt`, and generated settings text/lists are authored in `build.gradle.kts`. That pair is the source of truth for baseline ordering and visible allowed-values guidance.
+Current canonical names and alias rules are defined in `WeaponAITags.kt`; generated settings text/lists are authored in `build.gradle.kts`. TF/SF behavior is spread across helper utilities and per-tag classes; consolidation should stay mechanical and preserve semantics.
 
 ## Near-term queue
 
-- completeTagList baseline/validity audit
-- narrow TF/SF flux-condition helper pass
-- parameterized tags:
-- IgnoreMinorPD(H<...)
-- ConserveAmmo(A<...)
-- ConservePDAmmo(A<...)
-- HF support where TF/SF currently exist
-- LunaSettings exposure of the soft-flux total-flux cap
-- broad review tasks:
-- tag incompatibility review
-- tooltip accuracy/consistency review
-- priority-system review
-- README/example review
-- text consistency sweep
-- rename wave only after logic confirmation
+1. Narrow TF/SF flux-condition helper pass.
+2. Parameterized thresholds:
+   - `IgnoreMinorPD(H<...)`
+   - `ConserveAmmo(A<...)`
+   - `ConservePDAmmo(A<...)`
+   - HF support where TF/SF currently exist
+   - LunaSettings exposure of the soft-flux total-flux cap
+3. Review/audit wave:
+   - tag incompatibility review
+   - tooltip accuracy/consistency review
+   - README update with realistic per-tag example use cases
+   - text consistency sweep (for example `Avd -> Avoid`)
+4. Naming/logic review wave:
+   - add `PrioBig`
+   - review `PrioPD -> PrioSmall`
+   - review `BigShip/SmallShip -> TargetBig/TargetSmall`
+   - review `TargetPhase -> PrioPhase` (only if semantics match prioritization)
+5. Larger system work:
+   - rotate-toward-closest-valid-target behavior as ship mode rather than global aiming behavior
+   - deep dive on priority-system consistency/transparency
+   - broader LunaLib/settings migration strategy
 
 ## Plan
 
-- [ ] Validate proposed baseline entries against parser and canonicalizer.
-- [ ] Normalize stale aliases and remove post-canonical duplicates.
-- [ ] Update complete/default list source and allowed-values comments in `build.gradle.kts`.
+- [x] Validate proposed baseline entries against parser and canonicalizer.
+- [x] Normalize stale aliases and remove post-canonical duplicates.
+- [x] Update complete/default list source and allowed-values comments in `build.gradle.kts`.
+- [ ] Introduce narrow helper abstractions for existing TF/SF conditional tags only.
+- [ ] Preserve canonical names, legacy compatibility, and gameplay behavior.
+- [ ] Defer HF support and new parameterized tags until after helper consolidation.
 - [ ] Re-run `compileKotlin`.
 - [ ] Run `jar create-metadata-files write-settings-file` when generation inputs changed.
 - [ ] Deploy updated mod to `C:\Games\Starsector\mods\Advanced-Gunnery-Control-Fork`.
@@ -84,7 +95,9 @@ Then copy to `C:\Games\Starsector\mods\Advanced-Gunnery-Control-Fork` using the 
 
 - Settings comment blocks can drift from actual support if list/regex updates are not mirrored in `build.gradle.kts`.
 - Large rename waves should be staged only after behavior confirmation to avoid compatibility regressions.
+- `IgnoreMinorPD(H<...)` must describe `H` as effective durability (not literal hull) when implemented.
+- The rename requests are intentionally deferred until logic confirmation (`BigShip/SmallShip` target naming and `TargetPhase` prioritization semantics).
 
 ## Current status
 
-Tag naming/threshold semantics have been actively updated; baseline curation now takes priority over further GUI polish in this planning window.
+Baseline curation is complete. The active implementation focus is now narrow TF/SF helper consolidation before adding new parameterized tag families.
