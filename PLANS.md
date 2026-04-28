@@ -2,26 +2,24 @@
 
 ## Active task
 
-Resume GUI work on Advanced Gunnery Control Fork.
-Status: active UI polish and tag-rename follow-up.
+Tag-system baseline and standardization.
+Status: active completeTagList validity/coverage pass.
 
 ## Goal
 
-Stabilize the campaign ship editor and suggested-tags custom visual dialogs so they are usable in-game at the target Starsector UI scales, then remove temporary diagnostics/test scaffolding when no longer needed.
+Make `completeTagList` a stable canonical baseline: valid against current parser/canonicalizer support, ordered intentionally, and complete enough to represent active tag families without changing gameplay behavior.
 
 ## Why this task matters
 
-The prior agent moved the campaign and suggested-tags workflows into custom full-screen GUIs. The user wants to continue from that point, so the next work should preserve the best working baseline while tightening layout, scrolling, coloring, and runtime behavior.
+The tag list itself is now part of user-facing configuration UX and influences discoverability. A stale or inconsistent baseline causes confusion, hidden features, and invalid/stale examples in generated settings.
 
 ## Acceptance criteria
 
-- [ ] Campaign ship editor opens from the campaign `J` hotkey, selects a ship, and returns safely with `Esc`/Back.
-- [ ] Campaign seven-column weapon-group layout remains readable at the user's target scales, with empty groups handled cleanly.
-- [ ] Per-column tag scrolling affects only the hovered column and selected pinned tags update immediately.
-- [ ] Suggested-tags GUI opens, paginates, filters, pins selected tags, scrolls per weapon column, and returns to AGC safely.
-- [ ] Plain tag labels render correctly in-game without clipping, formatter crashes, or visible markup tokens.
-- [x] Temporary scroll-test tags and sync debug logging are removed or intentionally retained with a documented reason.
-- [ ] `compileKotlin` passes before pushing.
+- [ ] `completeTagList` is canonical and parses cleanly against current tag support.
+- [ ] Obvious stale/legacy names are normalized to canonical equivalents.
+- [ ] Supported tag families have representation in baseline unless intentionally excluded.
+- [ ] Allowed-values comment block in generated settings source reflects current support.
+- [ ] `compileKotlin` passes before push.
 
 ## Constraints
 
@@ -34,27 +32,34 @@ The prior agent moved the campaign and suggested-tags workflows into custom full
 
 ## Current understanding
 
-The current GUI work is centered on `CampaignShipEditorDialog.kt`, `ShipView.kt`, `CampaignGuiStyle.kt`, `TagButton.kt`, `ShipModeButton.kt`, `SuggestedTagGui.kt`, `SuggestedTagGuiView.kt`, `SuggestedTagButton.kt`, and `WeaponFilter.kt`.
-
-The best recent campaign baseline uses forwarded `InputEventAPI` wheel handling, pinned selected tags, no duplicate selected tags in normal rows, seven fixed weapon-group columns, full-width item rows, ASCII scroll indicators, plain single-label tag text, dynamic wrapped action-row sizing, and fallback error panels for failed custom UI builds.
+Current canonical names are defined in `WeaponAITags.kt`, and generated settings text/lists are authored in `build.gradle.kts`. That pair is the source of truth for baseline ordering and visible allowed-values guidance.
 
 ## Near-term queue
 
-- Confirm or reject the suspected `saveShipModesInShip()` custom-data key mismatch in `ShipModes.kt`.
-- Continue campaign/suggested GUI polish only from concrete in-game regressions.
-- Fix and validate literal threshold semantics for soft/total flux weapon tags: `TargetShield(SF>N%)`, `AvoidShield(SF>N%)`, `TargetShield(TF>N%)`, `AvoidShield(TF>N%)`, `PD(SF>N%)`, and verify `Force(SF<N%)` / `IgnoreMinorPD`. For `SF>N%`, activation means soft flux greater than N and total flux below the configured cap.
-- Standardize weapon tag names/tooltips: rename canonical `BurstPD(SF>N%)` to `PD(SF>N%)`, preserve legacy aliases, and make PD/TargetShield/AvoidShield conditional tooltips use shared baseline wording plus only the flux condition.
-- Improve `IgnoreMinorPD` effective durability estimation if compile-safe: use remaining shield buffer rather than current flux for fighter shield contribution, while preserving hull/armor/missile behavior.
+- completeTagList baseline/validity audit
+- narrow TF/SF flux-condition helper pass
+- parameterized tags:
+- IgnoreMinorPD(H<...)
+- ConserveAmmo(A<...)
+- ConservePDAmmo(A<...)
+- HF support where TF/SF currently exist
+- LunaSettings exposure of the soft-flux total-flux cap
+- broad review tasks:
+- tag incompatibility review
+- tooltip accuracy/consistency review
+- priority-system review
+- README/example review
+- text consistency sweep
+- rename wave only after logic confirmation
 
 ## Plan
 
-- [ ] Run a focused compile check on the inherited dirty tree before new GUI edits if the next task changes Kotlin.
-- [ ] Inspect the exact in-game issue or screenshot the user provides before changing layout constants.
-- [ ] Make the smallest local GUI change in the owning file.
+- [ ] Validate proposed baseline entries against parser and canonicalizer.
+- [ ] Normalize stale aliases and remove post-canonical duplicates.
+- [ ] Update complete/default list source and allowed-values comments in `build.gradle.kts`.
 - [ ] Re-run `compileKotlin`.
-- [ ] Package/deploy only when the user needs to test in Starsector.
-- [x] Remove `completeListScrollTestTags` once scroll validation is no longer needed.
-- [x] Set `DEBUG_SYNC` false unless the user wants ongoing diagnostics.
+- [ ] Run `jar create-metadata-files write-settings-file` when generation inputs changed.
+- [ ] Deploy updated mod to `C:\Games\Starsector\mods\Advanced-Gunnery-Control-Fork`.
 - [ ] Commit and push the confirmed scope to GitHub.
 
 ## Verification needed
@@ -77,9 +82,9 @@ Then copy to `C:\Games\Starsector\mods\Advanced-Gunnery-Control-Fork` using the 
 
 ## Risks and open questions
 
-- Runtime UI behavior cannot be fully proven by compile alone because Starsector custom UI layout has engine-specific quirks.
-- Suggested-tags plain labels still need in-game confirmation after the clipping fix.
+- Settings comment blocks can drift from actual support if list/regex updates are not mirrored in `build.gradle.kts`.
+- Large rename waves should be staged only after behavior confirmation to avoid compatibility regressions.
 
 ## Current status
 
-Documentation has been reset to the templates and filled with durable project state. GUI code is inherited from the prior agent and still needs runtime validation before further cleanup.
+Tag naming/threshold semantics have been actively updated; baseline curation now takes priority over further GUI polish in this planning window.

@@ -238,13 +238,14 @@ tasks {
                    |   #                                 #### TAG LIST ####
                    |   # Determines which tags will be shown in the GUIs. Feel free to add/remove tags as you see fit.
                    |   # Allowed values are: (replace N with a number, usually between 0 and 100)
-                   |   # "PD", "NoPD", "NoMissile", "PD(TF>N%)", "PrioPD", "Fighter", "NoFighter", "AvoidShield", "TargetShield",
-                   |   # "AvoidShield+", "TargetShield+", "AvoidShield(TF>N%)", "AvoidShield(SF>N%)",
-                   |   # "TargetShield(TF>N%)", "TargetShield(SF>N%)", "AvoidArmor(N%)", "AvoidDebris", "ShieldOff",
-                   |   # "Opportunist", "Hold(TF>N%)", "Hold(SF>N%)", "ConserveAmmo", "ConservePDAmmo", "PD(SF>N%)",
-                   |   # "ShipTarget", "AvoidPhased", "TargetPhase", "SyncWindow", "SyncVolley", "Ambush", "IgnoreMinorPD",
-                   |   # "BigShip", "SmallShip", "Panic(H<N%)", "AvoidPhased", "Range<N%", "Force(TF<N%)", "Force(SF<N%)",
-                   |   # "Overloaded", "Merge", "PrioFighter", "PrioMissile", "PrioShip", "PrioWounded", "PrioHealthy", "CustomAI", "LowRoF(N%)"
+                   |   # "PD", "NoPD", "NoMissile", "PD(TF>N%)", "PD(SF>N%)", "PrioPD", "Fighter", "NoFighter",
+                   |   # "AvoidShield", "TargetShield", "AvoidShield+", "TargetShield+",
+                   |   # "AvoidShield(TF>N%)", "AvoidShield(SF>N%)", "TargetShield(TF>N%)", "TargetShield(SF>N%)",
+                   |   # "AvoidArmor(N%)", "AvoidDebris", "ShieldOff", "Opportunist", "Hold(TF>N%)", "Hold(SF>N%)",
+                   |   # "ConserveAmmo", "ConservePDAmmo", "ShipTarget", "AvoidPhased", "TargetPhase", "SyncWindow", "SyncVolley", "Ambush",
+                   |   # "IgnoreMinorPD", "BigShip", "SmallShip", "Panic(H<N%)", "Range<N%", "Force(TF<N%)", "Force(SF<N%)",
+                   |   # "Overloaded", "Merge", "PrioFighter", "PrioMissile", "PrioShip", "PrioWounded", "PrioHealthy",
+                   |   # "BlockBeams", "CustomAI", "LowRoF(N%)", "PrioDense"
                    |   
                    |   # Flux notation inside parentheses: TF = total flux, HF = hard flux, SF = soft flux.
                    |   # Legacy tags such as Hold(Flx>N%), HoldSFT(F>N%), and AvShldFT(F<N%) are still accepted for saved-loadout compatibility.
@@ -254,21 +255,19 @@ tasks {
                    |   "listVariant" : "classic"
                    |   
                    |   ,"completeTagList" : [
-                   |                "PD", "NoPD", "PD(TF>50%)", "PD(TF>10%)",
-                   |                "AvoidShield", "TargetShield", "AvoidShield+", "TargetShield+",
-                   |                "AvoidShield(TF>80%)", "AvoidShield(SF>90%)", "TargetShield(TF>80%)", "TargetShield(SF>90%)",
-                   |                "AvoidArmor(33%)", "AvoidArmor(75%)",
-                   |                "Hold(TF>90%)", "Hold(TF>75%)", "Hold(TF>50%)",
-                   |                "Hold(SF>10%)", "Hold(SF>20%)", "Merge", "SyncWindow", "SyncVolley", "Ambush",
-                   |                "AvoidPhased", "TargetPhase", "ShipTarget", 
-                   |                "ForceAF", "Force(TF<25%)", "Force(TF<50%)", "Force(TF<75%)", "Force(SF<5%)", "Force(SF<15%)",
+                   |                "AvoidShield", "AvoidShield+", "AvoidShield(TF>10%)", "AvoidShield(SF>10%)",
+                   |                "TargetShield", "TargetShield+", "TargetShield(TF>10%)", "TargetShield(SF>10%)",
+                   |                "ShieldOff",
+                   |                "AvoidArmor(33%)", "AvoidArmor(75%)", "AvoidPhased", "TargetPhase",
+                   |                "Hold(TF>90%)", "Hold(TF>75%)", "Hold(TF>50%)", "Hold(SF>10%)", "Hold(SF>20%)",
+                   |                "ForceAF", "Force(TF<10%)", "Force(TF<25%)", "Force(TF<50%)", "Force(TF<75%)", "Force(SF<10%)", "Force(SF<20%)",
+                   |                "PD", "NoPD", "PD(TF>50%)", "PD(SF>10%)", "PD(SF>20%)", "IgnoreMinorPD",
+                   |                "Merge", "SyncWindow", "SyncVolley", "Ambush",
                    |                "PrioPD", "PrioFighter", "PrioMissile", "PrioShip", "PrioWounded", "PrioHealthy",
-                   |                "Fighter", "AvoidDebris",
-                   |                "NoMissile", "NoFighter",
-                   |                "Opportunist", "Panic(H<25%)", "Range<60%", "Range<80%",
-                   |                "ConserveAmmo", "ConservePDAmmo", "PD(SF>10%)", "IgnoreMinorPD",
-                   |                "BigShip", "SmallShip",
-                   |                "Overloaded", "LowRoF(200%)", "CustomAI", "PrioDense"
+                   |                "Fighter", "NoMissile", "NoFighter", "BigShip", "SmallShip", "ShipTarget",
+                   |                "Opportunist", "ConserveAmmo", "ConservePDAmmo",
+                   |                "Panic(H<25%)", "Range<60%", "Range<90%",
+                   |                "Overloaded", "LowRoF(200%)", "CustomAI", "PrioDense", "AvoidDebris", "BlockBeams"
                    |                ]  
                    |   
                    |   ,"classicTagList" : [
