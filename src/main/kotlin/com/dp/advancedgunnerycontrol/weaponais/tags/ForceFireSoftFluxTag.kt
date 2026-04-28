@@ -1,10 +1,20 @@
 package com.dp.advancedgunnerycontrol.weaponais.tags
 
-import com.dp.advancedgunnerycontrol.utils.softFluxBelowThresholdAndTotalFluxBelowCap
+import com.dp.advancedgunnerycontrol.utils.FluxComparator
+import com.dp.advancedgunnerycontrol.utils.FluxCondition
+import com.dp.advancedgunnerycontrol.utils.FluxMetric
+import com.dp.advancedgunnerycontrol.utils.meetsFluxCondition
 import com.dp.advancedgunnerycontrol.weaponais.FiringSolution
 import com.fs.starfarer.api.combat.WeaponAPI
 
 class ForceFireSoftFluxTag(weapon: WeaponAPI, private val softFluxThreshold: Float) : WeaponAITagBase(weapon) {
+    private val activeCondition = FluxCondition(
+        metric = FluxMetric.SOFT,
+        comparator = FluxComparator.LESS_THAN,
+        threshold = softFluxThreshold,
+        requireTotalFluxBelowSoftFluxCap = true
+    )
+
     override fun computeTargetPriorityModifier(solution: FiringSolution): Float = 1f
 
     override fun shouldFire(solution: FiringSolution): Boolean = true
@@ -14,6 +24,6 @@ class ForceFireSoftFluxTag(weapon: WeaponAPI, private val softFluxThreshold: Flo
     override fun avoidDebris(): Boolean = false
 
     override fun forceFire(solution: FiringSolution?, baseDecision: Boolean): Boolean {
-        return baseDecision && (weapon.ship?.softFluxBelowThresholdAndTotalFluxBelowCap(softFluxThreshold) ?: true)
+        return baseDecision && (weapon.ship?.meetsFluxCondition(activeCondition) ?: true)
     }
 }

@@ -20,7 +20,7 @@ The baseline pass fixed immediate list drift, but remaining TF/SF conditional pl
 - [x] Supported tag families have representation in baseline unless intentionally excluded.
 - [x] Allowed-values comment block in generated settings source reflects current support.
 - [ ] TF/SF conditional parsing/canonicalization/tooltip-condition/evaluation duplication is reduced via narrow helper abstractions without changing behavior.
-- [ ] Parameterized threshold backlog is explicitly staged for follow-up.
+- [ ] Parameterized threshold backlog and naming direction are explicitly staged for follow-up.
 - [ ] `compileKotlin` passes before push.
 
 ## Constraints
@@ -39,6 +39,9 @@ Current canonical names and alias rules are defined in `WeaponAITags.kt`; genera
 ## Near-term queue
 
 1. Narrow TF/SF flux-condition helper pass.
+   - Introduce helper abstractions for canonical TF/SF conditional parsing, canonicalization, tooltip-condition wording, and evaluation.
+   - Naming direction for threshold classes: prefer comparator-explicit `...AboveFluxTag` / `...BelowFluxTag` naming over vague `At...` naming.
+   - Assess whether one behavior class per family plus a shared FluxCondition model is practical for `TargetShield` / `AvoidShield` / `PD` / `HoldFire` / `ForceFire`.
 2. Parameterized thresholds:
    - `IgnoreMinorPD(H<...)`
    - `ConserveAmmo(A<...)`
@@ -51,6 +54,8 @@ Current canonical names and alias rules are defined in `WeaponAITags.kt`; genera
    - README update with realistic per-tag example use cases
    - text consistency sweep (for example `Avd -> Avoid`)
 4. Naming/logic review wave:
+   - `Hold -> HoldFire` (preserve `Hold(...)` aliases)
+   - `ForceAF -> ForceAutoFire` (preserve `ForceAF` alias)
    - add `PrioBig`
    - review `PrioPD -> PrioSmall`
    - review `BigShip/SmallShip -> TargetBig/TargetSmall`
@@ -68,6 +73,7 @@ Current canonical names and alias rules are defined in `WeaponAITags.kt`; genera
 - [ ] Introduce narrow helper abstractions for existing TF/SF conditional tags only.
 - [ ] Preserve canonical names, legacy compatibility, and gameplay behavior.
 - [ ] Defer HF support and new parameterized tags until after helper consolidation.
+- [ ] Record `Hold->HoldFire` and `ForceAF->ForceAutoFire` as canonical rename goals while preserving old aliases in the later rename wave.
 - [ ] Re-run `compileKotlin`.
 - [ ] Run `jar create-metadata-files write-settings-file` when generation inputs changed.
 - [ ] Deploy updated mod to `C:\Games\Starsector\mods\Advanced-Gunnery-Control-Fork`.
@@ -97,6 +103,7 @@ Then copy to `C:\Games\Starsector\mods\Advanced-Gunnery-Control-Fork` using the 
 - Large rename waves should be staged only after behavior confirmation to avoid compatibility regressions.
 - `IgnoreMinorPD(H<...)` must describe `H` as effective durability (not literal hull) when implemented.
 - The rename requests are intentionally deferred until logic confirmation (`BigShip/SmallShip` target naming and `TargetPhase` prioritization semantics).
+- `HoldFire` / `ForceAutoFire` canonical rename work should watch for UI density and button-label length constraints, especially outside the campaign GUI.
 
 ## Current status
 

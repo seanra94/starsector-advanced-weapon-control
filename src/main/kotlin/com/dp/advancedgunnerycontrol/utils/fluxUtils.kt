@@ -3,7 +3,46 @@ package com.dp.advancedgunnerycontrol.utils
 import com.dp.advancedgunnerycontrol.settings.Settings
 import com.fs.starfarer.api.combat.ShipAPI
 
+enum class FluxMetric {
+    TOTAL,
+    SOFT
+}
+
+enum class FluxComparator {
+    GREATER_THAN,
+    LESS_THAN,
+    GREATER_OR_EQUAL,
+    LESS_OR_EQUAL
+}
+
+data class FluxCondition(
+    val metric: FluxMetric,
+    val comparator: FluxComparator,
+    val threshold: Float,
+    val requireTotalFluxBelowSoftFluxCap: Boolean = false
+)
+
 fun ShipAPI.softFluxLevel(): Float = fluxLevel - hardFluxLevel
+
+private fun ShipAPI.fluxValue(metric: FluxMetric): Float {
+    return when (metric) {
+        FluxMetric.TOTAL -> fluxLevel
+        FluxMetric.SOFT -> softFluxLevel()
+    }
+}
+
+fun ShipAPI.meetsFluxCondition(condition: FluxCondition): Boolean {
+    if (condition.requireTotalFluxBelowSoftFluxCap && !totalFluxBelowThreshold(Settings.softFluxTotalFluxCap())) {
+        return false
+    }
+    val value = fluxValue(condition.metric)
+    return when (condition.comparator) {
+        FluxComparator.GREATER_THAN -> value > condition.threshold
+        FluxComparator.LESS_THAN -> value < condition.threshold
+        FluxComparator.GREATER_OR_EQUAL -> value >= condition.threshold
+        FluxComparator.LESS_OR_EQUAL -> value <= condition.threshold
+    }
+}
 
 fun ShipAPI.totalFluxAtOrBelowThreshold(totalFluxLimit: Float): Boolean = fluxLevel <= totalFluxLimit
 
@@ -12,13 +51,25 @@ fun ShipAPI.totalFluxBelowThreshold(totalFluxLimit: Float): Boolean = fluxLevel 
 fun ShipAPI.totalFluxAboveThreshold(totalFluxLimit: Float): Boolean = fluxLevel > totalFluxLimit
 
 fun ShipAPI.softFluxBelowThresholdAndTotalFluxBelowCap(softFluxLimit: Float): Boolean {
-    if (!totalFluxBelowThreshold(Settings.softFluxTotalFluxCap())) return false
-    return softFluxLevel() < softFluxLimit
+    return meetsFluxCondition(
+        FluxCondition(
+            metric = FluxMetric.SOFT,
+            comparator = FluxComparator.LESS_THAN,
+            threshold = softFluxLimit,
+            requireTotalFluxBelowSoftFluxCap = true
+        )
+    )
 }
 
 fun ShipAPI.softFluxAboveThresholdAndTotalFluxBelowCap(softFluxLimit: Float): Boolean {
-    if (!totalFluxBelowThreshold(Settings.softFluxTotalFluxCap())) return false
-    return softFluxLevel() > softFluxLimit
+    return meetsFluxCondition(
+        FluxCondition(
+            metric = FluxMetric.SOFT,
+            comparator = FluxComparator.GREATER_THAN,
+            threshold = softFluxLimit,
+            requireTotalFluxBelowSoftFluxCap = true
+        )
+    )
 }
 
 fun ShipAPI.softFluxBelowThreshold(softFluxLimit: Float): Boolean {

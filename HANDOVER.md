@@ -84,7 +84,12 @@ C:\Games\Starsector\starsector-core\starsector.log
 - The `completeTagList` baseline/coverage pass is complete; treat the current canonical list in `build.gradle.kts` as the user-facing ordering baseline.
 - The next preferred implementation task is a narrow backend helper pass for existing TF/SF conditional tags only: centralize parsing/canonicalization/tooltip-condition/evaluation helpers while preserving current tag classes, canonical names, legacy alias behavior, and gameplay behavior.
 - Immediate follow-up feature phase after helper consolidation: `IgnoreMinorPD(H<...)`, `ConserveAmmo(A<...)`, `ConservePDAmmo(A<...)`, HF support where TF/SF currently exist, and LunaSettings exposure of the soft-flux total-flux cap.
+- Threshold-class naming direction for future touched code: prefer comparator-explicit names such as `...AboveFluxTag` / `...BelowFluxTag`; avoid vague new `At...` names.
+- If/when threshold behavior families are consolidated safely, prefer one behavior class per family plus a shared FluxCondition model over separate SoftFlux/TotalFlux classes.
+- `BurstPDSoftFluxTag` is semantically outdated relative to canonical `PD(SF>N%)` and is an internal rename candidate when that area is touched again.
+- Legacy settings-backed wrappers `TargetShieldAtTotalFluxTag` / `AvoidShieldAtTotalFluxTag` should be treated as legacy wrappers, not preferred naming models.
 - Naming/review wave should be staged after behavior/plumbing work: incompatibility audit, tooltip accuracy audit, README/examples, text consistency sweep, `PrioPD -> PrioSmall` review, `BigShip/SmallShip -> TargetBig/TargetSmall` review, `TargetPhase -> PrioPhase` review, and adding `PrioBig`.
+- Canonical user-facing rename goals for a later wave: `Hold(...) -> HoldFire(...)` (with `Hold(...)` aliases preserved) and `ForceAF -> ForceAutoFire` (with `ForceAF` alias preserved). Check UI label density before applying these.
 - `IgnoreMinorPD(H<...)` should be documented as effective durability (combined durability concept), not literal hull.
 - The user requested `PrioBig` twice in backlog discussion; track it once.
 - Campaign tag scrolling should use the single forwarded `InputEventAPI` wheel path with explicit event consumption. Do not reintroduce direct LWJGL mouse polling unless coordinate logs prove it is needed.

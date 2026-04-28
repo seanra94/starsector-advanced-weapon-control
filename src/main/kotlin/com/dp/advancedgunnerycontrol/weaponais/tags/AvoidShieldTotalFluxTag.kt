@@ -1,7 +1,10 @@
 package com.dp.advancedgunnerycontrol.weaponais.tags
 
 import com.dp.advancedgunnerycontrol.settings.Settings
-import com.dp.advancedgunnerycontrol.utils.totalFluxAtOrBelowThreshold
+import com.dp.advancedgunnerycontrol.utils.FluxComparator
+import com.dp.advancedgunnerycontrol.utils.FluxCondition
+import com.dp.advancedgunnerycontrol.utils.FluxMetric
+import com.dp.advancedgunnerycontrol.utils.meetsFluxCondition
 import com.dp.advancedgunnerycontrol.weaponais.FiringSolution
 import com.dp.advancedgunnerycontrol.weaponais.computeShieldFactor
 import com.dp.advancedgunnerycontrol.weaponais.computeTimeToTravel
@@ -14,8 +17,10 @@ class AvoidShieldTotalFluxTag(
     private val freeFireTotalFluxThreshold: Float,
     private val shieldThreshold: Float = Settings.avoidShieldThreshold()
 ) : WeaponAITagBase(weapon) {
+    private val freeFireCondition = FluxCondition(FluxMetric.TOTAL, FluxComparator.LESS_OR_EQUAL, freeFireTotalFluxThreshold)
+
     override fun isBaseAiValid(entity: CombatEntityAPI): Boolean {
-        return if (weapon.ship?.totalFluxAtOrBelowThreshold(freeFireTotalFluxThreshold) ?: true) {
+        return if (weapon.ship?.meetsFluxCondition(freeFireCondition) ?: true) {
             true
         } else {
             computeShieldFactor(entity, weapon) < shieldThreshold
@@ -27,7 +32,7 @@ class AvoidShieldTotalFluxTag(
     }
 
     override fun shouldFire(solution: FiringSolution): Boolean {
-        return if (weapon.ship?.totalFluxAtOrBelowThreshold(freeFireTotalFluxThreshold) ?: true) {
+        return if (weapon.ship?.meetsFluxCondition(freeFireCondition) ?: true) {
             true
         } else if (solution.target is ShipAPI) {
             if (Settings.ignoreFighterShield() && solution.target.isFighter) {

@@ -1,20 +1,30 @@
 package com.dp.advancedgunnerycontrol.weaponais.tags
 
-import com.dp.advancedgunnerycontrol.utils.softFluxBelowThreshold
+import com.dp.advancedgunnerycontrol.utils.FluxComparator
+import com.dp.advancedgunnerycontrol.utils.FluxCondition
+import com.dp.advancedgunnerycontrol.utils.FluxMetric
+import com.dp.advancedgunnerycontrol.utils.meetsFluxCondition
 import com.dp.advancedgunnerycontrol.weaponais.FiringSolution
 import com.fs.starfarer.api.combat.CombatEntityAPI
 import com.fs.starfarer.api.combat.WeaponAPI
 
 class HoldSoftFluxTag(weapon: WeaponAPI, private val threshold: Float) : WeaponAITagBase(weapon) {
+    private val activeCondition = FluxCondition(
+        metric = FluxMetric.SOFT,
+        comparator = FluxComparator.LESS_THAN,
+        threshold = threshold,
+        requireTotalFluxBelowSoftFluxCap = true
+    )
+
     override fun isValidTarget(entity: CombatEntityAPI): Boolean = true
 
     override fun isBaseAiValid(entity: CombatEntityAPI): Boolean =
-        weapon.ship?.softFluxBelowThreshold(threshold) ?: true
+        weapon.ship?.meetsFluxCondition(activeCondition) ?: true
 
     override fun computeTargetPriorityModifier(solution: FiringSolution): Float = 1.0f
 
     override fun shouldFire(solution: FiringSolution): Boolean =
-        weapon.ship?.softFluxBelowThreshold(threshold) ?: true
+        weapon.ship?.meetsFluxCondition(activeCondition) ?: true
 
     override fun isBaseAiOverridable(): Boolean = false
 
