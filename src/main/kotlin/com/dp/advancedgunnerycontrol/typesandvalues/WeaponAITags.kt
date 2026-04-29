@@ -46,6 +46,8 @@ val burstPDSoftFluxAliasRegex = Regex("BurstPD\\(SF>(\\d+)%\\)")
 val burstPDSoftFluxLegacyRegex = Regex("BurstPDSFT\\($LEGACY_TOTAL_FLUX_TOKEN<(\\d+)%\\)")
 val pdTotalFluxRegex = Regex("PD\\(TF>(\\d+)%\\)")
 val pdTotalFluxLegacyRegex = Regex("PD\\($LEGACY_TOTAL_FLUX_TOKEN>(\\d+)%\\)")
+val conserveAmmoRegex = Regex("ConserveAmmo\\(A<(\\d+)%\\)")
+val conservePDAmmoRegex = Regex("ConservePDAmmo\\(A<(\\d+)%\\)")
 val avoidArmorRegex = Regex("(?:AvoidArmor|AvdArmor)\\((\\d+)%\\)")
 val panicFireRegex = Regex("Panic\\(H<(\\d+)%\\)")
 val rangeRegex = Regex("Range<(\\d+)%")
@@ -273,6 +275,8 @@ fun canonicalizeWeaponTagName(tag: String): String {
     return when {
         burstPDSoftFluxAliasRegex.matches(tag) -> "PD(SF>${invertedRegexThresholdAsPercentageString(burstPDSoftFluxAliasRegex, tag)})"
         pdSoftFluxRegex.matches(tag) -> tag
+        conserveAmmoRegex.matches(tag) -> "ConserveAmmo(A<${extractRegexThresholdAsPercentageString(conserveAmmoRegex, tag)})"
+        conservePDAmmoRegex.matches(tag) -> "ConservePDAmmo(A<${extractRegexThresholdAsPercentageString(conservePDAmmoRegex, tag)})"
         avoidArmorRegex.matches(tag) -> "AvoidArmor(${extractRegexThresholdAsPercentageString(avoidArmorRegex, tag)})"
         tag == "PrioritisePD" -> "PrioPD"
         tag == "PrioritizePD" -> "PrioPD"
@@ -369,6 +373,16 @@ fun getTagTooltip(tag: String): String {
             )
         }."
 
+        conserveAmmoRegex.matches(canonicalTag) -> "Weapon will be much more hesitant to fire when ammo below ${
+            extractRegexThresholdAsPercentageString(conserveAmmoRegex, canonicalTag)
+        }." + "\nNo targeting restrictions."
+
+        conservePDAmmoRegex.matches(canonicalTag) -> "When ammo is below ${
+            extractRegexThresholdAsPercentageString(conservePDAmmoRegex, canonicalTag)
+        }, weapon will only fire when the target is a fighter/missile." +
+                "\nFor non-PD weapons, only fighters will be fired upon in that case." +
+                "\nNo targeting restrictions."
+
         avoidArmorRegex.matches(canonicalTag) -> "Weapon will fire when the shot is likely to hit shields (as TargetShield) OR a section of hull " +
                 "\nwhere the armor is low enough to achieve at least ${
                     extractRegexThresholdAsPercentageString(
@@ -428,6 +442,8 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
         )
         pdSoftFluxRegex.matches(canonicalName) -> return BurstPDSoftFluxTag(weapon, extractRegexThreshold(pdSoftFluxRegex, canonicalName))
         pdTotalFluxRegex.matches(canonicalName) -> return PDAtTotalFluxTag(weapon, extractRegexThreshold(pdTotalFluxRegex, canonicalName))
+        conserveAmmoRegex.matches(canonicalName) -> return ConserveAmmoTag(weapon, extractRegexThreshold(conserveAmmoRegex, canonicalName))
+        conservePDAmmoRegex.matches(canonicalName) -> return ConservePDAmmoTag(weapon, extractRegexThreshold(conservePDAmmoRegex, canonicalName))
         avoidArmorRegex.matches(canonicalName) -> return AvoidArmorTag(weapon, extractRegexThreshold(avoidArmorRegex, canonicalName))
         panicFireRegex.matches(canonicalName) -> return PanicFireTag(weapon, extractRegexThreshold(panicFireRegex, canonicalName))
         rangeRegex.matches(canonicalName) -> return RangeTag(weapon, extractRegexThreshold(rangeRegex, canonicalName))
@@ -499,6 +515,8 @@ fun tagNameToRegexName(tag: String): String {
         targetShieldSoftFluxRegex.matches(canonicalTag) -> "TargetShield(SF>N%)"
         pdSoftFluxRegex.matches(canonicalTag) -> "PD(SF>N%)"
         pdTotalFluxRegex.matches(canonicalTag) -> "PD(TF>N%)"
+        conserveAmmoRegex.matches(canonicalTag) -> "ConserveAmmo"
+        conservePDAmmoRegex.matches(canonicalTag) -> "ConservePDAmmo"
         avoidArmorRegex.matches(canonicalTag) -> "AvoidArmor"
         panicFireRegex.matches(canonicalTag) -> "Panic"
         rangeRegex.matches(canonicalTag) -> "Range"

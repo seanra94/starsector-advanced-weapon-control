@@ -82,8 +82,9 @@ C:\Games\Starsector\starsector-core\starsector.log
 - When preserving legacy `BurstPD(SF>N%)` compatibility, verify whether the old parser inverted the threshold. If so, old `BurstPD(SF>90%)` should normalize to canonical `PD(SF>10%)`, while new canonical `PD(SF>10%)` remains literal.
 - A generic flux-condition parser/helper may be useful later, but broad tag-class refactors should be staged separately from naming/tooltip standardization.
 - The `completeTagList` baseline/coverage pass is complete; treat the current canonical list in `build.gradle.kts` as the user-facing ordering baseline.
-- The next preferred implementation task is a narrow backend helper pass for existing TF/SF conditional tags only: centralize parsing/canonicalization/tooltip-condition/evaluation helpers while preserving current tag classes, canonical names, legacy alias behavior, and gameplay behavior.
-- Immediate follow-up feature phase after helper consolidation: `IgnoreMinorPD(H<...)`, `ConserveAmmo(A<...)`, `ConservePDAmmo(A<...)`, HF support where TF/SF currently exist, and LunaSettings exposure of the soft-flux total-flux cap.
+- The narrow TF/SF helper pass is accepted groundwork and complete for this stage.
+- The next preferred implementation task is canonical parameterized ammo-threshold tags: `ConserveAmmo(A<...)` and `ConservePDAmmo(A<...)`, while preserving plain-tag compatibility.
+- Later follow-up feature phase after ammo-threshold support: `IgnoreMinorPD(H<...)`, HF support where TF/SF currently exist, and LunaSettings exposure of the soft-flux total-flux cap.
 - Threshold-class naming direction for future touched code: prefer comparator-explicit names such as `...AboveFluxTag` / `...BelowFluxTag`; avoid vague new `At...` names.
 - If/when threshold behavior families are consolidated safely, prefer one behavior class per family plus a shared FluxCondition model over separate SoftFlux/TotalFlux classes.
 - `BurstPDSoftFluxTag` is semantically outdated relative to canonical `PD(SF>N%)` and is an internal rename candidate when that area is touched again.

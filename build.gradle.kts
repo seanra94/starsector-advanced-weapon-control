@@ -242,7 +242,7 @@ tasks {
                    |   # "AvoidShield", "TargetShield", "AvoidShield+", "TargetShield+",
                    |   # "AvoidShield(TF>N%)", "AvoidShield(SF>N%)", "TargetShield(TF>N%)", "TargetShield(SF>N%)",
                    |   # "AvoidArmor(N%)", "AvoidDebris", "ShieldOff", "Opportunist", "Hold(TF>N%)", "Hold(SF>N%)",
-                   |   # "ConserveAmmo", "ConservePDAmmo", "ShipTarget", "AvoidPhased", "TargetPhase", "SyncWindow", "SyncVolley", "Ambush",
+                   |   # "ConserveAmmo", "ConserveAmmo(A<N%)", "ConservePDAmmo", "ConservePDAmmo(A<N%)", "ShipTarget", "AvoidPhased", "TargetPhase", "SyncWindow", "SyncVolley", "Ambush",
                    |   # "IgnoreMinorPD", "BigShip", "SmallShip", "Panic(H<N%)", "Range<N%", "Force(TF<N%)", "Force(SF<N%)",
                    |   # "Overloaded", "Merge", "PrioFighter", "PrioMissile", "PrioShip", "PrioWounded", "PrioHealthy",
                    |   # "BlockBeams", "CustomAI", "LowRoF(N%)", "PrioDense"

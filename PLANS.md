@@ -3,15 +3,15 @@
 ## Active task
 
 Tag-system standardization.
-Status: baseline completeTagList pass done; next is narrow TF/SF helper consolidation.
+Status: baseline completeTagList pass done; TF/SF helper groundwork accepted; active next step is parameterized ammo-threshold tags.
 
 ## Goal
 
-Stage the tag-system roadmap cleanly: baseline list is canonicalized, next reduce TF/SF duplication with behavior preservation, then add parameterized thresholds, and only after that do broader naming/review waves.
+Stage the tag-system roadmap cleanly: baseline list is canonicalized, TF/SF helper groundwork is complete, and the next implementation step is parameterized ammo-threshold tags before broader threshold/naming waves.
 
 ## Why this task matters
 
-The baseline pass fixed immediate list drift, but remaining TF/SF conditional plumbing is still duplicated and brittle. Consolidating that narrowly first reduces regression risk before adding new parameterized tags and later renames.
+With TF/SF helper groundwork accepted, parameterized ammo tags are the next low-risk capability step and unblock the broader threshold backlog without opening a rename wave.
 
 ## Acceptance criteria
 
@@ -19,7 +19,7 @@ The baseline pass fixed immediate list drift, but remaining TF/SF conditional pl
 - [x] Obvious stale/legacy names are normalized to canonical equivalents.
 - [x] Supported tag families have representation in baseline unless intentionally excluded.
 - [x] Allowed-values comment block in generated settings source reflects current support.
-- [ ] TF/SF conditional parsing/canonicalization/tooltip-condition/evaluation duplication is reduced via narrow helper abstractions without changing behavior.
+- [x] TF/SF conditional parsing/canonicalization/tooltip-condition/evaluation duplication is reduced via narrow helper abstractions without changing behavior.
 - [ ] Parameterized threshold backlog and naming direction are explicitly staged for follow-up.
 - [ ] `compileKotlin` passes before push.
 
@@ -34,18 +34,16 @@ The baseline pass fixed immediate list drift, but remaining TF/SF conditional pl
 
 ## Current understanding
 
-Current canonical names and alias rules are defined in `WeaponAITags.kt`; generated settings text/lists are authored in `build.gradle.kts`. TF/SF behavior is spread across helper utilities and per-tag classes; consolidation should stay mechanical and preserve semantics.
+Current canonical names and alias rules are defined in `WeaponAITags.kt`; generated settings text/lists are authored in `build.gradle.kts`. Next scoped feature is parameterized ammo-threshold tags while preserving plain-tag compatibility and persisted-loadout behavior.
 
 ## Near-term queue
 
-1. Narrow TF/SF flux-condition helper pass.
-   - Introduce helper abstractions for canonical TF/SF conditional parsing, canonicalization, tooltip-condition wording, and evaluation.
-   - Naming direction for threshold classes: prefer comparator-explicit `...AboveFluxTag` / `...BelowFluxTag` naming over vague `At...` naming.
-   - Assess whether one behavior class per family plus a shared FluxCondition model is practical for `TargetShield` / `AvoidShield` / `PD` / `HoldFire` / `ForceFire`.
-2. Parameterized thresholds:
-   - `IgnoreMinorPD(H<...)`
+1. Parameterized ammo-threshold tags:
    - `ConserveAmmo(A<...)`
    - `ConservePDAmmo(A<...)`
+   - Preserve plain `ConserveAmmo` / `ConservePDAmmo` compatibility.
+2. Remaining parameterized thresholds:
+   - `IgnoreMinorPD(H<...)`
    - HF support where TF/SF currently exist
    - LunaSettings exposure of the soft-flux total-flux cap
 3. Review/audit wave:
@@ -70,9 +68,10 @@ Current canonical names and alias rules are defined in `WeaponAITags.kt`; genera
 - [x] Validate proposed baseline entries against parser and canonicalizer.
 - [x] Normalize stale aliases and remove post-canonical duplicates.
 - [x] Update complete/default list source and allowed-values comments in `build.gradle.kts`.
-- [ ] Introduce narrow helper abstractions for existing TF/SF conditional tags only.
+- [x] Introduce narrow helper abstractions for existing TF/SF conditional tags only.
 - [ ] Preserve canonical names, legacy compatibility, and gameplay behavior.
-- [ ] Defer HF support and new parameterized tags until after helper consolidation.
+- [ ] Defer HF support and remaining new parameterized tags until after ammo-threshold support.
+- [ ] Implement canonical `ConserveAmmo(A<...)` and `ConservePDAmmo(A<...)` with plain-tag compatibility.
 - [ ] Record `Hold->HoldFire` and `ForceAF->ForceAutoFire` as canonical rename goals while preserving old aliases in the later rename wave.
 - [ ] Re-run `compileKotlin`.
 - [ ] Run `jar create-metadata-files write-settings-file` when generation inputs changed.
@@ -107,4 +106,4 @@ Then copy to `C:\Games\Starsector\mods\Advanced-Gunnery-Control-Fork` using the 
 
 ## Current status
 
-Baseline curation is complete. The active implementation focus is now narrow TF/SF helper consolidation before adding new parameterized tag families.
+Baseline curation and TF/SF helper groundwork are complete. The active implementation focus is parameterized ammo-threshold tag support before the remaining threshold backlog.
