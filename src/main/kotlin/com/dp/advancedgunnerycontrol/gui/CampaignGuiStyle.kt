@@ -72,7 +72,7 @@ object CampaignGuiStyle {
 }
 
 fun TooltipMakerAPI.applyAgcDefaultTextStyle() {
-    setParaSmallInsignia()
+    setParaFont("graphics/fonts/victor12.fnt")
 }
 
 fun TooltipMakerAPI.addAgcText(
