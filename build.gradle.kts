@@ -242,7 +242,7 @@ tasks {
                    |   # "AvoidShield", "TargetShield", "AvoidShield+", "TargetShield+",
                    |   # "AvoidShield(TF>N%)", "AvoidShield(SF>N%)", "TargetShield(TF>N%)", "TargetShield(SF>N%)",
                    |   # "AvoidArmor(N%)", "AvoidDebris", "ShieldOff", "Opportunist", "Hold(TF>N%)", "Hold(SF>N%)",
-                   |   # "ConserveAmmo", "ConserveAmmo(A<N%)", "ConservePDAmmo", "ConservePDAmmo(A<N%)", "ShipTarget", "AvoidPhased", "TargetPhase", "SyncWindow", "SyncVolley", "Ambush",
+                   |   # "Opportunist(A<N%)", "PD(A<N%)", "ConserveAmmo", "ConserveAmmo(A<N%)", "ConservePDAmmo", "ConservePDAmmo(A<N%)", "CnsrvPDAmmo", "ShipTarget", "AvoidPhased", "TargetPhase", "SyncWindow", "SyncVolley", "Ambush",
                    |   # "IgnoreMinorPD", "IgnoreMinorPD(H<N>)", "BigShip", "SmallShip", "Panic(H<N%)", "Range<N%", "Force(TF<N%)", "Force(SF<N%)",
                    |   # "Overloaded", "Merge", "PrioFighter", "PrioMissile", "PrioShip", "PrioWounded", "PrioHealthy",
                    |   # "BlockBeams", "CustomAI", "LowRoF(N%)", "PrioDense"
@@ -265,7 +265,7 @@ tasks {
                    |                "Merge", "SyncWindow", "SyncVolley", "Ambush",
                    |                "PrioPD", "PrioFighter", "PrioMissile", "PrioShip", "PrioWounded", "PrioHealthy",
                    |                "Fighter", "NoMissile", "NoFighter", "BigShip", "SmallShip", "ShipTarget",
-                   |                "Opportunist", "ConserveAmmo(A<50%)", "ConservePDAmmo(A<90%)",
+                   |                "Opportunist", "Opportunist(A<80%)", "PD(A<80%)",
                    |                "IgnoreMinorPD(H<145)", "Panic(H<25%)", "Range<60%", "Range<90%",
                    |                "Overloaded", "LowRoF(200%)", "CustomAI", "PrioDense", "AvoidDebris", "BlockBeams"
                    |                ]  
@@ -279,7 +279,7 @@ tasks {
                    |                "PrioPD", "PrioFighter", "PrioMissile",
                    |                "NoMissile", "NoFighter",
                    |                "Opportunist", "Panic(H<25%)", "Range<60%",
-                   |                "ConserveAmmo(A<50%)", "ConservePDAmmo(A<90%)", "PD(SF>10%)", "IgnoreMinorPD(H<145)",
+                   |                "Opportunist(A<80%)", "PD(A<80%)", "PD(SF>10%)", "IgnoreMinorPD(H<145)",
                    |                "AvoidShield+", "TargetShield+"
                    |                ]  
                    |                

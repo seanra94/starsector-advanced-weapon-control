@@ -4,6 +4,7 @@ import com.dp.advancedgunnerycontrol.WeaponControlPlugin
 import com.dp.advancedgunnerycontrol.gui.isElligibleForPD
 import com.dp.advancedgunnerycontrol.gui.isEverythingBlacklisted
 import com.dp.advancedgunnerycontrol.gui.usesAmmo
+import com.dp.advancedgunnerycontrol.gui.usesAmmoNonMissile
 import com.dp.advancedgunnerycontrol.settings.Settings
 import com.dp.advancedgunnerycontrol.utils.FluxComparator
 import com.dp.advancedgunnerycontrol.utils.FluxCondition
@@ -21,7 +22,8 @@ import kotlin.math.roundToInt
 // NOTE: Tag names should NOT exceed 13 characters to be able to cleanly fit on buttons!
 
 val pdTags = listOf("PD", "NoPD", "PD(TF>N%)", "PD(SF>N%)", "NoMissile")
-val ammoTags = listOf("ConserveAmmo", "ConservePDAmmo")
+val opportunistAmmoTags = listOf("ConserveAmmo", "Opportunist(A<N%)")
+val pdAmmoTags = listOf("ConservePDAmmo", "PD(A<N%)")
 
 private const val LEGACY_TOTAL_FLUX_TOKEN = "Fl?u?x?"
 
@@ -46,8 +48,11 @@ val burstPDSoftFluxAliasRegex = Regex("BurstPD\\(SF>(\\d+)%\\)")
 val burstPDSoftFluxLegacyRegex = Regex("BurstPDSFT\\($LEGACY_TOTAL_FLUX_TOKEN<(\\d+)%\\)")
 val pdTotalFluxRegex = Regex("PD\\(TF>(\\d+)%\\)")
 val pdTotalFluxLegacyRegex = Regex("PD\\($LEGACY_TOTAL_FLUX_TOKEN>(\\d+)%\\)")
+val opportunistAmmoRegex = Regex("Opportunist\\(A<(\\d+)%\\)")
 val conserveAmmoRegex = Regex("ConserveAmmo\\(A<(\\d+)%\\)")
+val pdAmmoRegex = Regex("PD\\(A<(\\d+)%\\)")
 val conservePDAmmoRegex = Regex("ConservePDAmmo\\(A<(\\d+)%\\)")
+val conservePDAmmoShortRegex = Regex("CnsrvPDAmmo\\(A<(\\d+)%\\)")
 val ignoreMinorPDRegex = Regex("IgnoreMinorPD\\(H<(\\d+)\\)")
 val avoidArmorRegex = Regex("(?:AvoidArmor|AvdArmor)\\((\\d+)%\\)")
 val panicFireRegex = Regex("Panic\\(H<(\\d+)%\\)")
@@ -162,7 +167,8 @@ private fun fluxConditionThresholdPercent(condition: FluxCondition): String = "$
 fun shouldTagBeDisabled(groupIndex: Int, sh: FleetMemberAPI, tag: String): Boolean {
     val modTag = tagNameToRegexName(tag)
     if (pdTags.contains(modTag) && !isElligibleForPD(groupIndex, sh)) return true
-    if (ammoTags.contains(modTag) && !usesAmmo(groupIndex, sh)) return true
+    if (opportunistAmmoTags.contains(modTag) && !usesAmmo(groupIndex, sh)) return true
+    if (pdAmmoTags.contains(modTag) && !usesAmmoNonMissile(groupIndex, sh)) return true
     return isEverythingBlacklisted(groupIndex, sh)
 }
 
@@ -280,8 +286,11 @@ fun canonicalizeWeaponTagName(tag: String): String {
     return when {
         burstPDSoftFluxAliasRegex.matches(tag) -> "PD(SF>${invertedRegexThresholdAsPercentageString(burstPDSoftFluxAliasRegex, tag)})"
         pdSoftFluxRegex.matches(tag) -> tag
-        conserveAmmoRegex.matches(tag) -> "ConserveAmmo(A<${extractRegexThresholdAsPercentageString(conserveAmmoRegex, tag)})"
-        conservePDAmmoRegex.matches(tag) -> "ConservePDAmmo(A<${extractRegexThresholdAsPercentageString(conservePDAmmoRegex, tag)})"
+        opportunistAmmoRegex.matches(tag) -> tag
+        conserveAmmoRegex.matches(tag) -> "Opportunist(A<${extractRegexThresholdAsPercentageString(conserveAmmoRegex, tag)})"
+        pdAmmoRegex.matches(tag) -> tag
+        conservePDAmmoRegex.matches(tag) -> "PD(A<${extractRegexThresholdAsPercentageString(conservePDAmmoRegex, tag)})"
+        conservePDAmmoShortRegex.matches(tag) -> "PD(A<${extractRegexThresholdAsPercentageString(conservePDAmmoShortRegex, tag)})"
         ignoreMinorPDRegex.matches(tag) -> "IgnoreMinorPD(H<${extractRawRegexThreshold(ignoreMinorPDRegex, tag).toInt()})"
         avoidArmorRegex.matches(tag) -> "AvoidArmor(${extractRegexThresholdAsPercentageString(avoidArmorRegex, tag)})"
         tag == "PrioritisePD" -> "PrioPD"
@@ -379,15 +388,13 @@ fun getTagTooltip(tag: String): String {
             )
         }."
 
-        conserveAmmoRegex.matches(canonicalTag) -> "Weapon will be much more hesitant to fire when ammo below ${
-            extractRegexThresholdAsPercentageString(conserveAmmoRegex, canonicalTag)
-        }." + "\nNo targeting restrictions."
+        opportunistAmmoRegex.matches(canonicalTag) -> "While ammo is less than ${
+            extractRegexThresholdAsPercentageString(opportunistAmmoRegex, canonicalTag)
+        }, only fires at opportune targets. Weapons without ammo are unaffected."
 
-        conservePDAmmoRegex.matches(canonicalTag) -> "When ammo is below ${
-            extractRegexThresholdAsPercentageString(conservePDAmmoRegex, canonicalTag)
-        }, weapon will only fire when the target is a fighter/missile." +
-                "\nFor non-PD weapons, only fighters will be fired upon in that case." +
-                "\nNo targeting restrictions."
+        pdAmmoRegex.matches(canonicalTag) -> "Restricts targeting to fighters and missiles while ammo is less than ${
+            extractRegexThresholdAsPercentageString(pdAmmoRegex, canonicalTag)
+        }. Weapons without ammo and missile weapons are unaffected."
 
         ignoreMinorPDRegex.matches(canonicalTag) -> "Ignores missiles and fighters below effective durability ${
             extractRawRegexThreshold(ignoreMinorPDRegex, canonicalTag).toInt()
@@ -452,8 +459,8 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
         )
         pdSoftFluxRegex.matches(canonicalName) -> return BurstPDSoftFluxTag(weapon, extractRegexThreshold(pdSoftFluxRegex, canonicalName))
         pdTotalFluxRegex.matches(canonicalName) -> return PDAtTotalFluxTag(weapon, extractRegexThreshold(pdTotalFluxRegex, canonicalName))
-        conserveAmmoRegex.matches(canonicalName) -> return ConserveAmmoTag(weapon, extractRegexThreshold(conserveAmmoRegex, canonicalName))
-        conservePDAmmoRegex.matches(canonicalName) -> return ConservePDAmmoTag(weapon, extractRegexThreshold(conservePDAmmoRegex, canonicalName))
+        opportunistAmmoRegex.matches(canonicalName) -> return ConserveAmmoTag(weapon, extractRegexThreshold(opportunistAmmoRegex, canonicalName))
+        pdAmmoRegex.matches(canonicalName) -> return ConservePDAmmoTag(weapon, extractRegexThreshold(pdAmmoRegex, canonicalName))
         ignoreMinorPDRegex.matches(canonicalName) -> return IgnoreMinorPDTag(weapon, extractRawRegexThreshold(ignoreMinorPDRegex, canonicalName))
         avoidArmorRegex.matches(canonicalName) -> return AvoidArmorTag(weapon, extractRegexThreshold(avoidArmorRegex, canonicalName))
         panicFireRegex.matches(canonicalName) -> return PanicFireTag(weapon, extractRegexThreshold(panicFireRegex, canonicalName))
@@ -526,8 +533,10 @@ fun tagNameToRegexName(tag: String): String {
         targetShieldSoftFluxRegex.matches(canonicalTag) -> "TargetShield(SF>N%)"
         pdSoftFluxRegex.matches(canonicalTag) -> "PD(SF>N%)"
         pdTotalFluxRegex.matches(canonicalTag) -> "PD(TF>N%)"
-        conserveAmmoRegex.matches(canonicalTag) -> "ConserveAmmo"
-        conservePDAmmoRegex.matches(canonicalTag) -> "ConservePDAmmo"
+        canonicalTag == "ConserveAmmo" -> "Opportunist(A<N%)"
+        opportunistAmmoRegex.matches(canonicalTag) -> "Opportunist(A<N%)"
+        canonicalTag == "ConservePDAmmo" -> "PD(A<N%)"
+        pdAmmoRegex.matches(canonicalTag) -> "PD(A<N%)"
         ignoreMinorPDRegex.matches(canonicalTag) -> "IgnoreMinorPD"
         avoidArmorRegex.matches(canonicalTag) -> "AvoidArmor"
         panicFireRegex.matches(canonicalTag) -> "Panic"
@@ -559,9 +568,9 @@ val tagIncompatibility = mapOf(
         "NoPD",
         "PD(TF>N%)",
         "PD(SF>N%)",
+        "PD(A<N%)",
         "BigShip",
         "SmallShip",
-        "ConservePDAmmo",
         "PrioPD"
     ),
     "PrioPD" to listOf("Opportunist", "NoPD", "BigShip", "SmallShip", "Fighter", "PD"),
@@ -572,12 +581,12 @@ val tagIncompatibility = mapOf(
         "NoPD",
         "PD(TF>N%)",
         "PD(SF>N%)",
+        "PD(A<N%)",
         "BigShip",
         "SmallShip",
         "PrioPD",
-        "ConservePDAmmo",
     ),
-    "NoPD" to listOf("PD", "Fighter", "PD(TF>N%)", "PD(SF>N%)", "PrioPD", "ConservePDAmmo"),
+    "NoPD" to listOf("PD", "Fighter", "PD(TF>N%)", "PD(SF>N%)", "PD(A<N%)", "PrioPD"),
     "ShieldOff" to shieldTagIncompatibilities("ShieldOff"),
     "AvoidShield" to shieldTagIncompatibilities("AvoidShield"),
     "TargetShield" to shieldTagIncompatibilities("TargetShield"),
@@ -587,14 +596,15 @@ val tagIncompatibility = mapOf(
     "AvoidShield(SF>N%)" to shieldTagIncompatibilities("AvoidShield(SF>N%)"),
     "TargetShield(TF>N%)" to shieldTagIncompatibilities("TargetShield(TF>N%)"),
     "TargetShield(SF>N%)" to shieldTagIncompatibilities("TargetShield(SF>N%)"),
-    "NoFighter" to listOf("Fighter", "Opportunist"),
-    "ConservePDAmmo" to listOf("PD", "Fighter", "NoPD"),
-    "Opportunist" to listOf("Fighter", "PD", "NoFighter", "PD(TF>N%)", "PD(SF>N%)", "PrioPD", "ConservePDAmmo", "NoMissile"),
-    "PD(TF>N%)" to listOf("Fighter", "Opportunist", "NoPD", "PD", "BigShip", "SmallShip"),
-    "PD(SF>N%)" to listOf("Fighter", "Opportunist", "NoPD", "PD", "BigShip", "SmallShip"),
-    "SmallShip" to listOf("BigShip", "PD", "Fighter", "PD(TF>N%)", "PD(SF>N%)", "PrioPD"),
-    "BigShip" to listOf("SmallShip", "PD", "Fighter", "PD(TF>N%)", "PD(SF>N%)", "PrioPD"),
-    "NoMissile" to listOf("Opportunist"),
+    "NoFighter" to listOf("Fighter", "Opportunist", "Opportunist(A<N%)"),
+    "PD(A<N%)" to listOf("PD", "Fighter", "NoPD", "Opportunist", "Opportunist(A<N%)", "BigShip", "SmallShip"),
+    "Opportunist" to listOf("Fighter", "PD", "NoFighter", "PD(TF>N%)", "PD(SF>N%)", "PD(A<N%)", "PrioPD", "Opportunist(A<N%)", "NoMissile"),
+    "Opportunist(A<N%)" to listOf("Fighter", "PD", "NoFighter", "PD(TF>N%)", "PD(SF>N%)", "PD(A<N%)", "PrioPD", "Opportunist", "NoMissile"),
+    "PD(TF>N%)" to listOf("Fighter", "Opportunist", "Opportunist(A<N%)", "NoPD", "PD", "BigShip", "SmallShip"),
+    "PD(SF>N%)" to listOf("Fighter", "Opportunist", "Opportunist(A<N%)", "NoPD", "PD", "BigShip", "SmallShip"),
+    "SmallShip" to listOf("BigShip", "PD", "Fighter", "PD(TF>N%)", "PD(SF>N%)", "PD(A<N%)", "PrioPD"),
+    "BigShip" to listOf("SmallShip", "PD", "Fighter", "PD(TF>N%)", "PD(SF>N%)", "PD(A<N%)", "PrioPD"),
+    "NoMissile" to listOf("Opportunist", "Opportunist(A<N%)"),
     "TargetPhase" to listOf("AvoidPhased"),
     "AvoidPhased" to listOf("TargetPhase"),
     "PrioHealthy" to listOf("PrioWounded"),

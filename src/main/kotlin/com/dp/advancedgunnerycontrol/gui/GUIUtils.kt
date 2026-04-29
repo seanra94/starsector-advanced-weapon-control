@@ -76,3 +76,10 @@ fun usesAmmo(groupIndex: Int, sh: FleetMemberAPI): Boolean {
         it.usesAmmo()
     }
 }
+
+fun usesAmmoNonMissile(groupIndex: Int, sh: FleetMemberAPI): Boolean {
+    val group = sh.variant.weaponGroups.getOrNull(groupIndex) ?: return false
+    return group.slots.mapNotNull { Global.getSettings().getWeaponSpec(sh.variant.getWeaponId(it)) }.any {
+        it.usesAmmo() && it.type != WeaponAPI.WeaponType.MISSILE
+    }
+}

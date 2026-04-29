@@ -7,7 +7,7 @@ Status: baseline and TF/SF helper groundwork accepted; ammo-threshold tags imple
 
 ## Goal
 
-Stage the tag-system roadmap cleanly: baseline list is canonicalized, TF/SF helper groundwork is complete, and the next implementation step is parameterized ammo-threshold tags before broader threshold/naming waves.
+Stage the tag-system roadmap cleanly: baseline list is canonicalized, TF/SF helper groundwork is complete, and ammo-threshold canonicalization is done before broader threshold/naming waves.
 
 ## Why this task matters
 
@@ -20,7 +20,7 @@ With TF/SF helper groundwork and parameterized ammo tags in place, `IgnoreMinorP
 - [x] Supported tag families have representation in baseline unless intentionally excluded.
 - [x] Allowed-values comment block in generated settings source reflects current support.
 - [x] TF/SF conditional parsing/canonicalization/tooltip-condition/evaluation duplication is reduced via narrow helper abstractions without changing behavior.
-- [x] Parameterized ammo-threshold tags are implemented with plain-tag compatibility preserved.
+- [x] Parameterized ammo-threshold tags are implemented with plain-tag compatibility preserved (`Opportunist(A<...)` and `PD(A<...)` canonicals plus legacy aliases).
 - [ ] Remaining threshold backlog and naming direction are explicitly staged for follow-up.
 - [ ] `compileKotlin` passes before push.
 
@@ -35,7 +35,7 @@ With TF/SF helper groundwork and parameterized ammo tags in place, `IgnoreMinorP
 
 ## Current understanding
 
-Current canonical names and alias rules are defined in `WeaponAITags.kt`; generated settings text/lists are authored in `build.gradle.kts`. Next scoped feature is parameterized ammo-threshold tags while preserving plain-tag compatibility and persisted-loadout behavior.
+Current canonical names and alias rules are defined in `WeaponAITags.kt`; generated settings text/lists are authored in `build.gradle.kts`. Canonical ammo-threshold names are `Opportunist(A<...)` and `PD(A<...)`, with legacy `ConserveAmmo` / `ConservePDAmmo` / `CnsrvPDAmmo` aliases preserved.
 
 ## Near-term queue
 
@@ -67,7 +67,7 @@ Current canonical names and alias rules are defined in `WeaponAITags.kt`; genera
 - [x] Update complete/default list source and allowed-values comments in `build.gradle.kts`.
 - [x] Introduce narrow helper abstractions for existing TF/SF conditional tags only.
 - [ ] Preserve canonical names, legacy compatibility, and gameplay behavior.
-- [x] Implement canonical `ConserveAmmo(A<...)` and `ConservePDAmmo(A<...)` with plain-tag compatibility.
+- [x] Implement canonical `Opportunist(A<...)` and `PD(A<...)` with plain-tag compatibility.
 - [ ] Implement canonical `IgnoreMinorPD(H<...)` with plain-tag compatibility.
 - [ ] Defer HF support and remaining staged thresholds until after `IgnoreMinorPD(H<...)`.
 - [ ] Record `Hold->HoldFire` and `ForceAF->ForceAutoFire` as canonical rename goals while preserving old aliases in the later rename wave.

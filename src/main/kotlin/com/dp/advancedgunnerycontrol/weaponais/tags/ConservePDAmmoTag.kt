@@ -26,5 +26,5 @@ class ConservePDAmmoTag(weapon: WeaponAPI, private val ammoThreshold: Float) : W
 
     override fun avoidDebris(): Boolean = false
 
-    override fun isValid(): Boolean = super.isValid() && weapon.usesAmmo()
+    override fun isValid(): Boolean = super.isValid() && weapon.usesAmmo() && weapon.type != WeaponAPI.WeaponType.MISSILE
 }
