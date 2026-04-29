@@ -3,7 +3,7 @@
 ## Active task
 
 Tag-system standardization.
-Status: baseline completeTagList pass done; TF/SF helper groundwork accepted; active next step is parameterized ammo-threshold tags.
+Status: baseline and TF/SF helper groundwork accepted; ammo-threshold tags implemented; active next step is `IgnoreMinorPD(H<...)`.
 
 ## Goal
 
@@ -11,7 +11,7 @@ Stage the tag-system roadmap cleanly: baseline list is canonicalized, TF/SF help
 
 ## Why this task matters
 
-With TF/SF helper groundwork accepted, parameterized ammo tags are the next low-risk capability step and unblock the broader threshold backlog without opening a rename wave.
+With TF/SF helper groundwork and parameterized ammo tags in place, `IgnoreMinorPD(H<...)` is the next narrow threshold feature in the staged backlog.
 
 ## Acceptance criteria
 
@@ -20,7 +20,8 @@ With TF/SF helper groundwork accepted, parameterized ammo tags are the next low-
 - [x] Supported tag families have representation in baseline unless intentionally excluded.
 - [x] Allowed-values comment block in generated settings source reflects current support.
 - [x] TF/SF conditional parsing/canonicalization/tooltip-condition/evaluation duplication is reduced via narrow helper abstractions without changing behavior.
-- [ ] Parameterized threshold backlog and naming direction are explicitly staged for follow-up.
+- [x] Parameterized ammo-threshold tags are implemented with plain-tag compatibility preserved.
+- [ ] Remaining threshold backlog and naming direction are explicitly staged for follow-up.
 - [ ] `compileKotlin` passes before push.
 
 ## Constraints
@@ -38,27 +39,23 @@ Current canonical names and alias rules are defined in `WeaponAITags.kt`; genera
 
 ## Near-term queue
 
-1. Parameterized ammo-threshold tags:
-   - `ConserveAmmo(A<...)`
-   - `ConservePDAmmo(A<...)`
-   - Preserve plain `ConserveAmmo` / `ConservePDAmmo` compatibility.
-2. Remaining parameterized thresholds:
+1. Remaining parameterized thresholds:
    - `IgnoreMinorPD(H<...)`
    - HF support where TF/SF currently exist
    - LunaSettings exposure of the soft-flux total-flux cap
-3. Review/audit wave:
+2. Review/audit wave:
    - tag incompatibility review
    - tooltip accuracy/consistency review
    - README update with realistic per-tag example use cases
    - text consistency sweep (for example `Avd -> Avoid`)
-4. Naming/logic review wave:
+3. Naming/logic review wave:
    - `Hold -> HoldFire` (preserve `Hold(...)` aliases)
    - `ForceAF -> ForceAutoFire` (preserve `ForceAF` alias)
    - add `PrioBig`
    - review `PrioPD -> PrioSmall`
    - review `BigShip/SmallShip -> TargetBig/TargetSmall`
    - review `TargetPhase -> PrioPhase` (only if semantics match prioritization)
-5. Larger system work:
+4. Larger system work:
    - rotate-toward-closest-valid-target behavior as ship mode rather than global aiming behavior
    - deep dive on priority-system consistency/transparency
    - broader LunaLib/settings migration strategy
@@ -70,8 +67,9 @@ Current canonical names and alias rules are defined in `WeaponAITags.kt`; genera
 - [x] Update complete/default list source and allowed-values comments in `build.gradle.kts`.
 - [x] Introduce narrow helper abstractions for existing TF/SF conditional tags only.
 - [ ] Preserve canonical names, legacy compatibility, and gameplay behavior.
-- [ ] Defer HF support and remaining new parameterized tags until after ammo-threshold support.
-- [ ] Implement canonical `ConserveAmmo(A<...)` and `ConservePDAmmo(A<...)` with plain-tag compatibility.
+- [x] Implement canonical `ConserveAmmo(A<...)` and `ConservePDAmmo(A<...)` with plain-tag compatibility.
+- [ ] Implement canonical `IgnoreMinorPD(H<...)` with plain-tag compatibility.
+- [ ] Defer HF support and remaining staged thresholds until after `IgnoreMinorPD(H<...)`.
 - [ ] Record `Hold->HoldFire` and `ForceAF->ForceAutoFire` as canonical rename goals while preserving old aliases in the later rename wave.
 - [ ] Re-run `compileKotlin`.
 - [ ] Run `jar create-metadata-files write-settings-file` when generation inputs changed.
@@ -106,4 +104,4 @@ Then copy to `C:\Games\Starsector\mods\Advanced-Gunnery-Control-Fork` using the 
 
 ## Current status
 
-Baseline curation and TF/SF helper groundwork are complete. The active implementation focus is parameterized ammo-threshold tag support before the remaining threshold backlog.
+Baseline curation, TF/SF helper groundwork, and ammo-threshold tags are complete. The active implementation focus is now `IgnoreMinorPD(H<...)`.

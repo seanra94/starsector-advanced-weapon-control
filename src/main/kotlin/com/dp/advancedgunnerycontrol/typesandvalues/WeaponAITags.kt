@@ -48,6 +48,7 @@ val pdTotalFluxRegex = Regex("PD\\(TF>(\\d+)%\\)")
 val pdTotalFluxLegacyRegex = Regex("PD\\($LEGACY_TOTAL_FLUX_TOKEN>(\\d+)%\\)")
 val conserveAmmoRegex = Regex("ConserveAmmo\\(A<(\\d+)%\\)")
 val conservePDAmmoRegex = Regex("ConservePDAmmo\\(A<(\\d+)%\\)")
+val ignoreMinorPDRegex = Regex("IgnoreMinorPD\\(H<(\\d+)\\)")
 val avoidArmorRegex = Regex("(?:AvoidArmor|AvdArmor)\\((\\d+)%\\)")
 val panicFireRegex = Regex("Panic\\(H<(\\d+)%\\)")
 val rangeRegex = Regex("Range<(\\d+)%")
@@ -79,6 +80,10 @@ private val thresholdCanonicalizationRules = listOf(
 
 fun extractRegexThreshold(regex: Regex, name: String): Float {
     return (regex.matchEntire(name)?.groupValues?.get(1)?.toFloat() ?: 0f) / 100f
+}
+
+private fun extractRawRegexThreshold(regex: Regex, name: String): Float {
+    return regex.matchEntire(name)?.groupValues?.get(1)?.toFloat() ?: 0f
 }
 
 fun extractRegexThresholdAsPercentageString(regex: Regex, name: String): String {
@@ -250,7 +255,7 @@ val tagTooltips = mapOf(
     "Ambush" to "Tagged weapons in the same weapon group wait until every tagged weapon is ready and on the same target, then open fire together. " +
             "After the ambush starts, weapons keep prioritizing that target, but weapons that can no longer bear on it may fire at other valid targets. " +
             "The ambush resets when the target is lost by the whole group.",
-    "IgnoreMinorPD" to "Ignores very low-health missiles and fighters. Useful on PD weapons that should not waste shots on tiny threats.",
+    "IgnoreMinorPD" to "Ignores missiles and fighters below a default effective durability threshold. Effective durability is combined hull + armor + shield contribution.",
     "PrioFighter" to "Prioritize fighters over all other targets but target other things if no fighters present.$priorityBoilerplateText",
     "PrioMissile" to "Prioritize missiles over all other targets but target other things if no missiles present.$priorityBoilerplateText",
     "PrioShip" to "Prioritize non-fighter ships over all other targets but target other things if no ships present.$priorityBoilerplateText",
@@ -277,6 +282,7 @@ fun canonicalizeWeaponTagName(tag: String): String {
         pdSoftFluxRegex.matches(tag) -> tag
         conserveAmmoRegex.matches(tag) -> "ConserveAmmo(A<${extractRegexThresholdAsPercentageString(conserveAmmoRegex, tag)})"
         conservePDAmmoRegex.matches(tag) -> "ConservePDAmmo(A<${extractRegexThresholdAsPercentageString(conservePDAmmoRegex, tag)})"
+        ignoreMinorPDRegex.matches(tag) -> "IgnoreMinorPD(H<${extractRawRegexThreshold(ignoreMinorPDRegex, tag).toInt()})"
         avoidArmorRegex.matches(tag) -> "AvoidArmor(${extractRegexThresholdAsPercentageString(avoidArmorRegex, tag)})"
         tag == "PrioritisePD" -> "PrioPD"
         tag == "PrioritizePD" -> "PrioPD"
@@ -383,6 +389,10 @@ fun getTagTooltip(tag: String): String {
                 "\nFor non-PD weapons, only fighters will be fired upon in that case." +
                 "\nNo targeting restrictions."
 
+        ignoreMinorPDRegex.matches(canonicalTag) -> "Ignores missiles and fighters below effective durability ${
+            extractRawRegexThreshold(ignoreMinorPDRegex, canonicalTag).toInt()
+        }." + "\nEffective durability is combined hull + armor + shield contribution."
+
         avoidArmorRegex.matches(canonicalTag) -> "Weapon will fire when the shot is likely to hit shields (as TargetShield) OR a section of hull " +
                 "\nwhere the armor is low enough to achieve at least ${
                     extractRegexThresholdAsPercentageString(
@@ -444,6 +454,7 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
         pdTotalFluxRegex.matches(canonicalName) -> return PDAtTotalFluxTag(weapon, extractRegexThreshold(pdTotalFluxRegex, canonicalName))
         conserveAmmoRegex.matches(canonicalName) -> return ConserveAmmoTag(weapon, extractRegexThreshold(conserveAmmoRegex, canonicalName))
         conservePDAmmoRegex.matches(canonicalName) -> return ConservePDAmmoTag(weapon, extractRegexThreshold(conservePDAmmoRegex, canonicalName))
+        ignoreMinorPDRegex.matches(canonicalName) -> return IgnoreMinorPDTag(weapon, extractRawRegexThreshold(ignoreMinorPDRegex, canonicalName))
         avoidArmorRegex.matches(canonicalName) -> return AvoidArmorTag(weapon, extractRegexThreshold(avoidArmorRegex, canonicalName))
         panicFireRegex.matches(canonicalName) -> return PanicFireTag(weapon, extractRegexThreshold(panicFireRegex, canonicalName))
         rangeRegex.matches(canonicalName) -> return RangeTag(weapon, extractRegexThreshold(rangeRegex, canonicalName))
@@ -517,6 +528,7 @@ fun tagNameToRegexName(tag: String): String {
         pdTotalFluxRegex.matches(canonicalTag) -> "PD(TF>N%)"
         conserveAmmoRegex.matches(canonicalTag) -> "ConserveAmmo"
         conservePDAmmoRegex.matches(canonicalTag) -> "ConservePDAmmo"
+        ignoreMinorPDRegex.matches(canonicalTag) -> "IgnoreMinorPD"
         avoidArmorRegex.matches(canonicalTag) -> "AvoidArmor"
         panicFireRegex.matches(canonicalTag) -> "Panic"
         rangeRegex.matches(canonicalTag) -> "Range"

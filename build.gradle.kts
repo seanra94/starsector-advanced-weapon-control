@@ -237,13 +237,13 @@ tasks {
                    | {
                    |   #                                 #### TAG LIST ####
                    |   # Determines which tags will be shown in the GUIs. Feel free to add/remove tags as you see fit.
-                   |   # Allowed values are: (replace N with a number, usually between 0 and 100)
+                   |   # Allowed values are: (replace N with a number; percent forms usually use 0-100, raw-value forms use literal values like H<145)
                    |   # "PD", "NoPD", "NoMissile", "PD(TF>N%)", "PD(SF>N%)", "PrioPD", "Fighter", "NoFighter",
                    |   # "AvoidShield", "TargetShield", "AvoidShield+", "TargetShield+",
                    |   # "AvoidShield(TF>N%)", "AvoidShield(SF>N%)", "TargetShield(TF>N%)", "TargetShield(SF>N%)",
                    |   # "AvoidArmor(N%)", "AvoidDebris", "ShieldOff", "Opportunist", "Hold(TF>N%)", "Hold(SF>N%)",
                    |   # "ConserveAmmo", "ConserveAmmo(A<N%)", "ConservePDAmmo", "ConservePDAmmo(A<N%)", "ShipTarget", "AvoidPhased", "TargetPhase", "SyncWindow", "SyncVolley", "Ambush",
-                   |   # "IgnoreMinorPD", "BigShip", "SmallShip", "Panic(H<N%)", "Range<N%", "Force(TF<N%)", "Force(SF<N%)",
+                   |   # "IgnoreMinorPD", "IgnoreMinorPD(H<N>)", "BigShip", "SmallShip", "Panic(H<N%)", "Range<N%", "Force(TF<N%)", "Force(SF<N%)",
                    |   # "Overloaded", "Merge", "PrioFighter", "PrioMissile", "PrioShip", "PrioWounded", "PrioHealthy",
                    |   # "BlockBeams", "CustomAI", "LowRoF(N%)", "PrioDense"
                    |   
@@ -265,8 +265,8 @@ tasks {
                    |                "Merge", "SyncWindow", "SyncVolley", "Ambush",
                    |                "PrioPD", "PrioFighter", "PrioMissile", "PrioShip", "PrioWounded", "PrioHealthy",
                    |                "Fighter", "NoMissile", "NoFighter", "BigShip", "SmallShip", "ShipTarget",
-                   |                "Opportunist", "ConserveAmmo", "ConservePDAmmo",
-                   |                "Panic(H<25%)", "Range<60%", "Range<90%",
+                   |                "Opportunist", "ConserveAmmo(A<50%)", "ConservePDAmmo(A<90%)",
+                   |                "IgnoreMinorPD(H<145)", "Panic(H<25%)", "Range<60%", "Range<90%",
                    |                "Overloaded", "LowRoF(200%)", "CustomAI", "PrioDense", "AvoidDebris", "BlockBeams"
                    |                ]  
                    |   
@@ -279,7 +279,7 @@ tasks {
                    |                "PrioPD", "PrioFighter", "PrioMissile",
                    |                "NoMissile", "NoFighter",
                    |                "Opportunist", "Panic(H<25%)", "Range<60%",
-                   |                "ConserveAmmo", "ConservePDAmmo", "PD(SF>10%)", "IgnoreMinorPD",
+                   |                "ConserveAmmo(A<50%)", "ConservePDAmmo(A<90%)", "PD(SF>10%)", "IgnoreMinorPD(H<145)",
                    |                "AvoidShield+", "TargetShield+"
                    |                ]  
                    |                
@@ -452,7 +452,7 @@ tasks {
                    |   ,"shieldsOff_flux" : 0.5 # In LowShield mode, turn off shields if total flux level > X
                    |   
                    |   ,"conserveAmmo_ammo" : 0.5 # Start conserving ammo when ammoLevel < X
-                   |   ,"conservePDAmmo_ammo" : 0.8 # Only allow firing at fighters and missiles when ammo < X
+                   |   ,"conservePDAmmo_ammo" : 0.9 # Only allow firing at fighters and missiles when ammo < X
                    |   
                    |   # If true, the BigShip/SmallShip tags will exclusively target Destroyers and bigger/smaller
                    |   ,"strictBigSmallShipMode" : false

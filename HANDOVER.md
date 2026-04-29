@@ -83,8 +83,8 @@ C:\Games\Starsector\starsector-core\starsector.log
 - A generic flux-condition parser/helper may be useful later, but broad tag-class refactors should be staged separately from naming/tooltip standardization.
 - The `completeTagList` baseline/coverage pass is complete; treat the current canonical list in `build.gradle.kts` as the user-facing ordering baseline.
 - The narrow TF/SF helper pass is accepted groundwork and complete for this stage.
-- The next preferred implementation task is canonical parameterized ammo-threshold tags: `ConserveAmmo(A<...)` and `ConservePDAmmo(A<...)`, while preserving plain-tag compatibility.
-- Later follow-up feature phase after ammo-threshold support: `IgnoreMinorPD(H<...)`, HF support where TF/SF currently exist, and LunaSettings exposure of the soft-flux total-flux cap.
+- Canonical parameterized ammo-threshold support is complete: `ConserveAmmo(A<...)` and `ConservePDAmmo(A<...)`, with plain-tag compatibility preserved.
+- The next preferred implementation task is `IgnoreMinorPD(H<...)`; later follow-up remains HF support where TF/SF currently exist and LunaSettings exposure of the soft-flux total-flux cap.
 - Threshold-class naming direction for future touched code: prefer comparator-explicit names such as `...AboveFluxTag` / `...BelowFluxTag`; avoid vague new `At...` names.
 - If/when threshold behavior families are consolidated safely, prefer one behavior class per family plus a shared FluxCondition model over separate SoftFlux/TotalFlux classes.
 - `BurstPDSoftFluxTag` is semantically outdated relative to canonical `PD(SF>N%)` and is an internal rename candidate when that area is touched again.
