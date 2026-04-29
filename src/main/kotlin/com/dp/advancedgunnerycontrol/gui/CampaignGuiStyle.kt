@@ -1,6 +1,7 @@
 package com.dp.advancedgunnerycontrol.gui
 
 import java.awt.Color
+import com.fs.starfarer.api.ui.LabelAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -68,6 +69,23 @@ object CampaignGuiStyle {
     const val ITEM_TEXT_HORIZONTAL_PADDING = 4f
     const val ITEM_TEXT_TOP_PADDING = 2f
     const val ITEM_HIGHLIGHT_X_OFFSET = -3f
+}
+
+fun TooltipMakerAPI.applyAgcDefaultTextStyle() {
+    setParaSmallInsignia()
+}
+
+fun TooltipMakerAPI.addAgcText(
+    text: String,
+    pad: Float = 0f,
+    textColor: Color? = null,
+): LabelAPI {
+    applyAgcDefaultTextStyle()
+    return if (textColor == null) {
+        addPara(text, pad)
+    } else {
+        addPara(text, textColor, pad)
+    }
 }
 
 data class WrapGridMetrics(
@@ -222,7 +240,7 @@ fun computeWrappedLabelLayout(
 }
 
 fun TooltipMakerAPI.addTagLabelPara(text: String, pad: Float = 0f) {
-    addPara(text, pad)
+    addAgcText(text, pad)
 }
 
 fun renderTagLabel(
@@ -235,10 +253,6 @@ fun renderTagLabel(
     textColor: Color? = null,
 ) {
     val element = panel.createUIElement(width, height, false)
-    if (textColor == null) {
-        element.addPara(text, 0f)
-    } else {
-        element.addPara(text, textColor, 0f)
-    }
+    element.addAgcText(text, 0f, textColor)
     panel.addUIElement(element).inTL(x, y)
 }

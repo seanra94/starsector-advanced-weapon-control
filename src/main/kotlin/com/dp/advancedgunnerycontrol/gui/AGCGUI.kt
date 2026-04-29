@@ -24,7 +24,7 @@ class AGCGUI : InteractionDialogPlugin {
                 override fun isTooltipExpandable(p0: Any?): Boolean = false
                 override fun getTooltipWidth(p0: Any?): Float = min(description.length.toFloat() * 7f, 850f)
                 override fun createTooltip(tooltip: TooltipMakerAPI?, p1: Boolean, p2: Any?) {
-                    tooltip?.addPara(description, CampaignGuiStyle.TOOLTIP_TEXT_COLOR, 5f)
+                    tooltip?.addAgcText(description, 5f, CampaignGuiStyle.TOOLTIP_TEXT_COLOR)
                 }
             }
         }

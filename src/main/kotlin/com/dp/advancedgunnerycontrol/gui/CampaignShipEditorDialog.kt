@@ -204,13 +204,14 @@ class CampaignShipEditorPanelPlugin(
 
         val element = fallback.createUIElement(width - 16f, height - 16f, false)
         element.addSectionHeading("AGC Campaign UI Error", Alignment.MID, 0f)
+        element.applyAgcDefaultTextStyle()
         element.addPara(
             "The campaign editor failed to build. Press [Esc] or the AGC GUI hotkey to exit this screen.",
             6f,
             Misc.getNegativeHighlightColor(),
             "[Esc]"
         )
-        element.addPara("Reason: ${ex.javaClass.simpleName}: ${ex.message ?: "no message"}", 6f)
+        element.addAgcText("Reason: ${ex.javaClass.simpleName}: ${ex.message ?: "no message"}", 6f)
         fallback.addUIElement(element).inTL(8f, 8f)
     }
 
@@ -249,6 +250,7 @@ class CampaignShipEditorPanelPlugin(
         }
 
         val infoPanel = panel.createUIElement(width, layout.modifiersLayout.rowHeight, false)
+        infoPanel.applyAgcDefaultTextStyle()
         infoPanel.addPara(
             MODIFIERS_TEXT,
             0f,
@@ -386,9 +388,9 @@ class CampaignShipEditorPanelPlugin(
         baseColor: java.awt.Color? = null,
     ) {
         val label = if (baseColor == null) {
-            panel.addPara(labelText, 0f)
+            panel.addAgcText(labelText, 0f)
         } else {
-            panel.addPara(labelText, baseColor, 0f)
+            panel.addAgcText(labelText, 0f, baseColor)
         }
         val highlights = ACTION_SHORTCUT_HIGHLIGHTS.filter { labelText.contains(it) }
         if (highlights.isNotEmpty()) {

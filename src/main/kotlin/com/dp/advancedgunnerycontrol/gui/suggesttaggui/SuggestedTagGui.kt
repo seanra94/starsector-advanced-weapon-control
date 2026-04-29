@@ -6,6 +6,8 @@ import com.dp.advancedgunnerycontrol.gui.CampaignGuiStyle
 import com.dp.advancedgunnerycontrol.gui.CampaignPanelPlugin
 import com.dp.advancedgunnerycontrol.gui.GUIShower
 import com.dp.advancedgunnerycontrol.gui.WrappedLabelLayout
+import com.dp.advancedgunnerycontrol.gui.addAgcText
+import com.dp.advancedgunnerycontrol.gui.applyAgcDefaultTextStyle
 import com.dp.advancedgunnerycontrol.gui.computeWrappedLabelLayout
 import com.dp.advancedgunnerycontrol.settings.LunaSettingHandler
 import com.dp.advancedgunnerycontrol.settings.Settings
@@ -170,13 +172,14 @@ class SuggestedTagGui : InteractionDialogPlugin {
 
             val element = fallback.createUIElement(width - 16f, height - 16f, false)
             element.addSectionHeading("AGC Suggested Tags UI Error", Alignment.MID, 0f)
+            element.applyAgcDefaultTextStyle()
             element.addPara(
                 "The suggested-tags editor failed to build. Press [Esc] to return.",
                 6f,
                 Misc.getNegativeHighlightColor(),
                 "[Esc]"
             )
-            element.addPara("Reason: ${ex.javaClass.simpleName}: ${ex.message ?: "no message"}", 6f)
+            element.addAgcText("Reason: ${ex.javaClass.simpleName}: ${ex.message ?: "no message"}", 6f)
             fallback.addUIElement(element).inTL(8f, 8f)
         }
 
@@ -260,9 +263,9 @@ class SuggestedTagGui : InteractionDialogPlugin {
             }
 
             val infoPanel = panel.createUIElement(width, max(40f, panel.position.height - currentTop - CampaignGuiStyle.PANEL_PADDING), false)
-            infoPanel.addPara(weaponListView.pageString, 4f)
+            infoPanel.addAgcText(weaponListView.pageString, 4f)
             if (isFilterView) {
-                infoPanel.addPara("Filter mode", Misc.getHighlightColor(), 4f)
+                infoPanel.addAgcText("Filter mode", 4f, Misc.getHighlightColor())
             }
             panel.addUIElement(infoPanel).inTL(CampaignGuiStyle.PANEL_PADDING, currentTop)
         }
@@ -288,9 +291,9 @@ class SuggestedTagGui : InteractionDialogPlugin {
             baseColor: java.awt.Color? = null,
         ) {
             val label = if (baseColor == null) {
-                panel.addPara(labelText, 0f)
+                panel.addAgcText(labelText, 0f)
             } else {
-                panel.addPara(labelText, baseColor, 0f)
+                panel.addAgcText(labelText, 0f, baseColor)
             }
             val highlights = ACTION_SHORTCUT_HIGHLIGHTS.filter { labelText.contains(it) }
             if (highlights.isNotEmpty()) {

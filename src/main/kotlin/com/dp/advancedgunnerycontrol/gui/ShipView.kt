@@ -231,11 +231,11 @@ class ShipView(
         val valueWidth = width - labelWidth
 
         val labelPanel = panel.createUIElement(labelWidth, PICTURE_INFO_ROW_HEIGHT, false)
-        labelPanel.addPara("$label:", 0f)
+        labelPanel.addAgcText("$label:", 0f)
         panel.addUIElement(labelPanel).inTL(CampaignGuiStyle.PANEL_PADDING, top)
 
         val valuePanel = panel.createUIElement(valueWidth, PICTURE_INFO_ROW_HEIGHT, false)
-        valuePanel.addPara(
+        valuePanel.addAgcText(
             wrapTextCapped(value, max(8, ((valueWidth - 8f) / 6.4f).toInt()), maxLines),
             0f
         )
@@ -283,7 +283,7 @@ class ShipView(
             TAG_ELLIPSIS_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
             false
         )
-        text.addPara(symbol, 0f)
+        text.addAgcText(symbol, 0f)
         indicator.addUIElement(text).inTL(
             CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
             CampaignGuiStyle.ITEM_TEXT_TOP_PADDING
@@ -298,7 +298,7 @@ class ShipView(
 
         if (!Settings.isAdvancedMode) {
             val body = panel.createUIElement(innerWidth, bodyHeight, false)
-            body.addPara("Ship AI modes are only available in advanced mode.", 0f)
+            body.addAgcText("Ship AI modes are only available in advanced mode.", 0f)
             panel.addUIElement(body).inTL(CampaignGuiStyle.PANEL_PADDING, bodyTop)
             return
         }
@@ -315,15 +315,17 @@ class ShipView(
     ) {
         val binder = anchorPanel.createUIElement(0f, 0f, false)
         binder.addTooltip(anchorPanel, TooltipMakerAPI.TooltipLocation.BELOW, 260f) { tooltip ->
+            tooltip.applyAgcDefaultTextStyle()
             tooltip.setParaFontColor(CampaignGuiStyle.TOOLTIP_TEXT_COLOR)
             entries.forEach { entry ->
                 if (entry.sprite.isNotBlank()) {
                     val imageText = tooltip.beginImageWithText(entry.sprite, 16f)
+                    imageText.applyAgcDefaultTextStyle()
                     imageText.setParaFontColor(CampaignGuiStyle.TOOLTIP_TEXT_COLOR)
-                    imageText.addPara(entry.label, 0f)
+                    imageText.addAgcText(entry.label, 0f)
                     tooltip.addImageWithText(2f)
                 } else {
-                    tooltip.addPara(entry.label, CampaignGuiStyle.TOOLTIP_TEXT_COLOR, 0f)
+                    tooltip.addAgcText(entry.label, 0f, CampaignGuiStyle.TOOLTIP_TEXT_COLOR)
                 }
             }
         }
@@ -369,7 +371,7 @@ class ShipView(
                 WEAPON_ENTRY_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
                 false
             )
-            imageTextPanel.addPara(imageText, 0f)
+            imageTextPanel.addAgcText(imageText, 0f)
             entryPanel.addUIElement(imageTextPanel).inTL(0f, CampaignGuiStyle.ITEM_TEXT_TOP_PADDING)
         } else if (entry?.sprite?.isNotBlank() == true) {
             val imageMaxHeight = WEAPON_ENTRY_HEIGHT - 4f
@@ -394,7 +396,7 @@ class ShipView(
             false
         )
         val displayLabel = truncateLabelByLength(entry.label, WEAPON_TEXT_MAX_VISIBLE_CHARS)
-        textPanel.addPara(
+        textPanel.addAgcText(
             wrapTextCapped(displayLabel, WEAPON_TEXT_CHARS_PER_LINE, 2),
             0f
         )

@@ -135,7 +135,7 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
                     itemHeight - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
                     false
                 )
-                textPanel.addPara(label, 0f)
+                textPanel.addAgcText(label, 0f)
                 itemPanel.addUIElement(textPanel).inTL(
                     CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
                     CampaignGuiStyle.ITEM_TEXT_TOP_PADDING
