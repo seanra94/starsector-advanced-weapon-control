@@ -101,6 +101,7 @@ agc_targetShields_threshold,Target Shields Threshold,Double,0.1,,"Attack if targ
 agc_avoidShields_threshold,Avoid Shields Threshold,Double,0.2,,"Attack if target flux above 80 percent ",0.0,1.0,Advanced
 agc_opportunist_kineticThreshold,Opportunist Kinetic threshold,Double,0.5,,"Attack if target flux below 50 percent for opportunist tag with kinetic weapons ",0.0,1.0,Advanced
 agc_opportunist_HEThreshold,Opportunist HE threshold,Double,0.2,,"Attack if target flux above 50 percent for opportunist tag with HE weapons ",0.0,1.0,Advanced
+agc_noPDWasteCleanupDamageCap,NoPD Waste Cleanup Damage Cap,Double,100,,"Weapons with estimated attack packet damage at or below this value are exempt from NoPD(Waste>N%) filtering, allowing small PD weapons to finish off low-health fighters and missiles.",0.0,10000.0,Advanced
 agc_ignoreFighterShields,Ignore Fighter Shields,Boolean,true,,"Target/avoid shield tags allow targetting of fighters, regardless of their shield factor",,,Advanced
 agc_EtcHeader,Etc Header,Header,ETC,,,,,Advanced
 agc_strictBigSmallShipMode,Strict Big/Small Ship,Boolean,false,,"If true, the BigShips/SmallShips tags will exclusively target Destroyers and bigger/smaller",,,Advanced

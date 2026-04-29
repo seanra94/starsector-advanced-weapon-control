@@ -58,6 +58,7 @@ val conserveAmmoRegex = Regex("ConserveAmmo\\(A<(\\d+)%\\)")
 val pdAmmoRegex = Regex("PD\\(A<(\\d+)%\\)")
 val conservePDAmmoRegex = Regex("ConservePDAmmo\\(A<(\\d+)%\\)")
 val conservePDAmmoShortRegex = Regex("CnsrvPDAmmo\\(A<(\\d+)%\\)")
+val noPdWasteRegex = Regex("NoPD\\(Waste>(\\d+)%\\)")
 val noPdHealthRegex = Regex("NoPD\\(H<(\\d+)\\)")
 val ignoreMinorPDRegex = Regex("IgnoreMinorPD\\(H<(\\d+)\\)")
 val avoidArmorRegex = Regex("(?:AvoidArmor|AvdArmor)\\((\\d+)%\\)")
@@ -303,6 +304,7 @@ fun canonicalizeWeaponTagName(tag: String): String {
         pdAmmoRegex.matches(tag) -> tag
         conservePDAmmoRegex.matches(tag) -> "PD(A<${extractRegexThresholdAsPercentageString(conservePDAmmoRegex, tag)})"
         conservePDAmmoShortRegex.matches(tag) -> "PD(A<${extractRegexThresholdAsPercentageString(conservePDAmmoShortRegex, tag)})"
+        noPdWasteRegex.matches(tag) -> tag
         noPdHealthRegex.matches(tag) -> tag
         ignoreMinorPDRegex.matches(tag) -> "NoPD(H<${extractRawRegexThreshold(ignoreMinorPDRegex, tag).toInt()})"
         avoidArmorRegex.matches(tag) -> "AvoidArmor(${extractRegexThresholdAsPercentageString(avoidArmorRegex, tag)})"
@@ -444,6 +446,10 @@ fun getTagTooltip(tag: String): String {
             extractRegexThresholdAsPercentageString(pdAmmoRegex, canonicalTag)
         }. Weapons without ammo and missile weapons are unaffected."
 
+        noPdWasteRegex.matches(canonicalTag) -> "Does not target fighters or missiles when this weapon would waste more than ${
+            extractRegexThresholdAsPercentageString(noPdWasteRegex, canonicalTag)
+        } of its estimated attack packet damage. Weapons at or below the cleanup damage cap are unaffected."
+
         noPdHealthRegex.matches(canonicalTag) -> "Does not target fighters or missiles while target health is less than ${
             extractRawRegexThreshold(noPdHealthRegex, canonicalTag).toInt()
         }. Health is hull + armor × 2 + effective remaining shield."
@@ -520,6 +526,7 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
         pdHardFluxRegex.matches(canonicalName) -> return PDAtHardFluxTag(weapon, extractRegexThreshold(pdHardFluxRegex, canonicalName))
         opportunistAmmoRegex.matches(canonicalName) -> return ConserveAmmoTag(weapon, extractRegexThreshold(opportunistAmmoRegex, canonicalName))
         pdAmmoRegex.matches(canonicalName) -> return ConservePDAmmoTag(weapon, extractRegexThreshold(pdAmmoRegex, canonicalName))
+        noPdWasteRegex.matches(canonicalName) -> return NoPDWasteTag(weapon, extractRegexThreshold(noPdWasteRegex, canonicalName))
         noPdHealthRegex.matches(canonicalName) -> return IgnoreMinorPDTag(weapon, extractRawRegexThreshold(noPdHealthRegex, canonicalName))
         avoidArmorRegex.matches(canonicalName) -> return AvoidArmorTag(weapon, extractRegexThreshold(avoidArmorRegex, canonicalName))
         panicFireRegex.matches(canonicalName) -> return PanicFireTag(weapon, extractRegexThreshold(panicFireRegex, canonicalName))
@@ -601,6 +608,7 @@ fun tagNameToRegexName(tag: String): String {
         opportunistAmmoRegex.matches(canonicalTag) -> "Opportunist(A<N%)"
         canonicalTag == "ConservePDAmmo" -> "PD(A<N%)"
         pdAmmoRegex.matches(canonicalTag) -> "PD(A<N%)"
+        noPdWasteRegex.matches(canonicalTag) -> "NoPD(Waste>N%)"
         noPdHealthRegex.matches(canonicalTag) -> "NoPD(H<N>)"
         canonicalTag == "IgnoreMinorPD" -> "NoPD(H<N>)"
         avoidArmorRegex.matches(canonicalTag) -> "AvoidArmor"

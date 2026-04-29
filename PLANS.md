@@ -3,7 +3,7 @@
 ## Active task
 
 Tag-system standardization.
-Status: baseline and TF/SF helper groundwork accepted; ammo-threshold + `NoPD(H<...)` canonicalization complete; HF support complete for TF/SF families.
+Status: baseline and TF/SF helper groundwork accepted; ammo-threshold canonicalization complete; `NoPD(Waste>...)` is the preferred minor-PD suppression tag; `NoPD(H<...)` remains supported; HF support complete for TF/SF families.
 
 ## Goal
 
@@ -11,7 +11,7 @@ Stage the tag-system roadmap cleanly: baseline list is canonicalized, TF/SF help
 
 ## Why this task matters
 
-With TF/SF helper groundwork, ammo-threshold canonicals, `NoPD(H<...)`, and HF threshold support in place, the next staged feature is LunaSettings exposure for the soft-flux total-flux cap.
+With TF/SF helper groundwork, ammo-threshold canonicals, `NoPD(Waste>...)`, retained `NoPD(H<...)` support, and HF threshold support in place, the next staged feature is LunaSettings exposure for the soft-flux total-flux cap.
 
 ## Acceptance criteria
 
@@ -44,7 +44,7 @@ Current canonical names and alias rules are defined in `WeaponAITags.kt`; genera
 2. Review/audit wave:
    - tag incompatibility review
    - tooltip accuracy/consistency review
-   - README update with realistic per-tag example use cases
+   - README tag table examples column: add one realistic grounded example/use case for every tag
    - text consistency sweep (for example `Avd -> Avoid`)
 3. Naming/logic review wave:
    - `Hold -> HoldFire` (preserve `Hold(...)` aliases)
@@ -67,6 +67,7 @@ Current canonical names and alias rules are defined in `WeaponAITags.kt`; genera
 - [ ] Preserve canonical names, legacy compatibility, and gameplay behavior.
 - [x] Implement canonical `Opportunist(A<...)` and `PD(A<...)` with plain-tag compatibility.
 - [x] Implement canonical `NoPD(H<...)` with legacy `IgnoreMinorPD` compatibility.
+- [x] Implement preferred `NoPD(Waste>...)` minor-PD waste filtering with `NoPD(H<...)` retained.
 - [x] Implement HF support where TF/SF conditional families already exist.
 - [ ] Implement LunaSettings exposure of the soft-flux total-flux cap.
 - [ ] Record `Hold->HoldFire` and `ForceAF->ForceAutoFire` as canonical rename goals while preserving old aliases in the later rename wave.
@@ -103,4 +104,4 @@ Then copy to `C:\Games\Starsector\mods\Advanced-Gunnery-Control-Fork` using the 
 
 ## Current status
 
-Baseline curation, TF/SF helper groundwork, ammo-threshold canonicals, `NoPD(H<...)`, and HF support are complete. The active implementation focus is now LunaSettings exposure of the soft-flux total-flux cap.
+Baseline curation, TF/SF helper groundwork, ammo-threshold canonicals, preferred `NoPD(Waste>...)`, retained `NoPD(H<...)` support, and HF support are complete. The active implementation focus is now LunaSettings exposure of the soft-flux total-flux cap.

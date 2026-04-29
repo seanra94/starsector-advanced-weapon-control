@@ -68,6 +68,7 @@ object Settings : SettingsDefinition() {
     val shieldOffThreshold = addSetting<Float>("shieldsOff_flux", 0.5f, false)
     val conserveAmmo = addSetting<Float>("conserveAmmo_ammo", 0.5f, false)
     val conservePDAmmo = addSetting<Float>("conservePDAmmo_ammo", 0.9f, false)
+    val noPDWasteCleanupDamageCap = addSetting<Float>("noPDWasteCleanupDamageCap", 100f, true)
     val directRetreat = addSetting<Boolean>("retreat_shouldDirectRetreat", false, tryLunar = false)
     val opportunistModifier = addSetting<Float>("opportunist_triggerHappinessModifier", 1.0f, false)
     val strictBigSmall = addSetting<Boolean>("strictBigSmallShipMode", true, tryLunar = true)

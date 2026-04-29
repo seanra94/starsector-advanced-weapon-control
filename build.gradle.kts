@@ -243,7 +243,7 @@ tasks {
                    |   # "AvoidShield(TF>N%)", "AvoidShield(SF>N%)", "AvoidShield(HF>N%)", "TargetShield(TF>N%)", "TargetShield(SF>N%)", "TargetShield(HF>N%)",
                    |   # "AvoidArmor(N%)", "AvoidDebris", "ShieldOff", "Opportunist", "Hold(TF>N%)", "Hold(SF>N%)", "Hold(HF>N%)",
                    |   # "Opportunist(A<N%)", "PD(A<N%)", "ConserveAmmo", "ConserveAmmo(A<N%)", "ConservePDAmmo", "ConservePDAmmo(A<N%)", "CnsrvPDAmmo", "ShipTarget", "AvoidPhased", "TargetPhase", "SyncWindow", "SyncVolley", "Ambush",
-                   |   # "NoPD(H<N>)", "IgnoreMinorPD", "IgnoreMinorPD(H<N>)", "BigShip", "SmallShip", "Panic(H<N%)", "Range<N%", "Force(TF<N%)", "Force(SF<N%)", "Force(HF<N%)",
+                   |   # "NoPD(Waste>N%)", "NoPD(H<N>)", "IgnoreMinorPD", "IgnoreMinorPD(H<N>)", "BigShip", "SmallShip", "Panic(H<N%)", "Range<N%", "Force(TF<N%)", "Force(SF<N%)", "Force(HF<N%)",
                    |   # "Overloaded", "Merge", "PrioFighter", "PrioMissile", "PrioShip", "PrioWounded", "PrioHealthy",
                    |   # "BlockBeams", "CustomAI", "LowRoF(N%)", "PrioDense"
                    |   
@@ -266,7 +266,7 @@ tasks {
                    |                "PrioPD", "PrioFighter", "PrioMissile", "PrioShip", "PrioWounded", "PrioHealthy",
                    |                "Fighter", "NoMissile", "NoFighter", "BigShip", "SmallShip", "ShipTarget",
                    |                "Opportunist", "Opportunist(A<80%)", "PD(A<80%)",
-                   |                "NoPD(H<145)", "Panic(H<25%)", "Range<60%", "Range<90%",
+                   |                "NoPD(Waste>40%)", "Panic(H<25%)", "Range<60%", "Range<90%",
                    |                "Overloaded", "LowRoF(200%)", "CustomAI", "PrioDense", "AvoidDebris", "BlockBeams"
                    |                ]  
                    |   
@@ -279,7 +279,7 @@ tasks {
                    |                "PrioPD", "PrioFighter", "PrioMissile",
                    |                "NoMissile", "NoFighter",
                    |                "Opportunist", "Panic(H<25%)", "Range<60%",
-                   |                "Opportunist(A<80%)", "PD(A<80%)", "PD(SF>10%)", "NoPD(H<145)",
+                   |                "Opportunist(A<80%)", "PD(A<80%)", "PD(SF>10%)", "NoPD(Waste>40%)",
                    |                "AvoidShield+", "TargetShield+"
                    |                ]  
                    |                
@@ -453,6 +453,7 @@ tasks {
                    |   
                    |   ,"conserveAmmo_ammo" : 0.5 # Start conserving ammo when ammoLevel < X
                    |   ,"conservePDAmmo_ammo" : 0.9 # Only allow firing at fighters and missiles when ammo < X
+                   |   ,"noPDWasteCleanupDamageCap" : 100 # NoPD(Waste>N%) ignores waste filtering for weapons at or below this estimated attack packet damage
                    |   
                    |   # If true, the BigShip/SmallShip tags will exclusively target Destroyers and bigger/smaller
                    |   ,"strictBigSmallShipMode" : false

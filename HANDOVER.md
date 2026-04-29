@@ -84,7 +84,8 @@ C:\Games\Starsector\starsector-core\starsector.log
 - The `completeTagList` baseline/coverage pass is complete; treat the current canonical list in `build.gradle.kts` as the user-facing ordering baseline.
 - The narrow TF/SF helper pass is accepted groundwork and complete for this stage.
 - Canonical parameterized ammo-threshold support is complete with renamed canonicals: `Opportunist(A<...)` (ammo-gated opportunist) and `PD(A<...)` (ammo-gated PD reservation). Legacy names `ConserveAmmo` / `ConservePDAmmo` / `CnsrvPDAmmo` remain compatibility aliases.
-- Canonical minor-PD suppression is `NoPD(H<...)`, meaning do not target fighters/missiles while target health is below the raw threshold. Legacy `IgnoreMinorPD` / `IgnoreMinorPD(H<...)` names remain compatibility aliases.
+- Canonical minor-PD waste suppression is `NoPD(Waste>...)`, meaning do not target fighters/missiles when this weapon would waste more than the configured share of its estimated attack packet damage. `NoPD(H<...)` remains supported as the simpler health-threshold form, and legacy `IgnoreMinorPD` / `IgnoreMinorPD(H<...)` names remain compatibility aliases.
+- `NoPD(Waste>...)` uses a bounded waste ratio and exempts weapons at or below `noPDWasteCleanupDamageCap` so low-damage PD can clean up nearly-dead targets.
 - HF support is complete for conditional tag families that already had TF/SF forms. The next preferred implementation task is LunaSettings exposure of the soft-flux total-flux cap.
 - Threshold-class naming direction for future touched code: prefer comparator-explicit names such as `...AboveFluxTag` / `...BelowFluxTag`; avoid vague new `At...` names.
 - If/when threshold behavior families are consolidated safely, prefer one behavior class per family plus a shared FluxCondition model over separate SoftFlux/TotalFlux classes.
@@ -92,7 +93,7 @@ C:\Games\Starsector\starsector-core\starsector.log
 - Legacy settings-backed wrappers `TargetShieldAtTotalFluxTag` / `AvoidShieldAtTotalFluxTag` should be treated as legacy wrappers, not preferred naming models.
 - Naming/review wave should be staged after behavior/plumbing work: incompatibility audit, tooltip accuracy audit, README/examples, text consistency sweep, `PrioPD -> PrioSmall` review, `BigShip/SmallShip -> TargetBig/TargetSmall` review, `TargetPhase -> PrioPhase` review, and adding `PrioBig`.
 - Canonical user-facing rename goals for a later wave: `Hold(...) -> HoldFire(...)` (with `Hold(...)` aliases preserved) and `ForceAF -> ForceAutoFire` (with `ForceAF` alias preserved). Check UI label density before applying these.
-- `NoPD(H<...)` health means effective durability (hull + armor * 2 + effective remaining shield), not literal hull alone.
+- `NoPD(H<...)` health means effective durability (hull + armor * 2 + effective remaining shield), not literal hull alone. The preferred visible minor-PD suppression tag is now `NoPD(Waste>...)`; `NoPD(H<...)` is retained for compatibility and simpler threshold use.
 - The user requested `PrioBig` twice in backlog discussion; track it once.
 - Campaign tag scrolling should use the single forwarded `InputEventAPI` wheel path with explicit event consumption. Do not reintroduce direct LWJGL mouse polling unless coordinate logs prove it is needed.
 - Campaign selected tags are pinned at the top of each tag column, removed from the normal scroll slice while pinned, and use pale yellow selected backgrounds.
