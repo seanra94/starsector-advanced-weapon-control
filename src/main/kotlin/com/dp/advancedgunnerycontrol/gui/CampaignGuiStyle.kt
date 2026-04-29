@@ -72,7 +72,7 @@ object CampaignGuiStyle {
 }
 
 fun TooltipMakerAPI.applyAgcDefaultTextStyle() {
-    setParaFont("graphics/fonts/victor12.fnt")
+    // Intentionally no-op: preserve Starsector's native paragraph font/style.
 }
 
 fun TooltipMakerAPI.addAgcText(
