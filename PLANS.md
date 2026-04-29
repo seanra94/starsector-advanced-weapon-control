@@ -3,7 +3,7 @@
 ## Active task
 
 Tag-system standardization.
-Status: baseline and TF/SF helper groundwork accepted; ammo-threshold tags implemented; active next step is `IgnoreMinorPD(H<...)`.
+Status: baseline and TF/SF helper groundwork accepted; ammo-threshold + `NoPD(H<...)` canonicalization complete; HF support complete for TF/SF families.
 
 ## Goal
 
@@ -11,7 +11,7 @@ Stage the tag-system roadmap cleanly: baseline list is canonicalized, TF/SF help
 
 ## Why this task matters
 
-With TF/SF helper groundwork and parameterized ammo tags in place, `IgnoreMinorPD(H<...)` is the next narrow threshold feature in the staged backlog.
+With TF/SF helper groundwork, ammo-threshold canonicals, `NoPD(H<...)`, and HF threshold support in place, the next staged feature is LunaSettings exposure for the soft-flux total-flux cap.
 
 ## Acceptance criteria
 
@@ -39,9 +39,7 @@ Current canonical names and alias rules are defined in `WeaponAITags.kt`; genera
 
 ## Near-term queue
 
-1. Remaining parameterized thresholds:
-   - `IgnoreMinorPD(H<...)`
-   - HF support where TF/SF currently exist
+1. Remaining parameterized thresholds/settings:
    - LunaSettings exposure of the soft-flux total-flux cap
 2. Review/audit wave:
    - tag incompatibility review
@@ -68,8 +66,9 @@ Current canonical names and alias rules are defined in `WeaponAITags.kt`; genera
 - [x] Introduce narrow helper abstractions for existing TF/SF conditional tags only.
 - [ ] Preserve canonical names, legacy compatibility, and gameplay behavior.
 - [x] Implement canonical `Opportunist(A<...)` and `PD(A<...)` with plain-tag compatibility.
-- [ ] Implement canonical `IgnoreMinorPD(H<...)` with plain-tag compatibility.
-- [ ] Defer HF support and remaining staged thresholds until after `IgnoreMinorPD(H<...)`.
+- [x] Implement canonical `NoPD(H<...)` with legacy `IgnoreMinorPD` compatibility.
+- [x] Implement HF support where TF/SF conditional families already exist.
+- [ ] Implement LunaSettings exposure of the soft-flux total-flux cap.
 - [ ] Record `Hold->HoldFire` and `ForceAF->ForceAutoFire` as canonical rename goals while preserving old aliases in the later rename wave.
 - [ ] Re-run `compileKotlin`.
 - [ ] Run `jar create-metadata-files write-settings-file` when generation inputs changed.
@@ -98,10 +97,10 @@ Then copy to `C:\Games\Starsector\mods\Advanced-Gunnery-Control-Fork` using the 
 
 - Settings comment blocks can drift from actual support if list/regex updates are not mirrored in `build.gradle.kts`.
 - Large rename waves should be staged only after behavior confirmation to avoid compatibility regressions.
-- `IgnoreMinorPD(H<...)` must describe `H` as effective durability (not literal hull) when implemented.
+- `NoPD(H<...)` must continue to describe `H` as effective durability (not literal hull).
 - The rename requests are intentionally deferred until logic confirmation (`BigShip/SmallShip` target naming and `TargetPhase` prioritization semantics).
 - `HoldFire` / `ForceAutoFire` canonical rename work should watch for UI density and button-label length constraints, especially outside the campaign GUI.
 
 ## Current status
 
-Baseline curation, TF/SF helper groundwork, and ammo-threshold tags are complete. The active implementation focus is now `IgnoreMinorPD(H<...)`.
+Baseline curation, TF/SF helper groundwork, ammo-threshold canonicals, `NoPD(H<...)`, and HF support are complete. The active implementation focus is now LunaSettings exposure of the soft-flux total-flux cap.

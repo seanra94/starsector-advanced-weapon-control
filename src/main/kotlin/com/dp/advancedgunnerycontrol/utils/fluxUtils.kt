@@ -5,7 +5,8 @@ import com.fs.starfarer.api.combat.ShipAPI
 
 enum class FluxMetric {
     TOTAL,
-    SOFT
+    SOFT,
+    HARD
 }
 
 enum class FluxComparator {
@@ -28,6 +29,7 @@ private fun ShipAPI.fluxValue(metric: FluxMetric): Float {
     return when (metric) {
         FluxMetric.TOTAL -> fluxLevel
         FluxMetric.SOFT -> softFluxLevel()
+        FluxMetric.HARD -> hardFluxLevel
     }
 }
 

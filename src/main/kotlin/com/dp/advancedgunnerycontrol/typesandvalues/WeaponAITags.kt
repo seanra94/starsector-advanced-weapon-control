@@ -21,7 +21,7 @@ import kotlin.math.roundToInt
 
 // NOTE: Tag names should NOT exceed 13 characters to be able to cleanly fit on buttons!
 
-val pdTags = listOf("PD", "NoPD", "PD(TF>N%)", "PD(SF>N%)", "NoMissile")
+val pdTags = listOf("PD", "NoPD", "PD(TF>N%)", "PD(SF>N%)", "PD(HF>N%)", "NoMissile")
 val opportunistAmmoTags = listOf("ConserveAmmo", "Opportunist(A<N%)")
 val pdAmmoTags = listOf("ConservePDAmmo", "PD(A<N%)")
 
@@ -30,29 +30,35 @@ private const val LEGACY_TOTAL_FLUX_TOKEN = "Fl?u?x?"
 val holdTotalFluxRegex = Regex("Hold\\(TF>(\\d+)%\\)")
 val holdTotalFluxLegacyRegex = Regex("Hold(?:FT)?\\($LEGACY_TOTAL_FLUX_TOKEN>(\\d+)%\\)")
 val holdSoftFluxRegex = Regex("Hold\\(SF>(\\d+)%\\)")
+val holdHardFluxRegex = Regex("Hold\\(HF>(\\d+)%\\)")
 val holdSoftFluxLegacyRegex = Regex("HoldSFT\\($LEGACY_TOTAL_FLUX_TOKEN>(\\d+)%\\)")
 val forceFireTotalFluxRegex = Regex("Force\\(TF<(\\d+)%\\)")
 val forceFireTotalFluxLegacyRegex = Regex("Force(?:F|FT)\\($LEGACY_TOTAL_FLUX_TOKEN<(\\d+)%\\)")
 val forceFireSoftFluxRegex = Regex("Force\\(SF<(\\d+)%\\)")
+val forceFireHardFluxRegex = Regex("Force\\(HF<(\\d+)%\\)")
 val forceFireSoftFluxLegacyRegex = Regex("ForceSFT\\($LEGACY_TOTAL_FLUX_TOKEN<(\\d+)%\\)")
 val avoidShieldTotalFluxRegex = Regex("AvoidShield\\(TF>(\\d+)%\\)")
 val avoidShieldSoftFluxRegex = Regex("AvoidShield\\(SF>(\\d+)%\\)")
+val avoidShieldHardFluxRegex = Regex("AvoidShield\\(HF>(\\d+)%\\)")
 val avoidShieldTotalFluxLegacyRegex = Regex("(?:AvShldFT|AvdShieldsFT)\\($LEGACY_TOTAL_FLUX_TOKEN<(\\d+)%\\)")
 val avoidShieldSoftFluxLegacyRegex = Regex("(?:AvShldSFT|AvShlddSFT|AvdShieldsSFT)\\($LEGACY_TOTAL_FLUX_TOKEN<(\\d+)%\\)")
 val targetShieldTotalFluxRegex = Regex("TargetShield\\(TF>(\\d+)%\\)")
 val targetShieldSoftFluxRegex = Regex("TargetShield\\(SF>(\\d+)%\\)")
+val targetShieldHardFluxRegex = Regex("TargetShield\\(HF>(\\d+)%\\)")
 val targetShieldTotalFluxLegacyRegex = Regex("(?:TgtShldFT|TgtShieldsFT)\\($LEGACY_TOTAL_FLUX_TOKEN<(\\d+)%\\)")
 val targetShieldSoftFluxLegacyRegex = Regex("(?:TgtShldSFT|TgtShieldsSFT)\\($LEGACY_TOTAL_FLUX_TOKEN<(\\d+)%\\)")
 val pdSoftFluxRegex = Regex("PD\\(SF>(\\d+)%\\)")
 val burstPDSoftFluxAliasRegex = Regex("BurstPD\\(SF>(\\d+)%\\)")
 val burstPDSoftFluxLegacyRegex = Regex("BurstPDSFT\\($LEGACY_TOTAL_FLUX_TOKEN<(\\d+)%\\)")
 val pdTotalFluxRegex = Regex("PD\\(TF>(\\d+)%\\)")
+val pdHardFluxRegex = Regex("PD\\(HF>(\\d+)%\\)")
 val pdTotalFluxLegacyRegex = Regex("PD\\($LEGACY_TOTAL_FLUX_TOKEN>(\\d+)%\\)")
 val opportunistAmmoRegex = Regex("Opportunist\\(A<(\\d+)%\\)")
 val conserveAmmoRegex = Regex("ConserveAmmo\\(A<(\\d+)%\\)")
 val pdAmmoRegex = Regex("PD\\(A<(\\d+)%\\)")
 val conservePDAmmoRegex = Regex("ConservePDAmmo\\(A<(\\d+)%\\)")
 val conservePDAmmoShortRegex = Regex("CnsrvPDAmmo\\(A<(\\d+)%\\)")
+val noPdHealthRegex = Regex("NoPD\\(H<(\\d+)\\)")
 val ignoreMinorPDRegex = Regex("IgnoreMinorPD\\(H<(\\d+)\\)")
 val avoidArmorRegex = Regex("(?:AvoidArmor|AvdArmor)\\((\\d+)%\\)")
 val panicFireRegex = Regex("Panic\\(H<(\\d+)%\\)")
@@ -146,6 +152,7 @@ private fun fluxConditionWording(condition: FluxCondition): String {
     val metric = when (condition.metric) {
         FluxMetric.TOTAL -> "total flux"
         FluxMetric.SOFT -> "soft flux"
+        FluxMetric.HARD -> "hard flux"
     }
     val comparator = when (condition.comparator) {
         FluxComparator.GREATER_THAN -> "greater than"
@@ -286,12 +293,18 @@ fun canonicalizeWeaponTagName(tag: String): String {
     return when {
         burstPDSoftFluxAliasRegex.matches(tag) -> "PD(SF>${invertedRegexThresholdAsPercentageString(burstPDSoftFluxAliasRegex, tag)})"
         pdSoftFluxRegex.matches(tag) -> tag
+        pdHardFluxRegex.matches(tag) -> tag
+        holdHardFluxRegex.matches(tag) -> tag
+        forceFireHardFluxRegex.matches(tag) -> tag
+        avoidShieldHardFluxRegex.matches(tag) -> tag
+        targetShieldHardFluxRegex.matches(tag) -> tag
         opportunistAmmoRegex.matches(tag) -> tag
         conserveAmmoRegex.matches(tag) -> "Opportunist(A<${extractRegexThresholdAsPercentageString(conserveAmmoRegex, tag)})"
         pdAmmoRegex.matches(tag) -> tag
         conservePDAmmoRegex.matches(tag) -> "PD(A<${extractRegexThresholdAsPercentageString(conservePDAmmoRegex, tag)})"
         conservePDAmmoShortRegex.matches(tag) -> "PD(A<${extractRegexThresholdAsPercentageString(conservePDAmmoShortRegex, tag)})"
-        ignoreMinorPDRegex.matches(tag) -> "IgnoreMinorPD(H<${extractRawRegexThreshold(ignoreMinorPDRegex, tag).toInt()})"
+        noPdHealthRegex.matches(tag) -> tag
+        ignoreMinorPDRegex.matches(tag) -> "NoPD(H<${extractRawRegexThreshold(ignoreMinorPDRegex, tag).toInt()})"
         avoidArmorRegex.matches(tag) -> "AvoidArmor(${extractRegexThresholdAsPercentageString(avoidArmorRegex, tag)})"
         tag == "PrioritisePD" -> "PrioPD"
         tag == "PrioritizePD" -> "PrioPD"
@@ -308,6 +321,7 @@ fun canonicalizeWeaponTagName(tag: String): String {
         tag == "AvdShieldsFT" -> "AvoidShield(TF>${settingAsActivationThreshold(Settings.avoidShieldAtTotalFlux())})"
         tag == "TgtShieldsFT" -> "TargetShield(TF>${settingAsActivationThreshold(Settings.targetShieldAtTotalFlux())})"
         tag == "ShieldsOff" -> "ShieldOff"
+        tag == "IgnoreMinorPD" -> "NoPD(H<145)"
         else -> tag
     }
 }
@@ -334,6 +348,13 @@ fun getTagTooltip(tag: String): String {
             )
         } or total flux reaches ${(Settings.softFluxTotalFluxCap() * 100f).toInt()}%."
 
+        holdHardFluxRegex.matches(canonicalTag) -> "Weapon will stop firing if ship hard flux exceeds ${
+            extractRegexThresholdAsPercentageString(
+                holdHardFluxRegex,
+                canonicalTag
+            )
+        }."
+
         forceFireTotalFluxRegex.matches(canonicalTag) -> "ForceFire: Weapon will ignore firing restrictions of other tags while total flux is below ${
             fluxConditionThresholdPercent(
                 parseCanonicalFluxCondition(canonicalTag, forceFireTotalFluxRegex, FluxMetric.TOTAL, FluxComparator.LESS_THAN)!!
@@ -348,6 +369,13 @@ fun getTagTooltip(tag: String): String {
         } and total flux is below ${(Settings.softFluxTotalFluxCap() * 100f).toInt()}%." +
                 "\nNote: This will not circumvent targeting restrictions, only firing restrictions."
 
+        forceFireHardFluxRegex.matches(canonicalTag) -> "ForceFire: Weapon will ignore firing restrictions of other tags while hard flux is below ${
+            fluxConditionThresholdPercent(
+                parseCanonicalFluxCondition(canonicalTag, forceFireHardFluxRegex, FluxMetric.HARD, FluxComparator.LESS_THAN)!!
+            )
+        }." +
+                "\nNote: This will not circumvent targeting restrictions, only firing restrictions."
+
         avoidShieldTotalFluxRegex.matches(canonicalTag) -> tooltipWithActivationCondition(
             tagTooltips["AvoidShield"] ?: "No description available.",
             fluxConditionWording(
@@ -359,6 +387,13 @@ fun getTagTooltip(tag: String): String {
             tagTooltips["AvoidShield"] ?: "No description available.",
             fluxConditionWording(
                 parseCanonicalFluxCondition(canonicalTag, avoidShieldSoftFluxRegex, FluxMetric.SOFT, FluxComparator.GREATER_THAN, requireSoftFluxCap = true)!!
+            )
+        )
+
+        avoidShieldHardFluxRegex.matches(canonicalTag) -> tooltipWithActivationCondition(
+            tagTooltips["AvoidShield"] ?: "No description available.",
+            fluxConditionWording(
+                parseCanonicalFluxCondition(canonicalTag, avoidShieldHardFluxRegex, FluxMetric.HARD, FluxComparator.GREATER_THAN)!!
             )
         )
 
@@ -376,6 +411,13 @@ fun getTagTooltip(tag: String): String {
             )
         )
 
+        targetShieldHardFluxRegex.matches(canonicalTag) -> tooltipWithActivationCondition(
+            tagTooltips["TargetShield"] ?: "No description available.",
+            fluxConditionWording(
+                parseCanonicalFluxCondition(canonicalTag, targetShieldHardFluxRegex, FluxMetric.HARD, FluxComparator.GREATER_THAN)!!
+            )
+        )
+
         pdSoftFluxRegex.matches(canonicalTag) -> "${pdTargetingRestrictionTooltip().removeSuffix(".")} while soft flux is greater than ${
             fluxConditionThresholdPercent(
                 parseCanonicalFluxCondition(canonicalTag, pdSoftFluxRegex, FluxMetric.SOFT, FluxComparator.GREATER_THAN, requireSoftFluxCap = true)!!
@@ -388,6 +430,12 @@ fun getTagTooltip(tag: String): String {
             )
         }."
 
+        pdHardFluxRegex.matches(canonicalTag) -> "${pdTargetingRestrictionTooltip().removeSuffix(".")} while hard flux is greater than ${
+            fluxConditionThresholdPercent(
+                parseCanonicalFluxCondition(canonicalTag, pdHardFluxRegex, FluxMetric.HARD, FluxComparator.GREATER_THAN)!!
+            )
+        }."
+
         opportunistAmmoRegex.matches(canonicalTag) -> "While ammo is less than ${
             extractRegexThresholdAsPercentageString(opportunistAmmoRegex, canonicalTag)
         }, only fires at opportune targets. Weapons without ammo are unaffected."
@@ -396,9 +444,9 @@ fun getTagTooltip(tag: String): String {
             extractRegexThresholdAsPercentageString(pdAmmoRegex, canonicalTag)
         }. Weapons without ammo and missile weapons are unaffected."
 
-        ignoreMinorPDRegex.matches(canonicalTag) -> "Ignores missiles and fighters below effective durability ${
-            extractRawRegexThreshold(ignoreMinorPDRegex, canonicalTag).toInt()
-        }." + "\nEffective durability is combined hull + armor + shield contribution."
+        noPdHealthRegex.matches(canonicalTag) -> "Does not target fighters or missiles while target health is less than ${
+            extractRawRegexThreshold(noPdHealthRegex, canonicalTag).toInt()
+        }. Health is hull + armor × 2 + effective remaining shield."
 
         avoidArmorRegex.matches(canonicalTag) -> "Weapon will fire when the shot is likely to hit shields (as TargetShield) OR a section of hull " +
                 "\nwhere the armor is low enough to achieve at least ${
@@ -439,8 +487,10 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
     when {
         holdTotalFluxRegex.matches(canonicalName) -> return HoldTotalFluxTag(weapon, extractRegexThreshold(holdTotalFluxRegex, canonicalName))
         holdSoftFluxRegex.matches(canonicalName) -> return HoldSoftFluxTag(weapon, extractRegexThreshold(holdSoftFluxRegex, canonicalName))
+        holdHardFluxRegex.matches(canonicalName) -> return HoldHardFluxTag(weapon, extractRegexThreshold(holdHardFluxRegex, canonicalName))
         forceFireTotalFluxRegex.matches(canonicalName) -> return ForceFireTotalFluxTag(weapon, extractRegexThreshold(forceFireTotalFluxRegex, canonicalName))
         forceFireSoftFluxRegex.matches(canonicalName) -> return ForceFireSoftFluxTag(weapon, extractRegexThreshold(forceFireSoftFluxRegex, canonicalName))
+        forceFireHardFluxRegex.matches(canonicalName) -> return ForceFireHardFluxTag(weapon, extractRegexThreshold(forceFireHardFluxRegex, canonicalName))
         avoidShieldTotalFluxRegex.matches(canonicalName) -> return AvoidShieldTotalFluxTag(
             weapon,
             extractRegexThreshold(avoidShieldTotalFluxRegex, canonicalName)
@@ -448,6 +498,10 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
         avoidShieldSoftFluxRegex.matches(canonicalName) -> return AvoidShieldSoftFluxTag(
             weapon,
             extractRegexThreshold(avoidShieldSoftFluxRegex, canonicalName)
+        )
+        avoidShieldHardFluxRegex.matches(canonicalName) -> return AvoidShieldHardFluxTag(
+            weapon,
+            extractRegexThreshold(avoidShieldHardFluxRegex, canonicalName)
         )
         targetShieldTotalFluxRegex.matches(canonicalName) -> return TargetShieldTotalFluxTag(
             weapon,
@@ -457,11 +511,16 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
             weapon,
             extractRegexThreshold(targetShieldSoftFluxRegex, canonicalName)
         )
+        targetShieldHardFluxRegex.matches(canonicalName) -> return TargetShieldHardFluxTag(
+            weapon,
+            extractRegexThreshold(targetShieldHardFluxRegex, canonicalName)
+        )
         pdSoftFluxRegex.matches(canonicalName) -> return BurstPDSoftFluxTag(weapon, extractRegexThreshold(pdSoftFluxRegex, canonicalName))
         pdTotalFluxRegex.matches(canonicalName) -> return PDAtTotalFluxTag(weapon, extractRegexThreshold(pdTotalFluxRegex, canonicalName))
+        pdHardFluxRegex.matches(canonicalName) -> return PDAtHardFluxTag(weapon, extractRegexThreshold(pdHardFluxRegex, canonicalName))
         opportunistAmmoRegex.matches(canonicalName) -> return ConserveAmmoTag(weapon, extractRegexThreshold(opportunistAmmoRegex, canonicalName))
         pdAmmoRegex.matches(canonicalName) -> return ConservePDAmmoTag(weapon, extractRegexThreshold(pdAmmoRegex, canonicalName))
-        ignoreMinorPDRegex.matches(canonicalName) -> return IgnoreMinorPDTag(weapon, extractRawRegexThreshold(ignoreMinorPDRegex, canonicalName))
+        noPdHealthRegex.matches(canonicalName) -> return IgnoreMinorPDTag(weapon, extractRawRegexThreshold(noPdHealthRegex, canonicalName))
         avoidArmorRegex.matches(canonicalName) -> return AvoidArmorTag(weapon, extractRegexThreshold(avoidArmorRegex, canonicalName))
         panicFireRegex.matches(canonicalName) -> return PanicFireTag(weapon, extractRegexThreshold(panicFireRegex, canonicalName))
         rangeRegex.matches(canonicalName) -> return RangeTag(weapon, extractRegexThreshold(rangeRegex, canonicalName))
@@ -496,7 +555,7 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
         "SyncWindow" -> SynchronizedFireTag(weapon, SyncFireMode.WINDOW)
         "SyncVolley" -> SynchronizedFireTag(weapon, SyncFireMode.VOLLEY)
         "Ambush" -> SynchronizedFireTag(weapon, SyncFireMode.AMBUSH)
-        "IgnoreMinorPD" -> IgnoreMinorPDTag(weapon)
+        "IgnoreMinorPD", "NoPD(H<145)" -> IgnoreMinorPDTag(weapon)
         "PrioFighter" -> PrioritizeFightersTag(weapon, Settings.prioXModifier())
         "PrioMissile" -> PrioritizeMissilesTag(weapon, Settings.prioXModifier())
         "PrioShip", "PrioShips" -> PrioritizeShipTag(weapon, Settings.prioXModifier())
@@ -525,19 +584,25 @@ fun tagNameToRegexName(tag: String): String {
     return when {
         holdTotalFluxRegex.matches(canonicalTag) -> "Hold(TF>N%)"
         holdSoftFluxRegex.matches(canonicalTag) -> "Hold(SF>N%)"
+        holdHardFluxRegex.matches(canonicalTag) -> "Hold(HF>N%)"
         forceFireTotalFluxRegex.matches(canonicalTag) -> "Force(TF<N%)"
         forceFireSoftFluxRegex.matches(canonicalTag) -> "Force(SF<N%)"
+        forceFireHardFluxRegex.matches(canonicalTag) -> "Force(HF<N%)"
         avoidShieldTotalFluxRegex.matches(canonicalTag) -> "AvoidShield(TF>N%)"
         avoidShieldSoftFluxRegex.matches(canonicalTag) -> "AvoidShield(SF>N%)"
+        avoidShieldHardFluxRegex.matches(canonicalTag) -> "AvoidShield(HF>N%)"
         targetShieldTotalFluxRegex.matches(canonicalTag) -> "TargetShield(TF>N%)"
         targetShieldSoftFluxRegex.matches(canonicalTag) -> "TargetShield(SF>N%)"
+        targetShieldHardFluxRegex.matches(canonicalTag) -> "TargetShield(HF>N%)"
         pdSoftFluxRegex.matches(canonicalTag) -> "PD(SF>N%)"
         pdTotalFluxRegex.matches(canonicalTag) -> "PD(TF>N%)"
+        pdHardFluxRegex.matches(canonicalTag) -> "PD(HF>N%)"
         canonicalTag == "ConserveAmmo" -> "Opportunist(A<N%)"
         opportunistAmmoRegex.matches(canonicalTag) -> "Opportunist(A<N%)"
         canonicalTag == "ConservePDAmmo" -> "PD(A<N%)"
         pdAmmoRegex.matches(canonicalTag) -> "PD(A<N%)"
-        ignoreMinorPDRegex.matches(canonicalTag) -> "IgnoreMinorPD"
+        noPdHealthRegex.matches(canonicalTag) -> "NoPD(H<N>)"
+        canonicalTag == "IgnoreMinorPD" -> "NoPD(H<N>)"
         avoidArmorRegex.matches(canonicalTag) -> "AvoidArmor"
         panicFireRegex.matches(canonicalTag) -> "Panic"
         rangeRegex.matches(canonicalTag) -> "Range"
@@ -553,8 +618,10 @@ private val shieldTargetingTags = listOf(
     "AvoidShield+",
     "AvoidShield(TF>N%)",
     "AvoidShield(SF>N%)",
+    "AvoidShield(HF>N%)",
     "TargetShield(TF>N%)",
-    "TargetShield(SF>N%)"
+    "TargetShield(SF>N%)",
+    "TargetShield(HF>N%)"
 )
 
 private fun shieldTagIncompatibilities(tag: String): List<String> {
@@ -568,6 +635,7 @@ val tagIncompatibility = mapOf(
         "NoPD",
         "PD(TF>N%)",
         "PD(SF>N%)",
+        "PD(HF>N%)",
         "PD(A<N%)",
         "BigShip",
         "SmallShip",
@@ -581,12 +649,13 @@ val tagIncompatibility = mapOf(
         "NoPD",
         "PD(TF>N%)",
         "PD(SF>N%)",
+        "PD(HF>N%)",
         "PD(A<N%)",
         "BigShip",
         "SmallShip",
         "PrioPD",
     ),
-    "NoPD" to listOf("PD", "Fighter", "PD(TF>N%)", "PD(SF>N%)", "PD(A<N%)", "PrioPD"),
+    "NoPD" to listOf("PD", "Fighter", "PD(TF>N%)", "PD(SF>N%)", "PD(HF>N%)", "PD(A<N%)", "PrioPD"),
     "ShieldOff" to shieldTagIncompatibilities("ShieldOff"),
     "AvoidShield" to shieldTagIncompatibilities("AvoidShield"),
     "TargetShield" to shieldTagIncompatibilities("TargetShield"),
@@ -594,16 +663,19 @@ val tagIncompatibility = mapOf(
     "AvoidShield+" to shieldTagIncompatibilities("AvoidShield+"),
     "AvoidShield(TF>N%)" to shieldTagIncompatibilities("AvoidShield(TF>N%)"),
     "AvoidShield(SF>N%)" to shieldTagIncompatibilities("AvoidShield(SF>N%)"),
+    "AvoidShield(HF>N%)" to shieldTagIncompatibilities("AvoidShield(HF>N%)"),
     "TargetShield(TF>N%)" to shieldTagIncompatibilities("TargetShield(TF>N%)"),
     "TargetShield(SF>N%)" to shieldTagIncompatibilities("TargetShield(SF>N%)"),
+    "TargetShield(HF>N%)" to shieldTagIncompatibilities("TargetShield(HF>N%)"),
     "NoFighter" to listOf("Fighter", "Opportunist", "Opportunist(A<N%)"),
     "PD(A<N%)" to listOf("PD", "Fighter", "NoPD", "Opportunist", "Opportunist(A<N%)", "BigShip", "SmallShip"),
-    "Opportunist" to listOf("Fighter", "PD", "NoFighter", "PD(TF>N%)", "PD(SF>N%)", "PD(A<N%)", "PrioPD", "Opportunist(A<N%)", "NoMissile"),
-    "Opportunist(A<N%)" to listOf("Fighter", "PD", "NoFighter", "PD(TF>N%)", "PD(SF>N%)", "PD(A<N%)", "PrioPD", "Opportunist", "NoMissile"),
+    "Opportunist" to listOf("Fighter", "PD", "NoFighter", "PD(TF>N%)", "PD(SF>N%)", "PD(HF>N%)", "PD(A<N%)", "PrioPD", "Opportunist(A<N%)", "NoMissile"),
+    "Opportunist(A<N%)" to listOf("Fighter", "PD", "NoFighter", "PD(TF>N%)", "PD(SF>N%)", "PD(HF>N%)", "PD(A<N%)", "PrioPD", "Opportunist", "NoMissile"),
     "PD(TF>N%)" to listOf("Fighter", "Opportunist", "Opportunist(A<N%)", "NoPD", "PD", "BigShip", "SmallShip"),
     "PD(SF>N%)" to listOf("Fighter", "Opportunist", "Opportunist(A<N%)", "NoPD", "PD", "BigShip", "SmallShip"),
-    "SmallShip" to listOf("BigShip", "PD", "Fighter", "PD(TF>N%)", "PD(SF>N%)", "PD(A<N%)", "PrioPD"),
-    "BigShip" to listOf("SmallShip", "PD", "Fighter", "PD(TF>N%)", "PD(SF>N%)", "PD(A<N%)", "PrioPD"),
+    "PD(HF>N%)" to listOf("Fighter", "Opportunist", "Opportunist(A<N%)", "NoPD", "PD", "BigShip", "SmallShip"),
+    "SmallShip" to listOf("BigShip", "PD", "Fighter", "PD(TF>N%)", "PD(SF>N%)", "PD(HF>N%)", "PD(A<N%)", "PrioPD"),
+    "BigShip" to listOf("SmallShip", "PD", "Fighter", "PD(TF>N%)", "PD(SF>N%)", "PD(HF>N%)", "PD(A<N%)", "PrioPD"),
     "NoMissile" to listOf("Opportunist", "Opportunist(A<N%)"),
     "TargetPhase" to listOf("AvoidPhased"),
     "AvoidPhased" to listOf("TargetPhase"),
