@@ -42,12 +42,22 @@ class NoPDWasteTag(weapon: WeaponAPI, private val wasteThreshold: Float) : Weapo
 
     private fun estimateAttackPacketDamage(): Float {
         val baseDamage = weapon.damage.damage.coerceAtLeast(0f)
-        val packetFactor = when {
-            // Local repo evidence: AGCUtils treats beam damage as DPS-like (`weapon.damage.damage * 2f`), so use a short fixed window.
-            weapon.isBeam || weapon.isBurstBeam -> BEAM_PACKET_WINDOW_SECONDS
-            else -> (weapon.spec?.burstSize ?: 1).coerceAtLeast(1).toFloat()
+        val packetDamage = when {
+            weapon.isBurstBeam -> {
+                val spec = weapon.spec
+                val burstDuration = spec?.burstDuration ?: 0f
+                val beamChargeupTime = spec?.beamChargeupTime ?: 0f
+                val beamChargedownTime = spec?.beamChargedownTime ?: 0f
+                baseDamage * (burstDuration + (beamChargeupTime / 3f) + (beamChargedownTime / 3f))
+            }
+            weapon.isBeam -> {
+                baseDamage * BEAM_PACKET_WINDOW_SECONDS
+            }
+            else -> {
+                baseDamage * (weapon.spec?.burstSize ?: 1).coerceAtLeast(1).toFloat()
+            }
         }
-        return (baseDamage * packetFactor).coerceAtLeast(0f)
+        return packetDamage.coerceAtLeast(0f)
     }
 
     private fun estimateFighterRequiredDamage(fighter: ShipAPI): Float {
