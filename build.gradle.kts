@@ -266,21 +266,24 @@ tasks {
                    |                "PrioSmall", "PrioBig", "PrioFighter", "PrioMissile", "PrioShip", "PrioWounded", "PrioHealthy",
                    |                "Fighter", "NoMissile", "NoFighter", "TargetBig", "TargetSmall", "ShipTarget",
                    |                "Opportunist", "Opportunist(A<80%)", "PD(A<80%)",
-                   |                "NoPD(Waste>40%)", "Panic(H<25%)", "Range<60%", "Range<90%",
+                   |                "NoPD(Waste>40%)", "NoPD(H<145)", "Panic(H<25%)", "Range<60%", "Range<90%",
                    |                "Overloaded", "LowRoF(200%)", "CustomAI", "PrioDense", "AvoidDebris", "BlockBeams"
                    |                ]  
                    |   
                    |   ,"classicTagList" : [
-                   |                "PD", "PD(TF>50%)",
-                   |                "AvoidShield", "TargetShield", "AvoidArmor(33%)", "AvoidShield(TF>80%)", "AvoidShield(SF>90%)", "TargetShield(TF>80%)", "TargetShield(SF>90%)",
-                   |                "HoldFire(TF>90%)", "HoldFire(TF>75%)", "HoldFire(SF>10%)", "Merge", "SyncWindow", "SyncVolley", "Ambush",
-                   |                "AvoidPhased", "TargetPhase", "ShipTarget", 
-                   |                "ForceAutoFire", "Force(TF<50%)", "Force(SF<5%)",
-                   |                "PrioSmall", "PrioBig", "PrioFighter", "PrioMissile",
-                   |                "NoMissile", "NoFighter",
-                   |                "Opportunist", "Panic(H<25%)", "Range<60%",
-                   |                "Opportunist(A<80%)", "PD(A<80%)", "PD(SF>10%)", "NoPD(Waste>40%)",
-                   |                "AvoidShield+", "TargetShield+"
+                   |                "AvoidShield", "AvoidShield+", "AvoidShield(TF>10%)", "AvoidShield(SF>10%)", "AvoidShield(HF>10%)",
+                   |                "TargetShield", "TargetShield+", "TargetShield(TF>10%)", "TargetShield(SF>10%)", "TargetShield(HF>10%)",
+                   |                "ShieldOff",
+                   |                "AvoidArmor(33%)", "AvoidArmor(75%)", "AvoidPhased", "TargetPhase",
+                   |                "HoldFire(TF>90%)", "HoldFire(TF>75%)", "HoldFire(TF>50%)", "HoldFire(SF>10%)", "HoldFire(SF>20%)", "HoldFire(HF>20%)",
+                   |                "ForceAutoFire", "Force(TF<10%)", "Force(TF<25%)", "Force(TF<50%)", "Force(TF<75%)", "Force(SF<10%)", "Force(SF<20%)", "Force(HF<20%)",
+                   |                "PD", "NoPD", "PD(TF>50%)", "PD(SF>10%)", "PD(SF>20%)", "PD(HF>20%)",
+                   |                "Merge", "SyncWindow", "SyncVolley", "Ambush",
+                   |                "PrioSmall", "PrioBig", "PrioFighter", "PrioMissile", "PrioShip", "PrioWounded", "PrioHealthy",
+                   |                "Fighter", "NoMissile", "NoFighter", "TargetBig", "TargetSmall", "ShipTarget",
+                   |                "Opportunist", "Opportunist(A<80%)", "PD(A<80%)",
+                   |                "NoPD(Waste>40%)", "NoPD(H<145)", "Panic(H<25%)", "Range<60%", "Range<90%",
+                   |                "Overloaded", "LowRoF(200%)", "CustomAI", "PrioDense", "AvoidDebris", "BlockBeams"
                    |                ]  
                    |                
                    |   ,"noviceTagList" : [
