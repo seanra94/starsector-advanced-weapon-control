@@ -2,15 +2,15 @@
 
 ## Active task
 
-Tag-system review/audit wave.
+Documentation/text consistency wave.
 
-Current status: baseline list curation, TF/SF helper groundwork, ammo-threshold canonicalization, preferred `NoPD(Waste>...)`, retained `NoPD(H<...)` support, burst-beam packet-estimation remediation, HF support, LunaSettings exposure of `SFTUpperFluxLimit`, weapon-relative `NoPD(H<...>)` durability, first static tooltip/text consistency pass, `HoldFire(...)` canonicalization, `ForceAutoFire` canonicalization, generated allowed-values repair, `PrioSmall` canonicalization, `PrioBig` implementation, `TargetBig` / `TargetSmall` canonicalization, and `TargetPhase` semantic review are complete.
+Current status: baseline list curation, TF/SF helper groundwork, ammo-threshold canonicalization, preferred `NoPD(Waste>...)`, retained `NoPD(H<...)` support, burst-beam packet-estimation remediation, HF support, LunaSettings exposure of `SFTUpperFluxLimit`, weapon-relative `NoPD(H<...>)` durability, first static tooltip/text consistency pass, `HoldFire(...)` canonicalization, `ForceAutoFire` canonicalization, generated allowed-values repair, `PrioSmall` canonicalization, `PrioBig` implementation, `TargetBig` / `TargetSmall` canonicalization, `TargetPhase` semantic review, code-side incompatibility/family mapping audit, and narrow non-phase tooltip cleanup are complete.
 
-The active implementation focus is now the review/audit wave: incompatibility consistency, remaining tooltip text, README tag-table synchronization, and README examples. Phase-tag behavior questions are deliberately deferred to the bottom of the priority list.
+The active implementation focus is now README tag-table synchronization, README examples, and remaining text consistency. Phase-tag behavior questions are deliberately deferred to the bottom of the priority list.
 
 ## Goal
 
-Keep the tag system compatibility-safe and user-understandable after canonicalization. Finish the remaining code-side consistency audits, then synchronize user-facing README tag documentation and examples.
+Keep the tag system compatibility-safe and user-understandable after canonicalization. Synchronize user-facing README tag documentation and examples with the current canonical tag set, while preserving important legacy-alias information.
 
 ## Current understanding
 
@@ -49,14 +49,14 @@ Compatibility aliases remain important:
 
 `AvoidPhaseTag` / `AvoidPhased` behavior is deferred. Static inspection suggests `AvoidPhaseTag.isBaseAiValid(...)` may be inverted because it appears to accept phase ships and reject normal ships in the base-AI validity path, while `shouldFire(...)` later refuses shots when the phase ship may phase before impact. This is original-author code and may rely on non-obvious base-AI/custom-AI handoff behavior, so do not change it from static reasoning alone.
 
+The latest code-side audit found no clear rename-wave drift requiring mapping or incompatibility code changes. Narrow non-phase tooltip cleanup is complete for `ShipTarget`, `PrioFighter`, `PrioMissile`, `PrioShip`, `PrioWounded`, and `PrioHealthy`.
+
 ## Near-term queue
 
-1. Review/audit wave:
-   - tag incompatibility review
-   - remaining tooltip accuracy/consistency review
+1. Documentation/text consistency wave:
    - README tag table canonical-name and alias synchronization
    - README tag table examples column: add one realistic grounded example/use case for every tag
-   - text consistency sweep, for example `Avd -> Avoid`
+   - remaining text consistency sweep, for example `Avd -> Avoid`
 2. Larger system work:
    - rotate-toward-closest-valid-target behavior as ship mode rather than global aiming behavior
    - deep dive on priority-system consistency/transparency
@@ -87,10 +87,11 @@ Compatibility aliases remain important:
 - [x] `PrioPD -> PrioSmall` is reviewed/canonicalized with aliases preserved.
 - [x] `BigShip/SmallShip -> TargetBig/TargetSmall` is reviewed/canonicalized with aliases preserved.
 - [x] `TargetPhase -> PrioPhase` was reviewed and rejected for now; `TargetPhase` remains canonical because behavior is not priority-only.
-- [ ] Incompatibility definitions are audited against current canonical families and legacy aliases.
-- [ ] Remaining tooltips are audited for canonical names, thresholds, ammo/flux notation, and legacy behavior.
+- [x] Incompatibility definitions were audited against current canonical families and legacy aliases; no clear rename-wave drift required code changes.
+- [x] Non-phase priority/targeting tooltip cleanup is complete for the narrow code-side pass.
 - [ ] README tag table is synchronized with current canonical names and important aliases.
 - [ ] README tag table examples column is staged or implemented with realistic use cases.
+- [ ] Remaining text consistency sweep is complete.
 - [ ] `compileKotlin` passes before push.
 - [ ] Deferred phase-tag review is resolved or intentionally closed after cautious runtime testing.
 
