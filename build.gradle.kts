@@ -392,7 +392,7 @@ tasks {
                    |   # Any positive or negative float possible, reasonable values: between 0.7 ~ 2.0 or so
                    |   # 1.0 means "fire if shot will land within 1.0*(targetHitbox+10)"
                    |   # (the +10 serves to compensate for very small targets such as missiles and fighters)
-                   |   ,"customAITriggerHappiness" : 1.0 # <---- EDIT HERE (maybe) ----
+                   |   ,"customAITriggerHappiness" : 1.1 # <---- EDIT HERE (maybe) ----
                    |   
                    |   # Set this to true if you want the custom AI to perform better :P
                    |   ,"customAIAlwaysUsesBestTargetLeading" : false # <---- EDIT HERE (maybe) ----
@@ -412,7 +412,7 @@ tasks {
                    |   
                    |   # Essentially the same as triggerHappiness, but used to prevent firing if ally would be hit
                    |   # 1.0 should be enough to not hit allies if they don't change their course, but it's nice to have a little buffer
-                   |   ,"customAIFriendlyFireCaution" : 1.25 # <---- EDIT HERE (maybe) ----                   
+                   |   ,"customAIFriendlyFireCaution" : 1.1 # <---- EDIT HERE (maybe) ----                   
                    | 
                    |   #                                 #### TAG CUSTOMIZATION ####
                    |   # NOTE: Unless stated otherwise, numbers in this section should be positive values between (exclusively) 0 and 1 and represent fractions (i.e. 0.01 to 0.99)
