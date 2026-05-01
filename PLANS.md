@@ -27,7 +27,11 @@ Compatibility aliases remain important:
 - `IgnoreMinorPD` / `IgnoreMinorPD(H<...)`
 
 `NoPD(Waste>...)` uses bounded waste: `max(0, estimatedAttackPacketDamage - estimatedTargetDamageRequired) / estimatedAttackPacketDamage`. Continuous beams estimate attack packet damage as `beamDps * 0.5s`. Burst beams estimate one committed burst packet: `beamDps * (burstDuration + beamChargeupTime / 3 + beamChargedownTime / 3)`. This predicts Phase Lance at `1000 * (1.0 + 0.375/3 + 0.375/3) = 1250` and Tachyon Lance at `750 * (2.5 + 0.75/3 + 0.75/3) = 2250`, matching expected vanilla burst damage within rounding.
+`NoPD(Waste>...)` uses bounded waste: `max(0, estimatedAttackPacketDamage - estimatedTargetDamageRequired) / estimatedAttackPacketDamage`. Continuous beams estimate attack packet damage as `beamDps * 0.5s`. Burst beams estimate one committed burst packet: `beamDps * (burstDuration + beamChargeupTime / 3 + beamChargedownTime / 3)`. This predicts Phase Lance at `1000 * (1.0 + 0.375/3 + 0.375/3) = 1250` and Tachyon Lance at `750 * (2.5 + 0.75/3 + 0.75/3) = 2250`, matching expected vanilla burst damage within rounding.
 
+Future `NoPD(H<...>)` refinement: replace the fixed effective-health model with a weapon-relative health estimate similar to `NoPD(Waste>...)` target-damage-required logic. The intended rule is bad-matchup penalty only: weapons that are weak against hull, armor, or shields may see the PD target as having more effective health, but weapons that are strong against a component should not reduce apparent health below the baseline hull + armor + shield estimate. Keep the estimate cheap and avoid exact armor-grid impact prediction.
+
+`SFTUpperFluxLimit` / `Settings.softFluxTotalFluxCap()` is Luna-exposed with default `0.9`; Settings.editme fallback remains supported. It is the total-flux safety cap used by soft-flux conditional tags.
 `SFTUpperFluxLimit` / `Settings.softFluxTotalFluxCap()` is Luna-exposed with default `0.9`; Settings.editme fallback remains supported. It is the total-flux safety cap used by soft-flux conditional tags.
 
 ## Near-term queue
@@ -39,12 +43,15 @@ Compatibility aliases remain important:
    - README tag table examples column: add one realistic grounded example/use case for every tag
    - text consistency sweep, for example `Avd -> Avoid`
 2. Naming/logic review wave:
+2. Naming/logic review wave:
+   - refine `NoPD(H<...>)` health estimation to use the same bad-matchup-only weapon-relative durability model as `NoPD(Waste>...)`
    - `Hold -> HoldFire`, preserving `Hold(...)` aliases
    - `ForceAF -> ForceAutoFire`, preserving `ForceAF` alias
    - add `PrioBig`
    - review `PrioPD -> PrioSmall`
    - review `BigShip/SmallShip -> TargetBig/TargetSmall`
    - review `TargetPhase -> PrioPhase`, only if semantics match prioritization
+3. Larger system work:
 3. Larger system work:
    - rotate-toward-closest-valid-target behavior as ship mode rather than global aiming behavior
    - deep dive on priority-system consistency/transparency
@@ -96,6 +103,8 @@ Then copy to `C:\Games\Starsector\mods\Advanced-Gunnery-Control-Fork` using the 
 - Settings comment blocks can drift from actual support if list/regex updates are not mirrored in `build.gradle.kts`.
 - Large rename waves should be staged only after behavior confirmation to avoid compatibility regressions.
 - `NoPD(H<...)` must continue to describe `H` as effective durability, not literal hull.
+- `NoPD(H<...)` must continue to describe `H` as effective durability, not literal hull. Future refinement should make this effective durability weapon-relative using bad-matchup penalties only, matching the `NoPD(Waste>...)` target-damage-required model without making health appear lower for favorable damage types.
+- `NoPD(Waste>...)` must not treat burst beams as short continuous cleanup beams; Phase Lance/Tachyon Lance-style weapons should estimate as high committed burst packets.
 - `NoPD(Waste>...)` must not treat burst beams as short continuous cleanup beams; Phase Lance/Tachyon Lance-style weapons should estimate as high committed burst packets.
 - LunaSettings and Settings.editme defaults for `SFTUpperFluxLimit` must remain aligned at `0.9`.
 - Scoped Luna/default audit left some mismatches unchanged as ambiguous: `targetShields_threshold`, `avoidShields_threshold`, `strictBigSmallShipMode`, and nearby custom-AI defaults. Do not normalize these blindly.
