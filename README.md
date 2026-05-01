@@ -35,7 +35,7 @@ Target an ally ("R"-Key) **before** opening the GUI to instead adjust their mode
 
 In that GUI, you will be able to apply one or more tags to each weapon group. Each added tag will change the target 
 priority of that weapon group and/or prevent it from firing in certain situations. Please note that a weapon group
-will only fire if **all** tags allow firing, so if you e.g. set a weapon group to Hold(TF>50%) and Fighter, it will
+will only fire if **all** tags allow firing, so if you e.g. set a weapon group to HoldFire(TF>50%) and Fighter, it will
 only fire when your ship's total flux is below 50% and will only target fighters.
 Rule of thumb: Usually, less is more. Don't set too many tags if you want your weapons to actually fire.
 Note that tags only affect weapon groups set to autofire.
