@@ -1,63 +1,60 @@
-# Advanced Weapon Control - Starsector Mod #
+# Advanced Gunnery Control Fork - Starsector Mod #
 
 ![Cover Image](imgs/agc.png "Cover Image")
 
-This is a utility mod that allows you to set your auto-fire weapon groups to different modes.
-For example, in PD-Only mode, weapons will ONLY fire at missiles and fighters, not at enemy ships.
-There are many modes, check out the full list of available modes below!
+This repository is a separate fork of Advanced Weapon Control / Advanced Gunnery Control for Starsector.
+Install and use it as its own mod, not as an in-place replacement for the original AGC install.
 
-Sections of this readme are roughly ordered by importance. For the most important stuff, stop after Settings.
+This fork repository:
+<https://github.com/seanra94/starsector-advanced-weapon-control>
 
-Note: If you don't have a markdown renderer handy, you can read the online version at 
+Historical upstream reference:
 <https://github.com/DesperatePeter/starsector-advanced-weapon-control/blob/master/README.md>
 
-Also visit the forums post: <https://fractalsoftworks.com/forum/index.php?topic=21280.0>
+Original forum thread:
+<https://fractalsoftworks.com/forum/index.php?topic=21280.0>
+
+Sections of this README are roughly ordered by importance. For the most important day-to-day usage, stop after Settings.
 
 ## TL;DR Instructions ##
 
-- Press the "J" key in combat to open up a GUI (select an ally via "R" key beforehand to modify their modes)
-- Press the "J" key in the campaign map to open a GUI
-- By default, firing modes are automatically saved/loaded between combats (per ship)
-- (optional) edit Starsector/mods/AdvancedGunneryControl/Settings.editme or use LunaSettings to customize the mod behavior.
+- Press the "J" key in combat to open the GUI. Select an ally with the "R" key beforehand if you want to modify that ship's weapon tags or ship modes.
+- Press the "J" key on the campaign map to open the campaign GUI.
+- By default, firing modes are automatically saved and loaded between combats according to the configured storage mode.
+- Optionally edit `Starsector/mods/Advanced-Gunnery-Control-Fork/Settings.editme` or use LunaSettings to customize behavior.
 
 ## Installation ##
 
-Simply download the latest release from <https://github.com/DesperatePeter/starsector-advanced-weapon-control/releases> 
-and unzip it in your mods folder. 
-If you install a new version, please make sure to delete the old folder before doing so. Backup you Settings.editme 
-if you wish to keep it.
+Install this fork as its own mod folder. Do not overwrite the original Advanced Gunnery Control / Advanced Weapon Control installation.
+If you are installing from a packaged release or a checkout of this repository, the target folder should be `Starsector/mods/Advanced-Gunnery-Control-Fork`.
+If you update the fork, replace the previous fork folder contents and keep a backup of `Settings.editme` if you want to preserve local settings.
 
 ## Controls (Combat) ##
 
-Press the "J"-Key to open up a GUI. This will pause the game and lock the camera. Press "J" again to close the GUI.
+Press the "J" key to open the GUI. This pauses the game and locks the camera. Press "J" again to close the GUI.
 
-Target an ally ("R"-Key) **before** opening the GUI to instead adjust their modes.
+Target an ally with the "R" key before opening the GUI if you want to adjust that ship's weapon tags or ship modes instead of the player ship.
 
-In that GUI, you will be able to apply one or more tags to each weapon group. Each added tag will change the target 
-priority of that weapon group and/or prevent it from firing in certain situations. Please note that a weapon group
-will only fire if **all** tags allow firing, so if you e.g. set a weapon group to HoldFire(TF>50%) and Fighter, it will
-only fire when your ship's total flux is below 50% and will only target fighters.
-Rule of thumb: Usually, less is more. Don't set too many tags if you want your weapons to actually fire.
-Note that tags only affect weapon groups set to autofire.
+In that GUI, you can apply one or more tags to each weapon group. Each added tag changes the target priority of that weapon group and/or prevents it from firing in certain situations. A weapon group will only fire if all selected tags allow firing, so a group set to `HoldFire(TF>50%)` and `Fighter` will only fire when your ship's total flux is below 50 percent and the target is a fighter.
+Rule of thumb: less is usually more. Do not stack too many tags if you still want the weapon group to fire regularly.
+Tags only affect weapon groups that are on autofire.
 
-You can also set ship AI modes in a very similar fashion. These will only affect AI-controlled ships, not the player ship.
+You can also set ship AI modes in a similar way. These only affect AI-controlled ships, not the player ship.
 
-### Gunnery Control GUI ###
+### Campaign GUI ###
 
-If you don't like having to set up your ships firing modes during (simulated) combat, there is also a campaign GUI available.
-Simply press the "J"-Key while on the campaign map, and the interface will guide you through configuring your
-firing modes. Unfortunately, I **can't directly interface with the ship refit screen**, which would be much better,
-so this is the best I can do.
+If you prefer not to configure weapon groups in simulated combat, press the "J" key on the campaign map to open the campaign GUI.
+The fork includes a custom campaign ship editor and suggested-tags workflow for configuring weapon-group tags and ship modes outside combat.
+The mod still cannot directly integrate with the stock refit screen, so the campaign workflow remains a custom UI.
 
 ### Loadouts ###
 
-You can define (by default 3) different mode loadouts for your fleet. You can then cycle through these loadouts for all
-ships by pressing the "+"-Key in combat or clicking the corresponding button in the GUI. Doing so will switch all firing modes,
-suffixes and ship modes to those defined in the next loadout. Loadouts are cycled fleet-wide, not per ship.
+You can define different mode loadouts for your fleet. By default there are three.
+Cycle through these loadouts for the whole fleet by pressing the "+" key in combat or by using the corresponding GUI control. Doing so switches all firing modes, suffixes, and ship modes to those defined in the next loadout. Loadouts are fleet-wide, not per ship.
 
-You can configure the number of available loadouts and their names in the Settings.editme file.
+You can configure the number of available loadouts and their names in `Settings.editme`.
 
-I would recommend leaving one loadout blank (i.e. everything default) for your entire fleet to give you a fallback option.
+It is usually a good idea to leave one loadout blank so the fleet always has a fallback configuration.
 
 ## Tags ##
 
