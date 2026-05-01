@@ -190,9 +190,9 @@ private fun tooltipWithActivationCondition(base: String, condition: String): Str
 }
 
 private fun noPdHealthTooltip(canonicalTag: String): String {
-    return "Does not target fighters or missiles while target health is less than ${
+    return "Does not target fighters or missiles while this weapon estimates target health is less than ${
         extractRawRegexThreshold(noPdHealthRegex, canonicalTag).toInt()
-    }. Health is hull + armor * 2 + effective remaining shield."
+    }. Ineffective damage types may count armor or shields as more durable; effective damage types do not reduce health below the baseline estimate."
 }
 
 val tagTooltips = mapOf(
@@ -565,7 +565,6 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
         "SyncWindow" -> SynchronizedFireTag(weapon, SyncFireMode.WINDOW)
         "SyncVolley" -> SynchronizedFireTag(weapon, SyncFireMode.VOLLEY)
         "Ambush" -> SynchronizedFireTag(weapon, SyncFireMode.AMBUSH)
-        "IgnoreMinorPD", "NoPD(H<145)" -> IgnoreMinorPDTag(weapon)
         "PrioFighter" -> PrioritizeFightersTag(weapon, Settings.prioXModifier())
         "PrioMissile" -> PrioritizeMissilesTag(weapon, Settings.prioXModifier())
         "PrioShip", "PrioShips" -> PrioritizeShipTag(weapon, Settings.prioXModifier())
