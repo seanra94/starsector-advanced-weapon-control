@@ -136,10 +136,13 @@ C:\Games\Starsector\starsector-core\starsector.log
 - MagicLib combat/refit buttons are narrow and do not clip long text. Widening combat/refit tag buttons reduces visible tag capacity on 1080p and is a poor default tradeoff.
 - Temporary complete-list scroll-test tags were removed from `Settings.getCurrentWeaponTagList()` after GUI scroll validation.
 - `SynchronizedFireTag.kt` has `DEBUG_SYNC = false` by default. Turn it on only for focused runtime sync diagnostics.
+- `SynchronizedFireTag.kt` has `DEBUG_SYNC = false` by default. Turn it on only for focused runtime sync diagnostics.
 
-## Open questions
 ## Open questions
 
 - Confirm in-game that the latest campaign/suggested plain tag labels still render without clipping.
 - Confirm suggested-tags reset flow, filter actions, page controls, and Esc/back behavior in-game.
+- External preset buttons now function and are positioned acceptably, but the user wants follow-up campaign GUI changes recorded before implementation: move the preset controls to the top of each weapon-group container directly beneath the `Group N` heading; remove or reduce the tiny gap between `Save Preset` and `Load Preset`; investigate and remove the stray extra white text currently appearing beneath the yellow save/load status line; and avoid leaving extra status-text spacing between the preset controls and the tag list if possible.
+- In the options container, broad-copy or destructive actions should not execute on a stray click. The user specifically wants confirm/cancel protection for `Copy to other ships of same variant`, `Copy to other ships of same variant (same hull type)`, `Copy previous loadout`, `Copy to other ships of same variant for all loadouts`, `Copy to other ships of same variant for all loadouts (same hull type)`, `Copy previous loadout for entire fleet`, and `Reload settings`.
+- Test whether weapon-group heading section bars such as `Group 1` can be recolored orange without affecting unrelated section headings.
 Original-upstream default restoration is deferred to the bottom of the backlog. When that task is reached, restore Luna and Settings defaults to the original upstream repo's defaults, but if original upstream LunaSettings and original upstream Settings/runtime defaults differ, prefer the original upstream LunaSettings default. Do not use that future task to restore upstream tag-list contents, old tag names, fork metadata, generated version metadata, or other non-default surfaces unless explicitly requested.
