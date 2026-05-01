@@ -10,7 +10,7 @@ The active implementation focus is now the review/audit wave: incompatibility co
 
 ## Goal
 
-Keep the tag system compatibility-safe and user-understandable after canonicalization. Finish remaining naming/logic work without breaking saved tags or legacy aliases, then synchronize user-facing README tag documentation and examples.
+Keep the tag system compatibility-safe and user-understandable after canonicalization. Finish the remaining code-side consistency audits, then synchronize user-facing README tag documentation and examples.
 
 ## Current understanding
 
@@ -26,7 +26,7 @@ Current canonical names:
 - Small-target priority: `PrioSmall`
 - Big-target priority: `PrioBig`
 - Target-size restrictions: `TargetBig`, `TargetSmall`
-- Phase-ship targeting/pressure tag: `TargetPhase` remains canonical. Do not rename it to `PrioPhase` unless behavior changes to priority-only.
+- Phase-ship targeting/pressure tag: `TargetPhase`
 
 Compatibility aliases remain important:
 - `ConserveAmmo` / `ConserveAmmo(A<...%)`
@@ -45,7 +45,10 @@ Compatibility aliases remain important:
 
 `SFTUpperFluxLimit` / `Settings.softFluxTotalFluxCap()` is Luna-exposed with default `0.9`; Settings.editme fallback remains supported. It is the total-flux safety cap used by soft-flux conditional tags.
 
-## Near-term queue
+`TargetPhase -> PrioPhase` was reviewed and rejected for now. `TargetPhaseTag` is not pure priority behavior: it strongly prioritizes phase ships and accepts only phase ships through the base-AI validity path, but it does not override `isValidTarget(...)`, so custom target selection may still consider other valid targets. `TargetPhase` remains the more accurate canonical name unless the behavior changes to priority-only.
+
+`AvoidPhaseTag` / `AvoidPhased` behavior is deferred. Static inspection suggests `AvoidPhaseTag.isBaseAiValid(...)` may be inverted because it appears to accept phase ships and reject normal ships in the base-AI validity path, while `shouldFire(...)` later refuses shots when the phase ship may phase before impact. This is original-author code and may rely on non-obvious base-AI/custom-AI handoff behavior, so do not change it from static reasoning alone.
+
 ## Near-term queue
 
 1. Review/audit wave:
@@ -64,7 +67,6 @@ Compatibility aliases remain important:
    - specifically investigate whether `AvoidPhaseTag.isBaseAiValid(...)` intentionally accepts phase ships and rejects normal ships, or whether that is inverted
    - only then decide whether tooltip-only changes, base-AI validity changes, or no changes are appropriate
 
-## Acceptance criteria
 ## Acceptance criteria
 
 - [x] `completeTagList` is canonical and parses cleanly against current tag support.
@@ -101,6 +103,7 @@ Compatibility aliases remain important:
 - Do not overwrite the original AGC mod folder.
 - Treat `build.gradle.kts` as the source for generated `mod_info.json`, version files, and `Settings.editme`.
 - Preserve persisted tag/loadout compatibility when renaming or canonicalizing tags.
+- Do not change `TargetPhaseTag` or `AvoidPhaseTag` behavior without runtime evidence.
 
 ## Verification needed
 
