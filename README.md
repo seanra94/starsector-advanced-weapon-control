@@ -61,44 +61,112 @@ I would recommend leaving one loadout blank (i.e. everything default) for your e
 
 ## Tags ##
 
-Note: Not all tags are enabled by default, cf. Settings.editme to customize which tags are available
-If you have ConsoleCommands installed, you can also hotload new tags via AGC_addTags.
-Ship refers to a non-fighter ship in the table below
-Replace N with a number between 1 and 99 when the tag name contains N%
+Note: Not all tags are enabled by default; check `Settings.editme` or LunaSettings to customize which tags are available.
+If you have ConsoleCommands installed, you can hotload new tags via `AGC_addTags`.
 
-|      Tag       | Targets                        | Prioritizes                                          | Requirements  |       Uses Custom AI When       |                                                                       Comments                                                                       |                                 Incompatible with                                 | Suggested Use Case                                                                       | Recommended as suggested tag?  |
-|:--------------:|:-------------------------------|:-----------------------------------------------------|:--------------|:-------------------------------:|:----------------------------------------------------------------------------------------------------------------------------------------------------:|:---------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------|:-------------------------------|
-|       PD       | Fighters/Missiles              | Fighters/Missiles                                    | PD Weapon     |               No                |                                                            Will never shoot regular ships                                                            |         "Fighter", "Opportunist", "NoPD", "PD(TF>N%)", "BigShip/SmallShip"        | Weapons that only make sense as PD weapons and shouldn't waste shots/flux on enemy ships | Yes                            |
-|    Fighters    | Fighters                       | Fighters                                             | None          |   Base AI targets non-fighter   |                                                                          -                                                                           | "PD", "NoFighter", "Opportunist", "NoPD", "PD(TF>N%)", "BigShip", "SmallShip"    | Dedicated Anti-Fighter Weapons                                                           | Usually not                    |
-|      NoPD      | Ships, Fighters                | Ships                                                | PD Weapon     |       Target is not Ship        |                                                         Doesn't change weapon classification                                                         |                           "PD", "Fighter", "PD(TF>N%)"                           | Weapons that have the PD tag but aren't really PD weapons, e.g. MachineGuns              | No                             |
-| NoPD(Waste>N%) | Ships, efficient fighters/missiles | Same as base AI                                   | None          | Base AI target fails waste check | Blocks fighter/missile targets when this weapon would waste more than N% of its estimated attack packet damage. Weapons at or below the cleanup damage cap are unaffected. | Review with other PD target-restriction tags | High-impact weapons that can still hit fighters, e.g. a Phase Lance should ignore a nearly-dead fighter that a PD Laser can finish, but still shoot healthy fighters when the damage is not mostly wasted. | Usually not                    |
-|     PrioPD     | Everything                     | Missile > Fighter > small ship > big ship            | None          |             Always              |                                             Consistently prioritizes smaller targets over larger targets                                             |            "Opportunist", "NoPD", "BigShip", "SmallShip", "Fighter"               | Any weapon that needs to reliably prioritize fighters and missiles over ships            | Yes                            |
-|   NoFighter    | Anything but Fighters          | Same as base AI                                      | None          |    base AI targets a fighter    |                                                                          -                                                                           |                             "Fighter", "Opportunist"                              | Low rate of fire, slow projectile speed                                                  | Yes                            |
-|  Opportunist   | Ignores fighters/missiles      | Special*                                             | None          |             Always              |                                             Only shoots when the shot is likely to hit and be effective                                              |                    "Fighter", "PD", "NoFighter", "PD(TF>N%)"                      | Weapons with severely limited ammo or extreme re-fire delay                              | Yes                            |
-|    BigShip     | Ships/Fighters                 | Bigger=Better                                        | None          |  base AI targeting Destroyer-   |                                                          cf. strict mode in Settings.editme                                                          |                    "SmallShip", "PD", "Fighter", "PD(TF>N%)"                      | Low rate of fire, slow projectile speed                                                  | No                             |
-|   SmallShip    | Ships/Fighters                 | Smaller=Better                                       | None          |  base AI targeting Destroyer+   |                                                          cf. strict mode in Settings.editme                                                          |                     "BigShip", "PD", "Fighter", "PD(TF>N%)"                       | Precise, fast firing weapons or Cone/AoE                                                 | No                             |
-|  AvoidShield   | Anything                       | ships without shields or high flux                   | None          |    base AI targets shielded     |                                                     Will target missiles if applied to PD weapon                                                     |                                other shield modes                                 | Weapons that are ineffective vs shields                                                  | Yes                            |
-| TargetShield   | Anything (usually no missiles) | ships with shields and low flux                      | None          |   base AI targets unshielded    |                                                     Does take shield flanking into consideration                                                     |                                other shield modes                                 | Weapons that are only effective against shields (e.g. needlers)                          | Yes                            |
-|   PD(TF>N%)    | Varies                         | Same as default when flux < N%, otherwise same as PD | PD Weapon     |               No                |                                                                          -                                                                           |                                      cf. PD                                       | Flux-hungry PD weapons (e.g. Flak Cannons)                                               | No                             |
-| AvoidArmor(N%) | Everything                     | Low armor targets                                    | None          |   base AI targets high armor    |                                   Only fires if weapon will deal at least N% damage to armor (not counting skills)                                   |                                         -                                         | Weapons that are ineffective vs armor                                                    | Yes                            |
-|  AvoidDebris   | -                              | -                                                    | None          |               No                |                                               Only affects custom AI, i.e. always use with other tags                                                |                                         -                                         | Limited ammo weapons or very high flux weapons                                           | No                             |
-|  ConserveAmmo  | Varies                         | Varies                                               | uses ammo     |        weapon ammo < 50%        |                                                       Behaves like opportunist when ammo < 50%                                                       |                                         -                                         | Limited ammo weapons with decent ammo or regenerating charges                            | No                             |
-| ConservePDAmmo | Varies                         | -                                                    | uses ammo, PD |        weapon ammo < 90%        |                                             When ammo < 90%, only fighters and missiles can be targeted                                              |                              "PD", "Fighter", "NoPD"                              | Limited ammo PD weapons that you still want to get some use from against non PD targets  | Usually not                    |
-|  Hold(TF>N%)   | -                              | -                                                    | None          |               No                |                                                   Will stop firing when ship total flux exceeds N%                                                   |                                         -                                         | high flux weapons                                                                        | Very                           |
-|  Hold(SF>N%)   | -                              | -                                                    | None          |               No                |                                  Will stop firing when ship soft flux exceeds N% or total flux reaches the soft-flux safety cap                    |                                         -                                         | Weapons that should stay aggressive on hard flux but ease off once soft flux stacks up   | Sometimes                      |
-|    ForceAF     | -                              | -                                                    | None          |                -                | Forces ShipAI to set affected weapon group to autofire. Will install custom ShipAI! For weapons that use flux, definitely combine with Hold(TF>N%)! |                                         -                                         | Weapons where the AI is too hesitant to fire. Combine with other tags.                   | Usually not                    |
-|  Panic(H<N%)   | -                              | -                                                    | None          |             Hull<N%             |                                          When Hull<N%, weapon always fires and ForceAF mode gets turned on                                           |                                         -                                         | Limited ammo missiles with tracking.                                                     | Usually not                    |
-|  AvoidPhased   | Anything                       | Non-phased                                           | None          |   base AI targets phase ships   |   Will avoid phase ships, unless they are vulnerable (phased and almost fluxed out or not phased and phase cooldown lasts until predicted impact)    |                                         -                                         | When you are annoyed with weapons shooting at phase ships to no avail.                   | Usually not                    |
-|   ShipTarget   | Ships/Fighters                 | Ship-Target (selected via R-Key)                     | None          | base AI doesn't target ship-tgt |                                                                          -                                                                           |                                         -                                         | Charge-based weapons that you don't want wasting shots against secondary targets         | Usually not                    |
-|    Range<N%    | Anything                       | -                                                    | None          |   base AI target out of range   |            Limits the range at which the weapon will shoot/target to N% base range. Note that predicted, not actual, locations are used.             |                                         -                                         | Slow-traveling projectiles or shotgun-style weapons (e.g. devastator)                    | Sometimes                      |
-| Force(TF<N%)   | -                              | -                                                    | None          |                -                |                         Circumvents firing restrictions (not targeting restrictions) of other tags such as e.g. AvoidShield                          |                                         -                                         | Fire weapons more liberally while ship has flux to spare                                 | No                             |
-|   Overloaded   | Overloaded ships               | Overloaded ships                                     | None          | Base AI targets non-overloaded  |                                                                          -                                                                           |                                         -                                         | Finisher-type weapons                                                                    | No                             |
-|   ShieldOff    | Targets without active shields | Targets without active shields                       | None          |     Base AI targets shields     |                    This is simple boolean logic. If a target has no shields or its shields are turned off, it will get targeted.                     |                                other shield modes                                 | Was requested for EMP weapons, so EMP weapons I guess?                                   | No                             |
-|  TargetPhase   | -                              | Phase ships                                          | None          |    Base AI targets non-phase    |                                                                          -                                                                           |                                    AvoidPhased                                    | Beam weapons                                                                             | No                             |
-|     PrioX      | Anything                       | X                                                    | None          |   If Base AI doesn't target X   |                                         X is a placeholder. PrioX tags: PrioFighter, PrioMissile, PrioShip                                           |                                         -                                         | If you want your weapon to mainly shoot X, but other stuff too if no X in range.         | Yes                            |
-|     Merge      | N/A                            | Special                                              | None          |               N/A               | Allows for controlling multiple weapon groups manually. Press the K-Key to merge all weapons with this tag into active group. Press again to cancel. |                                         -                                         | Main-battery type weapons.                                                               | No                             |
-|   BlockBeams   | Anything                       | Enemies shooting this ship with beams                | None          |             Always              |               Will shoot at enemies that are shooting this ship, even when out of range. Intended mainly for the SVC Ink Spitter gun.                |                                         -                                         | Weapons that block beams, such as the Ink Spitter                                        | Only for very specific weapons |
+This catalogue is split into smaller tables so it stays readable in both rendered Markdown and raw text.
 
+Notation:
+- `N%` means replace `N` with a percentage value, usually from `1` to `99`.
+- `TF`, `SF`, and `HF` mean total flux, soft flux, and hard flux.
+- `A<N%` means ammo below `N%`.
+- `H<N` means estimated target health/durability below raw value `N`.
+- `Waste>N%` means estimated wasted attack-packet damage above `N%`.
+- "Ship" means a non-fighter ship.
+- Tags only affect weapon groups set to autofire.
+- A weapon group fires only when all of its tags allow firing.
+
+Important aliases are still accepted for saved-loadout compatibility:
+- `Hold(...)` aliases normalize to `HoldFire(...)`.
+- `ForceAF` normalizes to `ForceAutoFire`.
+- `PrioPD`, `PrioritisePD`, and `PrioritizePD` normalize to `PrioSmall`.
+- `BigShip` / `BigShips` normalize to `TargetBig`.
+- `SmallShip` / `SmallShips` normalize to `TargetSmall`.
+- `ConserveAmmo(A<N%)` normalizes to `Opportunist(A<N%)`.
+- `ConservePDAmmo(A<N%)` and `CnsrvPDAmmo(A<N%)` normalize to `PD(A<N%)`.
+- `IgnoreMinorPD` and `IgnoreMinorPD(H<N>)` normalize to `NoPD(H<N>)`.
+- Legacy `BurstPD...` soft-flux forms normalize to canonical `PD(SF>N%)` forms.
+
+### Core targeting tags ###
+
+| Tag | Effect | Example use | Suggested? |
+|---|---|---|---|
+| `PD` | Restricts targeting to fighters and missiles. | Dedicated PD Lasers, Vulcans, or flak that should never shoot ships. | Yes |
+| `Fighter` | Restricts targeting to fighters. | Anti-fighter guns that should ignore missiles and ships. | Usually no |
+| `NoFighter` | Prevents targeting fighters. | Slow, low-rate weapons that waste shots on fighters. | Yes |
+| `NoMissile` | Prevents targeting missiles. | Weapons that should not snap to low-value missile targets. | Sometimes |
+| `NoPD` | Prevents missile targeting and prioritizes ships over fighters. | Machine guns with a PD weapon hint that should mainly pressure ships. | No |
+| `NoPD(Waste>N%)` | Avoids fighters/missiles when this weapon would waste more than `N%` of estimated attack-packet damage. Low-damage cleanup weapons are exempt. | Phase Lance ignores a nearly-dead fighter that a PD Laser can finish, but still shoots healthy fighters. | Usually no |
+| `NoPD(H<N)` | Avoids fighters/missiles below estimated health `N`; poor damage matchups count armor/shields as tougher. | Medium weapons ignore very fragile fighters but still shoot durable bombers. | Usually no |
+| `TargetBig` | Restricts targeting to larger ships and prioritizes the largest valid targets. | Heavy, slow projectiles focus cruisers/capitals over frigates. | No |
+| `TargetSmall` | Restricts targeting to smaller ships and prioritizes the smallest valid targets. | Accurate weapons clean up frigates and destroyers. | No |
+| `ShipTarget` | Restricts targeting to the selected ship target. For AI ships, uses the ShipAI maneuver target. | Charge weapons follow the target selected with `R`. | Usually no |
+| `Range<N%` | Only targets/fires at targets within `N%` of weapon range. | Devastator-style or slow projectile weapons wait for close targets. | Sometimes |
+| `Overloaded` | Restricts targeting to overloaded ships. | Finisher weapons wait for overload openings. | No |
+
+### Priority tags ###
+
+| Tag | Effect | Example use | Suggested? |
+|---|---|---|---|
+| `PrioSmall` | Prioritizes missiles, fighters, and smaller ships over larger ships. | Fast tracking guns prefer missiles/fighters before larger ships. | Yes |
+| `PrioBig` | Prioritizes larger ships over smaller ships without adding targeting restrictions. | Large weapons prefer cruisers/capitals while keeping fallback targets. | Sometimes |
+| `PrioFighter` | Prioritizes fighters when fighters are present. | Dual-purpose weapons lean toward fighter defense. | Yes |
+| `PrioMissile` | Prioritizes missiles when missiles are present. | Dual-purpose PD leans toward missile defense. | Yes |
+| `PrioShip` | Prioritizes non-fighter ships when ships are present. | General weapons avoid being distracted by fighters. | Sometimes |
+| `PrioWounded` | Prioritizes targets that have already taken hull damage. | Finishers focus damaged ships. | Sometimes |
+| `PrioHealthy` | Prioritizes targets with high hull. | Opening-volley weapons prefer fresh targets. | Sometimes |
+| `PrioDense` | Prioritizes target-rich areas. | AoE weapons prefer clustered fighters or ships. | Sometimes |
+
+### Shield, armor, and phase tags ###
+
+| Tag | Effect | Example use | Suggested? |
+|---|---|---|---|
+| `AvoidShield` | Prioritizes targets without useful shields, flanked shields, shield-off state, or high flux. | HE or frag weapons avoid strong shields. | Yes |
+| `AvoidShield+` | Stricter AvoidShield variant. | Frag weapons fire only into weak shield situations. | Sometimes |
+| `TargetShield` | Prioritizes shielded, low-flux targets. | Kinetic weapons such as needlers pressure shields. | Yes |
+| `TargetShield+` | More aggressive TargetShield variant. | Kinetics keep firing unless shields are disabled or flanked. | Sometimes |
+| `AvoidShield(TF>N%)` | AvoidShield behavior activates while own total flux is above `N%`. | HE weapons become selective when the ship is fluxed. | Sometimes |
+| `AvoidShield(SF>N%)` | AvoidShield behavior activates while soft flux is above `N%` and total flux is below the soft-flux cap. | Soft-flux management for shield-inefficient shots. | Sometimes |
+| `AvoidShield(HF>N%)` | AvoidShield behavior activates while hard flux is above `N%`. | Weapons become selective after taking hard flux. | Sometimes |
+| `TargetShield(TF>N%)` | TargetShield behavior activates while own total flux is above `N%`. | Kinetics keep pressure while the ship is already committed. | Sometimes |
+| `TargetShield(SF>N%)` | TargetShield behavior activates while soft flux is above `N%` and total flux is below the soft-flux cap. | Kinetics help convert soft-flux pressure into shield pressure. | Sometimes |
+| `TargetShield(HF>N%)` | TargetShield behavior activates while hard flux is above `N%`. | Kinetics prioritize shield pressure after taking hard flux. | Sometimes |
+| `ShieldOff` | Only fires at targets with no active shield. | EMP or HE weapons wait for shield-down openings. | No |
+| `AvoidArmor(N%)` | Fires when the shot should hit shields or low enough armor to reach at least `N%` armor effectiveness. | Frag weapons avoid heavy armor unless shields are available. | Yes |
+| `AvoidPhased` | Avoids phase ships that are likely to phase before the shot lands. | High-impact shots avoid wasting fire into active phase defense. | Usually no |
+| `TargetPhase` | Pressures phase ships whether currently phased or not. | Beams or rapid-fire weapons keep phase coils under pressure. | No |
+
+### Flux, ammo, and firing-condition tags ###
+
+| Tag | Effect | Example use | Suggested? |
+|---|---|---|---|
+| `PD(TF>N%)` | Restricts targeting to fighters/missiles while total flux is above `N%`. | Flux-hungry PD saves flux until defense is needed. | No |
+| `PD(SF>N%)` | Restricts targeting to fighters/missiles while soft flux is above `N%` and total flux is below the soft-flux cap. | Burst PD behavior when soft flux starts building. | No |
+| `PD(HF>N%)` | Restricts targeting to fighters/missiles while hard flux is above `N%`. | Defensive behavior after absorbing hard flux. | No |
+| `Opportunist` | Avoids fighters/missiles and fires only at likely effective shots. | Limited-ammo or long-cooldown weapons wait for good shots. | Yes |
+| `Opportunist(A<N%)` | Opportunist behavior only while ammo is below `N%`; weapons without ammo are unaffected. | Autocannons with ammo charges become selective late. | No |
+| `PD(A<N%)` | Restricts targeting to fighters/missiles while ammo is below `N%`; weapons without ammo and missile weapons are unaffected. | Limited-ammo PD weapon saves remaining ammo for defense. | Usually no |
+| `HoldFire(TF>N%)` | Stops firing while own total flux is above `N%`. | High-flux weapons stop before overloading the ship. | Very |
+| `HoldFire(SF>N%)` | Stops firing while own soft flux is above `N%` or total flux reaches the soft-flux safety cap. | Weapons ease off once soft flux stacks up. | Sometimes |
+| `HoldFire(HF>N%)` | Stops firing while own hard flux is above `N%`. | Weapons stop after taking dangerous hard flux. | Sometimes |
+| `ForceAutoFire` | Forces AI-controlled ships to keep this weapon group on autofire; modifies ShipAI. | AI-hesitant guns are kept on autofire, usually with HoldFire. | Usually no |
+| `Force(TF<N%)` | Ignores firing restrictions, but not targeting restrictions, while total flux is below `N%`. | Weapons fire more freely while flux is low. | No |
+| `Force(SF<N%)` | Ignores firing restrictions, but not targeting restrictions, while soft flux is below `N%` and total flux is below the soft-flux cap. | Weapons fire freely while soft flux is low. | No |
+| `Force(HF<N%)` | Ignores firing restrictions, but not targeting restrictions, while hard flux is below `N%`. | Weapons fire freely until hard flux rises. | No |
+| `Panic(H<N%)` | Fires blindly while own hull is below `N%`; AI ships also force autofire for the group. | Tracking missiles dump ammo before the ship dies. | Usually no |
+| `LowRoF(N%)` | Reduces rate of fire by the configured factor. | Weapons deliberately fire less often to conserve flux/ammo. | No |
+
+### Utility and synchronization tags ###
+
+| Tag | Effect | Example use | Suggested? |
+|---|---|---|---|
+| `Merge` | Lets the player merge tagged weapon groups into the active group with the merge hotkey. | Main-battery weapons can be fired manually together. | No |
+| `SyncWindow` | Tagged weapons in the same group wait for a shared firing window, then fire together. | Similar weapons synchronize volleys without interrupting natural bursts. | Sometimes |
+| `SyncVolley` | Tagged weapons in the same group synchronize one firing decision, then wait to sync again. | Alpha-strike weapons begin a volley together. | Sometimes |
+| `Ambush` | Tagged weapons wait until every tagged weapon is ready on the same target, then open fire together. | Burst weapons hold fire until an ambush target is ready. | Sometimes |
+| `AvoidDebris` | Prevents firing when debris or asteroids block the shot; only affects custom AI. | High-flux or limited-ammo weapons avoid blocked shots. | No |
+| `BlockBeams` | Shoots enemies currently hitting this ship with beams, even when out of range. | Specialized beam-blocking weapons such as the Ink Spitter. | Only for specific weapons |
+| `CustomAI` | Prevents vanilla AI from acting; intended only for specific custom-AI setups. | Devastator-style weapons avoid vanilla targeting quirks. | No |
 ## Settings ##
 
 The settings allow you to configure many aspects of the mod.
@@ -200,7 +268,7 @@ A simple modSettings.json that only includes suggested tags would look like this
 {
   "AdvancedGunneryControl": {
     "suggestedWeaponTags" : {
-      "my_awesome_pd_also_weapon_id": "PrioPD,PrioMissile",
+            "my_awesome_pd_also_weapon_id": "PrioSmall,PrioMissile",
       "my_needler_style_weapon_id": "TargetShield"
     }
   }
@@ -229,18 +297,18 @@ Its keys can be:
 The values must be lists of tag-names.
 All tags listed will be applied to all weapons that match the given key.
 
-For instance, if you want all missile weapons to receive the ForceAF and NoFighter tags, the following call should get the job done:
+For instance, if you want all missile weapons to receive the ForceAutoFire and NoFighter tags, the following call should get the job done:
 
 ```kotlin
 // Kotlin
 // assuming ship is an object of type ShipAPI
-ship.setCustomData("AGC_ApplyCustomOptions", mapOf("!MAGIC!Missile" to listOf("ForceAF", "NoFighter")))
+ship.setCustomData("AGC_ApplyCustomOptions", mapOf("!MAGIC!Missile" to listOf("ForceAutoFire", "NoFighter")))
 ```
 
 ```java
 // Java
 // assuming ship is an object of type ShipAPI
-ship.setCustomData("AGC_ApplyCustomOptions", Collections.singletonMap("!MAGIC!Missile", Arrays.asList("ForceAF", "NoFighter")));
+ship.setCustomData("AGC_ApplyCustomOptions", Collections.singletonMap("!MAGIC!Missile", Arrays.asList("ForceAutoFire", "NoFighter")));
 ```
 
 If you want to apply this via Hullmod, the hullmod effect could look something like this:
@@ -252,7 +320,7 @@ class ExampleTagSettingHullmod : BaseHullMod {
     override fun applyEffectsAfterShipCreation(ship: ShipAPI?, id: String?) {
         if(ship != null){// nullptr check just to be safe (I know, this is not the Kotlin-way, but easier to read for Java devs :P)           
             val tagMap = mapOf(
-                "!MAGIC!Missile" to listOf("ForceAF", "NoFighter") // set all missiles to ForceAF and NoFighter
+                                "!MAGIC!Missile" to listOf("ForceAutoFire", "NoFighter") // set all missiles to ForceAutoFire and NoFighter
                 , "hveldriver" to listOf("TargetShield") // set all hyper-velocity drivers to TargetShield
                 , ".*flak" to listOf("PD") // all weapons with IDs ending in flak (vanilla: single + dual flak) to PD 
             )

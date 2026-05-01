@@ -4,9 +4,9 @@
 
 Documentation/text consistency wave.
 
-Current status: baseline list curation, TF/SF helper groundwork, ammo-threshold canonicalization, preferred `NoPD(Waste>...)`, retained `NoPD(H<...)` support, burst-beam packet-estimation remediation, HF support, LunaSettings exposure of `SFTUpperFluxLimit`, weapon-relative `NoPD(H<...>)` durability, first static tooltip/text consistency pass, `HoldFire(...)` canonicalization, `ForceAutoFire` canonicalization, generated allowed-values repair, `PrioSmall` canonicalization, `PrioBig` implementation, `TargetBig` / `TargetSmall` canonicalization, `TargetPhase` semantic review, code-side incompatibility/family mapping audit, narrow non-phase tooltip cleanup, ship-mode local storage key/index repair, current-fork default backup documentation, and Luna-default alignment are complete.
+Current status: baseline list curation, TF/SF helper groundwork, ammo-threshold canonicalization, preferred `NoPD(Waste>...)`, retained `NoPD(H<...)` support, burst-beam packet-estimation remediation, HF support, LunaSettings exposure of `SFTUpperFluxLimit`, weapon-relative `NoPD(H<...>)` durability, first static tooltip/text consistency pass, `HoldFire(...)` canonicalization, `ForceAutoFire` canonicalization, generated allowed-values repair, `PrioSmall` canonicalization, `PrioBig` implementation, `TargetBig` / `TargetSmall` canonicalization, `TargetPhase` semantic review, code-side incompatibility/family mapping audit, narrow non-phase tooltip cleanup, ship-mode local storage key/index repair, current-fork default backup documentation, Luna-default alignment, and README tag catalogue synchronization/examples are complete.
 
-The active implementation focus is now README tag-table synchronization, README examples, and remaining text consistency. Phase-tag behavior questions and original-upstream default restoration are deliberately deferred to the bottom of the priority list.
+The active implementation focus is now remaining README/text consistency. Phase-tag behavior questions and original-upstream default restoration are deliberately deferred to the bottom of the priority list.
 
 ## Goal
 
@@ -77,9 +77,7 @@ Original-upstream default backup notes:
 ## Near-term queue
 
 1. Documentation/text consistency wave:
-   - README tag table canonical-name and alias synchronization
-   - README tag table examples column: add one realistic grounded example/use case for every tag
-   - remaining text consistency sweep, for example `Avd -> Avoid`
+   - remaining README/text consistency sweep, for example `Avd -> Avoid`
 2. Larger system work:
    - rotate-toward-closest-valid-target behavior as ship mode rather than global aiming behavior
    - deep dive on priority-system consistency/transparency
@@ -119,8 +117,8 @@ Original-upstream default backup notes:
 - [x] Ship-mode local storage key/index audit is complete: local ship-mode custom data uses `AGC_ShipTags`, type-compatible wrong-key local data migrates once from `AGC_Tags`, and persistent mode add/remove uses the passed loadout index.
 - [x] Current fork default values that differ from original upstream default surfaces are backed up for the future upstream-default restoration task.
 - [x] Runtime and generated fallback defaults are aligned to current fork LunaSettings defaults for Luna-exposed settings.
-- [ ] README tag table is synchronized with current canonical names and important aliases.
-- [ ] README tag table examples column is staged or implemented with realistic use cases.
+- [x] README tag catalogue is synchronized with current canonical names and important aliases.
+- [x] README tag catalogue includes realistic example use cases.
 - [ ] Remaining text consistency sweep is complete.
 - [ ] `compileKotlin` passes before push.
 - [ ] Deferred phase-tag review is resolved or intentionally closed after cautious runtime testing.
