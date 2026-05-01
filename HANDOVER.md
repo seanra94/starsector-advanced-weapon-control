@@ -141,3 +141,10 @@ C:\Games\Starsector\starsector-core\starsector.log
 
 - Confirm in-game that the latest campaign/suggested plain tag labels still render without clipping.
 - Confirm suggested-tags reset flow, filter actions, page controls, and Esc/back behavior in-game.
+
+
+## Default-source decision
+
+For Luna-exposed settings, the fork's current `data/config/LunaSettings.csv` defaults are now authoritative. `Settings.kt` runtime defaults and generated `Settings.editme` fallback defaults should be aligned to the current Luna defaults when they differ. `Settings.editme` remains a generated fallback/config surface, not the source of truth for defaults when it disagrees with Luna.
+
+Original-upstream default restoration is deferred to the bottom of the backlog. When that task is reached, restore Luna and Settings defaults to the original upstream repo's defaults, but if original upstream LunaSettings and original upstream Settings/runtime defaults differ, prefer the original upstream LunaSettings default. Do not use that future task to restore upstream tag-list contents, old tag names, fork metadata, generated version metadata, or other non-default surfaces unless explicitly requested.
