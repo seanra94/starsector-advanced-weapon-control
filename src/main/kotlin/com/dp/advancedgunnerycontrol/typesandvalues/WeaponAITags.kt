@@ -180,13 +180,19 @@ fun shouldTagBeDisabled(groupIndex: Int, sh: FleetMemberAPI, tag: String): Boole
     return isEverythingBlacklisted(groupIndex, sh)
 }
 
-val priorityBoilerplateText = "\nIncreases priority by a factor of ${Settings.prioXModifier()} (adjustable in Settigs.editme)." +
+val priorityBoilerplateText = "\nIncreases priority by a factor of ${Settings.prioXModifier()} (adjustable in Settings.editme)." +
         "\nCombine multiple Prio-tags to de-prioritize everything else."
 
 private fun pdTargetingRestrictionTooltip(): String = "Restricts targeting to fighters and missiles."
 
 private fun tooltipWithActivationCondition(base: String, condition: String): String {
     return "$base\nActivation condition: $condition."
+}
+
+private fun noPdHealthTooltip(canonicalTag: String): String {
+    return "Does not target fighters or missiles while target health is less than ${
+        extractRawRegexThreshold(noPdHealthRegex, canonicalTag).toInt()
+    }. Health is hull + armor * 2 + effective remaining shield."
 }
 
 val tagTooltips = mapOf(
@@ -269,7 +275,6 @@ val tagTooltips = mapOf(
     "Ambush" to "Tagged weapons in the same weapon group wait until every tagged weapon is ready and on the same target, then open fire together. " +
             "After the ambush starts, weapons keep prioritizing that target, but weapons that can no longer bear on it may fire at other valid targets. " +
             "The ambush resets when the target is lost by the whole group.",
-    "IgnoreMinorPD" to "Ignores missiles and fighters below a default effective durability threshold. Effective durability is combined hull + armor + shield contribution.",
     "PrioFighter" to "Prioritize fighters over all other targets but target other things if no fighters present.$priorityBoilerplateText",
     "PrioMissile" to "Prioritize missiles over all other targets but target other things if no missiles present.$priorityBoilerplateText",
     "PrioShip" to "Prioritize non-fighter ships over all other targets but target other things if no ships present.$priorityBoilerplateText",
@@ -450,9 +455,7 @@ fun getTagTooltip(tag: String): String {
             extractRegexThresholdAsPercentageString(noPdWasteRegex, canonicalTag)
         } of its estimated attack packet damage. Weapons at or below the cleanup damage cap are unaffected."
 
-        noPdHealthRegex.matches(canonicalTag) -> "Does not target fighters or missiles while target health is less than ${
-            extractRawRegexThreshold(noPdHealthRegex, canonicalTag).toInt()
-        }. Health is hull + armor × 2 + effective remaining shield."
+        noPdHealthRegex.matches(canonicalTag) -> noPdHealthTooltip(canonicalTag)
 
         avoidArmorRegex.matches(canonicalTag) -> "Weapon will fire when the shot is likely to hit shields (as TargetShield) OR a section of hull " +
                 "\nwhere the armor is low enough to achieve at least ${
