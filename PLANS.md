@@ -164,3 +164,49 @@ Then copy to `C:\Games\Starsector\mods\Advanced-Gunnery-Control-Fork` using the 
 - `TargetBig` / `TargetSmall` are canonical for former `BigShip` / `SmallShip` target-restriction tags; legacy aliases must remain accepted.
 - `TargetPhase` remains canonical because its behavior is mixed, not priority-only. Static inspection shows `TargetPhaseTag` strongly prioritizes phase ships and accepts only phase ships through `isBaseAiValid(...)`, but does not override `isValidTarget(...)`, so custom target selection may still consider other valid targets. This makes `TargetPhase` more accurate than `PrioPhase` unless behavior changes.
 - Deferred phase-tag caution: `AvoidPhaseTag.isBaseAiValid(...)` appears suspicious because it accepts phase ships and rejects normal ships in the base-AI validity path, while `shouldFire(...)` then refuses shots when the phase ship may phase before impact. This could prevent custom retargeting away from a bad phase target, but it is original-author code and may rely on non-obvious AI handoff behavior. Treat this as lowest-priority until runtime evidence justifies changing it.
+
+
+## Future feature: manual weapon-composition tag loadout buttons
+
+User goal: eventually add two buttons to each campaign weapon-group panel, placed below the weapon container and above the active tag buttons:
+- Save tag loadout for this combination of weapons.
+- Load the saved tag loadout for this combination of weapons.
+
+Current persistence model:
+- Existing tag persistence already has three user-facing storage modes: `Index`, `WeaponComposition`, and `WeaponCompositionGlobal`.
+- `Index` is the most customizable mode: tags are stored per ship and weapon group index, but refits or group reordering can make saved tags no longer match the intended weapons.
+- `WeaponComposition` trades some customization for convenience: tags are stored per ship by the weapon composition of the group, so moving a group to a different index can preserve tags, but changing the weapon mix changes the key.
+- `WeaponCompositionGlobal` is the most convenient and least flexible mode: tags are stored by weapon composition without being tied to a specific ship, so identical weapon combinations can share tags across ships.
+- Existing persistent data is routed through `StorageBase` / `Settings.tagStorage` / `Settings.tagStorageByWeaponComposition` and loadout slots are keyed by the active `AGCGUI.storageIndex`.
+- Campaign tag buttons currently use `loadPersistentTags(...)` and `persistTags(...)`; future preset buttons should prefer those existing persistence/canonicalization paths rather than inventing an unrelated storage system.
+
+Design direction:
+- Treat the new buttons as an explicit manual composition-preset layer, not as an automatic change to `tagStorageMode`.
+- The save button should capture the current tags for the current weapon group and store them under the weapon-composition key for the current active loadout slot.
+- The load button should read the saved tags for the current weapon composition and apply them to the current group using the normal persistence path for the active loadout slot.
+- This should let a user stay in `Index` mode for maximum customization while still manually saving/reusing a tag preset for repeated weapon combinations.
+- Loaded tags should be canonicalized and sanitized through the same constraints as normal tag buttons: remove unknown tags, disabled tags, and incompatible combinations rather than reviving stale or invalid saved state.
+- Reuse the existing save/persistent-data file path where possible. Do not introduce a new external file unless local inspection proves the existing persistent storage cannot safely represent manual composition presets.
+
+Likely implementation touchpoints:
+- `ShipView.buildWeaponGroupContainer(...)`: insert a small button row between the weapon list container and the tag container.
+- `TagButton` / campaign tag-button persistence flow: reuse or factor existing `loadPersistentTags(...)`, `persistTags(...)`, sanitization, and `campaignTagSelectionVersion` behavior.
+- `utils` persistence helpers: inspect the exact weapon-composition key generation and storage-mode dispatch before implementing.
+- `AGCGUI.storageIndex`: ensure save/load preset operations are scoped to the active loadout slot unless deliberately designing cross-loadout behavior.
+
+Acceptance criteria for eventual implementation:
+- Buttons appear once per non-empty weapon group below the weapon list and above active tag buttons.
+- Save stores the currently selected tags for that weapon composition without changing the current `tagStorageMode`.
+- Load applies the saved composition tags to the current group and refreshes the campaign UI state.
+- The feature works when normal storage mode is `Index`, which is the main use case.
+- Behavior is defined and tested for `WeaponComposition` and `WeaponCompositionGlobal` modes rather than accidentally double-applying or fighting the current mode.
+- Save/load respects the active `AGCGUI.storageIndex` loadout slot, or explicitly documents any cross-loadout behavior.
+- Loaded tags are canonical, valid for the current weapon group, and compatible with each other.
+- Existing normal tag persistence remains backward-compatible.
+
+Risks and open questions:
+- Need local inspection of `loadPersistentTags(...)`, `persistTags(...)`, `loadAllTags(...)`, and the weapon-composition key helper before coding.
+- Need to decide whether the manual preset store should reuse `tagStorageByWeaponComposition` directly or use a separate persistent-data key to avoid interfering with automatic `WeaponComposition` mode.
+- Need to decide what happens when no preset exists for a weapon composition: disabled Load button, tooltip, harmless no-op, or status message.
+- Need to decide whether saving an empty tag list should clear the saved preset or create an explicit empty preset.
+- Need in-game UI validation at 1080p because adding two buttons reduces vertical space available for tag scrolling.
