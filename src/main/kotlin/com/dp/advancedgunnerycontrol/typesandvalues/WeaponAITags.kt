@@ -254,9 +254,9 @@ val tagTooltips = mapOf(
     "AvoidPhased" to "Weapon will ignore phase-ships, unless they are unable to avoid the shot by phasing (due to flux or cooldown)." +
             "\nWhen used to fight phase-ships, it's best to use this on high-impact weapons and set some rapid-fire or beam weapons on TargetPhase." +
             "\nNo targeting restrictions.",
-    "TargetPhase" to "Weapon will prioritize phase-ships. Does not care if the ship is currently phased or not." +
+    "TargetPhase" to "Restricts targeting to phase-ships and prioritizes them. Does not care if the ship is currently phased or not." +
             "\nUseful for rapid-fire or beam weapons to keep up pressure on enemy phase coils." +
-            "\nNo targeting restrictions.",
+            "\nNo additional targeting restrictions beyond phase-ship targeting.",
     "ShipTarget" to "Weapon will only target the selected ship target (R-Key). I like to use this for regenerating missiles." +
             "\nFor AI-controlled ships, this will limit them to the maneuver-target that the ShipAI has chosen.",
     "NoMissile" to "Weapon won't target missiles.",
@@ -625,11 +625,8 @@ fun tagNameToRegexName(tag: String): String {
         opportunistAmmoRegex.matches(canonicalTag) -> "Opportunist(A<N%)"
         canonicalTag == "ConservePDAmmo" -> "PD(A<N%)"
         pdAmmoRegex.matches(canonicalTag) -> "PD(A<N%)"
-        canonicalTag == "PrioPD" -> "PrioSmall"
         canonicalTag == "PrioSmall" -> "PrioSmall"
-        canonicalTag == "BigShip" -> "TargetBig"
         canonicalTag == "TargetBig" -> "TargetBig"
-        canonicalTag == "SmallShip" -> "TargetSmall"
         canonicalTag == "TargetSmall" -> "TargetSmall"
         noPdWasteRegex.matches(canonicalTag) -> "NoPD(Waste>N%)"
         noPdHealthRegex.matches(canonicalTag) -> "NoPD(H<N>)"
