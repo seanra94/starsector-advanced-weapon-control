@@ -2,14 +2,14 @@
 
 ## Active task
 
-Documentation/text consistency wave.
+Settings-default restoration and documentation/text consistency wave.
 
-Current status: baseline list curation, TF/SF helper groundwork, ammo-threshold canonicalization, preferred `NoPD(Waste>...)`, retained `NoPD(H<...)` support, burst-beam packet-estimation remediation, HF support, LunaSettings exposure of `SFTUpperFluxLimit`, weapon-relative `NoPD(H<...>)` durability, first static tooltip/text consistency pass, `HoldFire(...)` canonicalization, `ForceAutoFire` canonicalization, generated allowed-values repair, `PrioSmall` canonicalization, `PrioBig` implementation, `TargetBig` / `TargetSmall` canonicalization, `TargetPhase` semantic review, code-side incompatibility/family mapping audit, narrow non-phase tooltip cleanup, and ship-mode local storage key/index repair are complete.
+Current status: baseline list curation, TF/SF helper groundwork, ammo-threshold canonicalization, preferred `NoPD(Waste>...)`, retained `NoPD(H<...)` support, burst-beam packet-estimation remediation, HF support, LunaSettings exposure of `SFTUpperFluxLimit`, weapon-relative `NoPD(H<...>)` durability, first static tooltip/text consistency pass, `HoldFire(...)` canonicalization, `ForceAutoFire` canonicalization, generated allowed-values repair, `PrioSmall` canonicalization, `PrioBig` implementation, `TargetBig` / `TargetSmall` canonicalization, `TargetPhase` semantic review, code-side incompatibility/family mapping audit, narrow non-phase tooltip cleanup, ship-mode local storage key/index repair, and current-fork default backup documentation are complete.
 
-The active implementation focus is now README tag-table synchronization, README examples, and remaining text consistency. Phase-tag behavior questions are deliberately deferred to the bottom of the priority list.
+The active implementation focus is now restoring selected scalar/config defaults to original upstream defaults where appropriate, then README tag-table synchronization, README examples, and remaining text consistency. Phase-tag behavior questions are deliberately deferred to the bottom of the priority list.
 ## Goal
 
-Keep the tag system compatibility-safe and user-understandable after canonicalization. Synchronize user-facing README tag documentation and examples with the current canonical tag set, while preserving important legacy-alias information.
+Keep the tag system compatibility-safe and user-understandable after canonicalization. Restore selected scalar/config defaults to original upstream defaults while preserving a backup of current fork values, then synchronize user-facing README tag documentation and examples with the current canonical tag set.
 
 ## Current understanding
 
@@ -50,12 +50,27 @@ Compatibility aliases remain important:
 
 The latest code-side audit found no clear rename-wave drift requiring mapping or incompatibility code changes. Narrow non-phase tooltip cleanup is complete for `ShipTarget`, `PrioFighter`, `PrioMissile`, `PrioShip`, `PrioWounded`, and `PrioHealthy`.
 
+Original-default restore backup:
+- Scope is scalar/config defaults only. Do not restore upstream tag-list contents, fork metadata, generated version files, or old tag names as part of this default pass.
+- Luna `agc_opportunist_HEThreshold`: original upstream Luna default `0.2`; current fork value `0.15`.
+- Luna `agc_spamSystemPreventsDeactivation`: original upstream Luna default `true`; current fork value `false`.
+- Generated `Settings.editme` fallback `conservePDAmmo_ammo`: original upstream generated fallback `0.8`, but upstream runtime default is `0.9`; current fork runtime/generated value is `0.9`. Treat this as source-of-truth ambiguous rather than an automatic `0.8` restore.
+- Luna `agc_ignoreFighterShields`: original upstream LunaSettings has duplicate conflicting defaults (`false` and `true`); upstream runtime/generated fallback and current fork use `true`. Do not reintroduce the duplicate unless explicitly restoring upstream Luna quirks.
+- Fork-only defaults with no original upstream counterpart: `noPDWasteCleanupDamageCap = 100`, `SFTUpperFluxLimit = 0.9`.
+
 ## Near-term queue
 
 1. Documentation/text consistency wave:
+1. Settings-default restoration wave:
+   - restore selected scalar/config defaults to original upstream values where source-of-truth is clear
+   - keep a backup of current fork values in docs before changing code/config
+   - do not restore upstream tag-list contents or old tag names as part of this pass
+   - preserve fork-only settings that have no upstream counterpart unless explicitly removing them
+2. Documentation/text consistency wave:
    - README tag table canonical-name and alias synchronization
    - README tag table examples column: add one realistic grounded example/use case for every tag
    - remaining text consistency sweep, for example `Avd -> Avoid`
+3. Larger system work:
 2. Larger system work:
    - rotate-toward-closest-valid-target behavior as ship mode rather than global aiming behavior
    - deep dive on priority-system consistency/transparency
@@ -89,6 +104,10 @@ The latest code-side audit found no clear rename-wave drift requiring mapping or
 - [x] Incompatibility definitions were audited against current canonical families and legacy aliases; no clear rename-wave drift required code changes.
 - [x] Non-phase priority/targeting tooltip cleanup is complete for the narrow code-side pass.
 - [x] Ship-mode local storage key/index audit is complete: local ship-mode custom data uses `AGC_ShipTags`, type-compatible wrong-key local data migrates once from `AGC_Tags`, and persistent mode add/remove uses the passed loadout index.
+- [x] Ship-mode local storage key/index audit is complete: local ship-mode custom data uses `AGC_ShipTags`, type-compatible wrong-key local data migrates once from `AGC_Tags`, and persistent mode add/remove uses the passed loadout index.
+- [x] Current fork default values that differ from original upstream default surfaces are backed up before restoration.
+- [ ] Selected scalar/config defaults are restored to original upstream values where source-of-truth is clear.
+- [ ] README tag table is synchronized with current canonical names and important aliases.
 - [ ] README tag table is synchronized with current canonical names and important aliases.
 - [ ] README tag table examples column is staged or implemented with realistic use cases.
 - [ ] Remaining text consistency sweep is complete.
@@ -127,7 +146,8 @@ Then copy to `C:\Games\Starsector\mods\Advanced-Gunnery-Control-Fork` using the 
 - `NoPD(H<...)` must continue to describe `H` as effective durability, not literal hull.
 - `NoPD(Waste>...)` must not treat burst beams as short continuous cleanup beams; Phase Lance/Tachyon Lance-style weapons should estimate as high committed burst packets.
 - LunaSettings and Settings.editme defaults for `SFTUpperFluxLimit` must remain aligned at `0.9`.
-- Scoped Luna/default audit left some mismatches unchanged as ambiguous: `targetShields_threshold`, `avoidShields_threshold`, `strictBigSmallShipMode`, and nearby custom-AI defaults. Do not normalize these blindly.
+- Scoped Luna/default audit left some mismatches unchanged as ambiguous: `targetShields_threshold`, `avoidShields_threshold`, `strictBigSmallShipMode`, and nearby custom-AI defaults. These mismatches are not necessarily fork-created because similar runtime/generated/Luna disagreements exist upstream. Do not normalize them blindly.
+- Original-default restoration should distinguish original upstream runtime defaults, original generated `Settings.editme` fallback defaults, and original Luna defaults. When these disagree, report the conflict and do not choose a default without an explicit source-of-truth decision.
 - `PrioSmall` is canonical for former `PrioPD` behavior; legacy `PrioPD` / `PrioritisePD` / `PrioritizePD` aliases must remain accepted.
 - `PrioBig` must remain priority-only and must not restrict non-ship target validity.
 - `TargetBig` / `TargetSmall` are canonical for former `BigShip` / `SmallShip` target-restriction tags; legacy aliases must remain accepted.
