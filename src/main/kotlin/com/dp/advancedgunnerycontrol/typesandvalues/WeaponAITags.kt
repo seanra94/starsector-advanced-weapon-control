@@ -257,8 +257,7 @@ val tagTooltips = mapOf(
     "TargetPhase" to "Restricts targeting to phase-ships and prioritizes them. Does not care if the ship is currently phased or not." +
             "\nUseful for rapid-fire or beam weapons to keep up pressure on enemy phase coils." +
             "\nNo additional targeting restrictions beyond phase-ship targeting.",
-    "ShipTarget" to "Weapon will only target the selected ship target (R-Key). I like to use this for regenerating missiles." +
-            "\nFor AI-controlled ships, this will limit them to the maneuver-target that the ShipAI has chosen.",
+    "ShipTarget" to "Restricts targeting to the selected ship target (R key). For AI-controlled ships, restricts targeting to the ShipAI maneuver target.",
     "NoMissile" to "Weapon won't target missiles.",
     "Overloaded" to "Weapon will only target and fire at overloaded ships.",
     "ShieldOff" to "Simplified version of AvoidShield. Will only fire at targets that have no shields or have shields turned off.",
@@ -274,11 +273,11 @@ val tagTooltips = mapOf(
     "Ambush" to "Tagged weapons in the same weapon group wait until every tagged weapon is ready and on the same target, then open fire together. " +
             "After the ambush starts, weapons keep prioritizing that target, but weapons that can no longer bear on it may fire at other valid targets. " +
             "The ambush resets when the target is lost by the whole group.",
-    "PrioFighter" to "Prioritize fighters over all other targets but target other things if no fighters present.$priorityBoilerplateText",
-    "PrioMissile" to "Prioritize missiles over all other targets but target other things if no missiles present.$priorityBoilerplateText",
-    "PrioShip" to "Prioritize non-fighter ships over all other targets but target other things if no ships present.$priorityBoilerplateText",
-    "PrioWounded" to "Prioritize targets that have already taken lots of hull damage.",
-    "PrioHealthy" to "Prioritize targets that have high hull level",
+    "PrioFighter" to "Prioritizes fighters over other targets when fighters are present.$priorityBoilerplateText",
+    "PrioMissile" to "Prioritizes missiles over other targets when missiles are present.$priorityBoilerplateText",
+    "PrioShip" to "Prioritizes non-fighter ships over other targets when ships are present.$priorityBoilerplateText",
+    "PrioWounded" to "Prioritizes targets that have already taken hull damage.",
+    "PrioHealthy" to "Prioritizes targets with high hull.",
     "BlockBeams" to "Will shoot at enemies that are shooting this ship with beams, even when out of range. Intended mainly for the SVC Ink Spitter gun.",
     "CustomAI" to "This tag does nothing but prevent the vanilla AI from doing anything. I use this for devastators to prevent vanilla jank.",
     "PrioDense" to "Prioritize target rich areas. Weapon will prioritize shooting at targets that are big and/or have lots of other targets nearby. Good for AoE weapons."
