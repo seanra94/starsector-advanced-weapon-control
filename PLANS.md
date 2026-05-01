@@ -2,15 +2,15 @@
 
 ## Active task
 
-Luna-default alignment and documentation/text consistency wave.
+Documentation/text consistency wave.
 
-Current status: baseline list curation, TF/SF helper groundwork, ammo-threshold canonicalization, preferred `NoPD(Waste>...)`, retained `NoPD(H<...)` support, burst-beam packet-estimation remediation, HF support, LunaSettings exposure of `SFTUpperFluxLimit`, weapon-relative `NoPD(H<...>)` durability, first static tooltip/text consistency pass, `HoldFire(...)` canonicalization, `ForceAutoFire` canonicalization, generated allowed-values repair, `PrioSmall` canonicalization, `PrioBig` implementation, `TargetBig` / `TargetSmall` canonicalization, `TargetPhase` semantic review, code-side incompatibility/family mapping audit, narrow non-phase tooltip cleanup, and ship-mode local storage key/index repair are complete.
+Current status: baseline list curation, TF/SF helper groundwork, ammo-threshold canonicalization, preferred `NoPD(Waste>...)`, retained `NoPD(H<...)` support, burst-beam packet-estimation remediation, HF support, LunaSettings exposure of `SFTUpperFluxLimit`, weapon-relative `NoPD(H<...>)` durability, first static tooltip/text consistency pass, `HoldFire(...)` canonicalization, `ForceAutoFire` canonicalization, generated allowed-values repair, `PrioSmall` canonicalization, `PrioBig` implementation, `TargetBig` / `TargetSmall` canonicalization, `TargetPhase` semantic review, code-side incompatibility/family mapping audit, narrow non-phase tooltip cleanup, ship-mode local storage key/index repair, current-fork default backup documentation, and Luna-default alignment are complete.
 
-The active implementation focus is now aligning runtime/generated fallback defaults to current fork LunaSettings defaults, then README tag-table synchronization, README examples, and remaining text consistency. Phase-tag behavior questions and original-upstream default restoration are deliberately deferred to the bottom of the priority list.
+The active implementation focus is now README tag-table synchronization, README examples, and remaining text consistency. Phase-tag behavior questions and original-upstream default restoration are deliberately deferred to the bottom of the priority list.
 
 ## Goal
 
-Keep the tag system compatibility-safe and user-understandable after canonicalization. Align Luna-exposed runtime/generated fallback defaults to the fork's current LunaSettings defaults, then synchronize user-facing README tag documentation and examples with the current canonical tag set while preserving important legacy-alias information.
+Keep the tag system compatibility-safe and user-understandable after canonicalization. Synchronize user-facing README tag documentation and examples with the current canonical tag set while preserving important legacy-alias information.
 
 ## Current understanding
 
@@ -47,34 +47,49 @@ Compatibility aliases remain important:
 
 `SFTUpperFluxLimit` / `Settings.softFluxTotalFluxCap()` is Luna-exposed with default `0.9`; Settings.editme fallback remains supported. It is the total-flux safety cap used by soft-flux conditional tags.
 
+Luna-default alignment is complete. `Settings.kt` and generated `Settings.editme` now follow current fork Luna defaults for Luna-exposed settings. The resolved mismatches were:
+- `listVariant`: `classic`
+- `messageDisplayDuration`: `250`
+- `messagePositionX`: `0.2`
+- `messagePositionY`: `0.4`
+- `combatUiAnchorX`: `0.025`
+- `combatUiAnchorY`: `0.8`
+- `customAITriggerHappiness`: `1.1`
+- `customAIFriendlyFireCaution`: `1.1`
+- `strictBigSmallShipMode`: `false`
+- `targetShields_threshold`: `0.1`
+- `avoidShields_threshold`: `0.2`
+
+Original-upstream default restoration is deferred. When that task is reached, restore Luna and Settings defaults to the original upstream repo's defaults, but if original upstream LunaSettings and original upstream Settings/runtime defaults differ, prefer the original upstream LunaSettings default. Do not restore upstream tag-list contents, old tag names, fork metadata, or generated version metadata as part of that task unless explicitly requested.
+
+Original-upstream default backup notes:
+- Scope is scalar/config defaults only.
+- Luna `agc_opportunist_HEThreshold`: original upstream Luna default `0.2`; current fork value `0.15`.
+- Luna `agc_spamSystemPreventsDeactivation`: original upstream Luna default `true`; current fork value `false`.
+- Generated `Settings.editme` fallback `conservePDAmmo_ammo`: original upstream generated fallback `0.8`, but upstream runtime default is `0.9`; current fork runtime/generated value is `0.9`. Treat this as source-of-truth ambiguous rather than an automatic `0.8` restore.
+- Luna `agc_ignoreFighterShields`: original upstream LunaSettings has duplicate conflicting defaults (`false` and `true`); upstream runtime/generated fallback and current fork use `true`. Do not reintroduce the duplicate unless explicitly restoring upstream Luna quirks.
+- Fork-only defaults with no original upstream counterpart: `noPDWasteCleanupDamageCap = 100`, `SFTUpperFluxLimit = 0.9`.
+
 `TargetPhase -> PrioPhase` was reviewed and rejected for now. `TargetPhaseTag` is not pure priority behavior: it strongly prioritizes phase ships and accepts only phase ships through the base-AI validity path, but it does not override `isValidTarget(...)`, so custom target selection may still consider other valid targets. `TargetPhase` remains the more accurate canonical name unless the behavior changes to priority-only.
 
 `AvoidPhaseTag` / `AvoidPhased` behavior is deferred. Static inspection suggests `AvoidPhaseTag.isBaseAiValid(...)` may be inverted because it appears to accept phase ships and reject normal ships in the base-AI validity path, while `shouldFire(...)` later refuses shots when the phase ship may phase before impact. This is original-author code and may rely on non-obvious base-AI/custom-AI handoff behavior, so do not change it from static reasoning alone.
 
-The latest code-side audit found no clear rename-wave drift requiring mapping or incompatibility code changes. Narrow non-phase tooltip cleanup is complete for `ShipTarget`, `PrioFighter`, `PrioMissile`, `PrioShip`, `PrioWounded`, and `PrioHealthy`.
-
-Original-upstream default restoration is deferred. When that task is reached, restore Luna and Settings defaults to the original upstream repo's defaults, but if original upstream LunaSettings and original upstream Settings/runtime defaults differ, prefer the original upstream LunaSettings default. Do not restore upstream tag-list contents, old tag names, fork metadata, or generated version metadata as part of that task unless explicitly requested.
-
 ## Near-term queue
 
-1. Luna-default alignment wave:
-   - align `Settings.kt` runtime defaults to current fork LunaSettings defaults for Luna-exposed settings
-   - align generated `Settings.editme` fallback defaults to current fork LunaSettings defaults for Luna-exposed settings
-   - do not use this pass to restore original upstream defaults
-2. Documentation/text consistency wave:
+1. Documentation/text consistency wave:
    - README tag table canonical-name and alias synchronization
    - README tag table examples column: add one realistic grounded example/use case for every tag
    - remaining text consistency sweep, for example `Avd -> Avoid`
-3. Larger system work:
+2. Larger system work:
    - rotate-toward-closest-valid-target behavior as ship mode rather than global aiming behavior
    - deep dive on priority-system consistency/transparency
    - broader LunaLib/settings migration strategy
-4. Lowest-priority deferred phase-tag review:
+3. Lowest-priority deferred phase-tag review:
    - revisit `TargetPhaseTag` and `AvoidPhaseTag` only after higher-priority audits and with cautious runtime testing
    - preserve original-author behavior unless in-game evidence shows the current base-AI/custom-AI interaction is wrong
    - specifically investigate whether `AvoidPhaseTag.isBaseAiValid(...)` intentionally accepts phase ships and rejects normal ships, or whether that is inverted
    - only then decide whether tooltip-only changes, base-AI validity changes, or no changes are appropriate
-5. Lowest-priority original-upstream default restoration:
+4. Lowest-priority original-upstream default restoration:
    - restore Luna and Settings defaults to the original upstream repo's defaults
    - if original upstream LunaSettings and original upstream Settings/runtime defaults differ, prefer the original upstream LunaSettings default
    - do not restore upstream tag-list contents, old tag names, fork metadata, or generated version metadata as part of that task unless explicitly requested
@@ -102,7 +117,8 @@ Original-upstream default restoration is deferred. When that task is reached, re
 - [x] Incompatibility definitions were audited against current canonical families and legacy aliases; no clear rename-wave drift required code changes.
 - [x] Non-phase priority/targeting tooltip cleanup is complete for the narrow code-side pass.
 - [x] Ship-mode local storage key/index audit is complete: local ship-mode custom data uses `AGC_ShipTags`, type-compatible wrong-key local data migrates once from `AGC_Tags`, and persistent mode add/remove uses the passed loadout index.
-- [ ] Runtime and generated fallback defaults are aligned to current fork LunaSettings defaults for Luna-exposed settings.
+- [x] Current fork default values that differ from original upstream default surfaces are backed up for the future upstream-default restoration task.
+- [x] Runtime and generated fallback defaults are aligned to current fork LunaSettings defaults for Luna-exposed settings.
 - [ ] README tag table is synchronized with current canonical names and important aliases.
 - [ ] README tag table examples column is staged or implemented with realistic use cases.
 - [ ] Remaining text consistency sweep is complete.
@@ -139,8 +155,8 @@ Then copy to `C:\Games\Starsector\mods\Advanced-Gunnery-Control-Fork` using the 
 ## Risks and open questions
 
 - Settings comment blocks can drift from actual support if list/regex updates are not mirrored in `build.gradle.kts`.
-- LunaSettings is now the source of truth for defaults. Previously ambiguous mismatches such as `targetShields_threshold`, `avoidShields_threshold`, `strictBigSmallShipMode`, and nearby custom-AI defaults should be resolved by aligning `Settings.kt` and generated `Settings.editme` to current fork LunaSettings defaults for Luna-exposed settings.
-- Original-upstream default restoration is a later bottom-backlog task. When that task is reached, compare original upstream LunaSettings and original upstream Settings/runtime defaults; if they differ, prefer original upstream LunaSettings.
+- LunaSettings is now the source of truth for defaults. Future Luna-exposed settings should keep `data/config/LunaSettings.csv`, `Settings.kt`, generated `Settings.editme`, and deployed config behavior aligned.
+- Original-upstream default restoration is a bottom-backlog task. When that task is reached, compare original upstream LunaSettings and original upstream Settings/runtime defaults; if they differ, prefer original upstream LunaSettings.
 - Large rename waves should be staged and compatibility-preserving because persisted saves/settings/loadouts may contain old tag strings.
 - `NoPD(H<...)` must continue to describe `H` as effective durability, not literal hull.
 - `NoPD(Waste>...)` must not treat burst beams as short continuous cleanup beams; Phase Lance/Tachyon Lance-style weapons should estimate as high committed burst packets.
