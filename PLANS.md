@@ -79,9 +79,12 @@ Original-upstream default backup notes:
 1. Documentation/text consistency wave:
    - remaining README/text consistency sweep, for example `Avd -> Avoid`
 2. Larger system work:
+2. Larger system work:
+   - manual external weapon-composition tag preset buttons in the campaign weapon-group GUI
    - rotate-toward-closest-valid-target behavior as ship mode rather than global aiming behavior
    - deep dive on priority-system consistency/transparency
    - broader LunaLib/settings migration strategy
+3. Lowest-priority deferred phase-tag review:
 3. Lowest-priority deferred phase-tag review:
    - revisit `TargetPhaseTag` and `AvoidPhaseTag` only after higher-priority audits and with cautious runtime testing
    - preserve original-author behavior unless in-game evidence shows the current base-AI/custom-AI interaction is wrong
@@ -210,3 +213,72 @@ Risks and open questions:
 - Need to decide what happens when no preset exists for a weapon composition: disabled Load button, tooltip, harmless no-op, or status message.
 - Need to decide whether saving an empty tag list should clear the saved preset or create an explicit empty preset.
 - Need in-game UI validation at 1080p because adding two buttons reduces vertical space available for tag scrolling.
+
+
+## Future feature: external weapon-composition tag preset buttons
+
+User goal: eventually add two buttons to each campaign weapon-group panel, placed below the weapon container and above the active tag buttons:
+- Save tag loadout for this weapon combination.
+- Load the saved tag loadout for this weapon combination.
+
+Desired user-facing behavior:
+- The feature should combine the customizability of `Index` mode with the convenience of `WeaponCompositionGlobal` style reuse.
+- Normal tag storage mode should not have to change. A user should be able to stay in `Index` mode while manually saving and loading reusable presets for repeated weapon combinations.
+- Presets must work across campaign saves and profiles. They should be backed by a real external file the user can keep, copy, back up, or move between installs/profiles, not only by `Global.getSector().persistentData`.
+- The external preset file does not need to be human-friendly if that is inconvenient, but it must be durable and portable outside a single save.
+- The buttons should operate on the active loadout slot unless explicitly redesigned later.
+
+Concrete expected matching semantics:
+- Matching should be based on the set of weapon types/components in the group, not the exact weapon count.
+- Example: a Medusa group with `2x PD Laser + 2x Tactical Laser` saves `TargetShield`. A different group with only `1x PD Laser` should not load that preset because it lacks the Tactical Laser component. A Paragon group with `3x PD Laser + 1x Tactical Laser` should load the same preset because it has the same weapon-type combination, even though counts differ.
+- Saving from the Paragon group after adding `NoFighter` should update the shared preset for the `PD Laser + Tactical Laser` combination. The Medusa group remains unchanged until the user explicitly presses Load, then it receives the updated preset.
+- Keying should therefore be normalized and count-insensitive by default: sort unique weapon IDs in the group and use that as the preset identity. Do not blindly reuse any existing weapon-composition key until verifying whether it includes counts or slot/index details.
+
+Current persistence model to account for:
+- Existing tag persistence has three user-facing storage modes: `Index`, `WeaponComposition`, and `WeaponCompositionGlobal`.
+- `Index` is the most customizable mode: tags are stored per ship and weapon group index, but refits or group reordering can make saved tags no longer match the intended weapons.
+- `WeaponComposition` trades some customization for convenience: tags are stored per ship by weapon composition, so moving a group to a different index can preserve tags, but changing the weapon mix changes the key.
+- `WeaponCompositionGlobal` is the most convenient and least flexible mode: tags are stored by weapon composition without being tied to a specific ship, so identical weapon combinations can share tags across ships.
+- Existing in-save persistent data is routed through `StorageBase` / `Settings.tagStorage` / `Settings.tagStorageByWeaponComposition`, and loadout slots are keyed by active `AGCGUI.storageIndex`.
+- Campaign tag buttons currently use `loadPersistentTags(...)` and `persistTags(...)`; future preset buttons should reuse the same canonicalization, compatibility, validation, and UI-refresh behavior where possible, but the preset store itself must be external and cross-save.
+
+Design direction:
+- Treat this as an explicit manual external preset layer, not as another automatic storage mode and not as a hidden switch to `WeaponCompositionGlobal`.
+- Save should capture the current selected tags for the current weapon group, canonicalize them, sanitize them, then write them to the external preset file under the normalized count-insensitive weapon-type key and active loadout slot.
+- Load should read the external preset for the current normalized weapon-type key and active loadout slot, sanitize it against current tag support and current weapon-group validity, then apply it to the current group through the normal persistence path.
+- Loading should refresh the campaign GUI state and pinned selected tags just like manual tag-button changes.
+- The feature should not silently mutate other groups. Other matching groups only change when the user presses Load on those groups.
+
+Resilience requirements:
+- Missing weapons should not crash loading or parsing the external preset file. A preset whose weapon IDs no longer exist should remain inert unless deliberately cleaned up.
+- Removed, renamed, or changed tags should not crash loading. Load should canonicalize known legacy aliases, discard unknown/unsupported tags, discard tags disabled for the current weapon group, and remove incompatible combinations using the same rules as normal tag-button persistence.
+- Corrupt or partially invalid preset files should fail softly: preserve recoverable entries where possible, ignore invalid entries, and log/report enough information to diagnose the issue.
+- Saving should avoid writing duplicate tags and should preserve canonical tag names rather than legacy aliases.
+- Decide later whether saving an empty tag list clears the preset, creates an explicit empty preset, or asks for a separate delete/clear behavior.
+
+Likely implementation touchpoints:
+- `ShipView.buildWeaponGroupContainer(...)`: insert a compact two-button row between the weapon list container and the tag container.
+- Campaign button infrastructure: likely add a small non-tag button type or helper rather than overloading `TagButton`.
+- `TagButton` / campaign tag-button persistence flow: reuse or factor existing `loadPersistentTags(...)`, `persistTags(...)`, sanitization, and `campaignTagSelectionVersion` behavior.
+- `utils` persistence helpers: inspect `loadPersistentTags(...)`, `persistTags(...)`, `loadAllTags(...)`, and existing weapon-composition key generation before coding.
+- External file read/write layer: choose a save-independent path and format suitable for portable presets. Do not rely solely on `Global.getSector().persistentData`.
+- `AGCGUI.storageIndex`: ensure preset save/load operations are scoped to the active loadout slot unless explicitly choosing cross-loadout presets.
+
+Acceptance criteria for eventual implementation:
+- Buttons appear once per non-empty weapon group below the weapon list and above active tag buttons.
+- Save writes the currently selected tags for the normalized weapon-type combination to a portable external preset file.
+- Load applies the saved external preset for the normalized weapon-type combination to the current group.
+- The feature works while normal tag storage mode remains `Index`.
+- Behavior is defined and tested under `WeaponComposition` and `WeaponCompositionGlobal` modes.
+- Presets work across campaign saves/profiles by copying or retaining the external file.
+- Loaded tags are canonical, valid for the current weapon group, compatible with each other, and resilient to missing old tags or removed weapons.
+- Existing normal tag persistence remains backward-compatible.
+- UI validation confirms the added buttons do not break 1080p campaign weapon-group layout or tag scrolling.
+
+Risks and open questions:
+- Need local inspection of the current weapon-composition key helper; existing key semantics may include weapon counts, while this feature should match by unique weapon IDs regardless of counts.
+- Need to choose the external file path and format. It should be portable across saves/profiles and robust against malformed data.
+- Need to decide what happens when no preset exists for the current weapon combination: disabled Load button, tooltip, harmless no-op, or status message.
+- Need to decide whether presets should be per active loadout slot or shared across loadout slots by default.
+- Need to decide whether a future delete/clear preset button is necessary, or whether saving an empty tag list is sufficient.
+- Need in-game UI validation because adding two buttons reduces vertical space available for tag scrolling.
