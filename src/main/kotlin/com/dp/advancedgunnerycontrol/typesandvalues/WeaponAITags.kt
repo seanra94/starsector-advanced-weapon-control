@@ -198,8 +198,8 @@ private fun noPdHealthTooltip(canonicalTag: String): String {
 
 val tagTooltips = mapOf(
     "PD" to pdTargetingRestrictionTooltip(),
-    "PrioPD" to "Weapon will always prioritize from small to large (Missiles > fighters > small ships > big ships)." +
-            if (Settings.strictBigSmall()) "\nRestricts targeting to missiles and ships smaller than cruisers." else "\nNo targeting restrictions.",
+    "PrioSmall" to "Prioritizes missiles, fighters, and smaller ships over larger ships.",
+    "PrioBig" to "Prioritizes larger ships over smaller ships. No targeting restrictions.",
     "NoPD" to "Forbids targeting missiles and prioritizes ships over fighters.",
     "Fighter" to "Restricts targeting to fighters.",
     "AvoidShield" to "Weapon will prioritize targets without shields, flanked shields or high flux/shield off. \nShields of fighters will ${
@@ -246,10 +246,8 @@ val tagTooltips = mapOf(
     "Opportunist" to "Weapon will be much more hesitant to fire and won't target missiles or fighters. Use for e.g. limited ammo weapons.",
     "AvoidDebris" to "Weapon will not fire when the shot is blocked by debris/asteroids." +
             "\nNote: This only affects the custom AI and the Opportunist mode already includes this option.",
-    "BigShip" to "Weapon won't target missiles and prioritize big ships" +
-            if (Settings.strictBigSmall()) " and won't target anything smaller than destroyers." else ".",
-    "SmallShip" to "Weapon will ignore missiles and prioritize small ships (including fighters)" +
-            if (Settings.strictBigSmall()) " and won't target anything bigger than destroyers." else ".",
+    "TargetBig" to "Restricts targeting to larger ships and prioritizes the largest valid targets.",
+    "TargetSmall" to "Restricts targeting to smaller ships and prioritizes the smallest valid targets.",
     "ForceAutoFire" to "Forces AI-controlled ships to keep this weapon group on autofire, similar to the ForceAutoFire ship mode for all groups." +
             "\nNote: This modifies the ShipAI because the API cannot directly set a weapon group to autofire." +
             "\n      The ShipAI may still try to select this weapon group, but will be forced to deselect it again.",
@@ -326,13 +324,16 @@ fun canonicalizeWeaponTagName(tag: String): String {
         ignoreMinorPDRegex.matches(tag) -> "NoPD(H<${extractRawRegexThreshold(ignoreMinorPDRegex, tag).toInt()})"
         avoidArmorRegex.matches(tag) -> "AvoidArmor(${extractRegexThresholdAsPercentageString(avoidArmorRegex, tag)})"
         tag == "ForceAF" -> "ForceAutoFire"
-        tag == "PrioritisePD" -> "PrioPD"
-        tag == "PrioritizePD" -> "PrioPD"
+        tag == "PrioPD" -> "PrioSmall"
+        tag == "PrioritisePD" -> "PrioSmall"
+        tag == "PrioritizePD" -> "PrioSmall"
         tag == "CnsrvPDAmmo" -> "ConservePDAmmo"
         tag == "NoFighters" -> "NoFighter"
         tag == "NoMissiles" -> "NoMissile"
-        tag == "BigShips" -> "BigShip"
-        tag == "SmallShips" -> "SmallShip"
+        tag == "BigShip" -> "TargetBig"
+        tag == "BigShips" -> "TargetBig"
+        tag == "SmallShip" -> "TargetSmall"
+        tag == "SmallShips" -> "TargetSmall"
         tag == "PrioShips" -> "PrioShip"
         tag == "AvoidShields" -> "AvoidShield"
         tag == "TargetShields" -> "TargetShield"
@@ -551,7 +552,8 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
     }
     return when (canonicalName) {
         "PD" -> PDTag(weapon)
-        "PrioPD", "PrioritizePD", "PrioritisePD" -> PrioritizePDTag(weapon, Settings.prioXModifier())
+        "PrioSmall", "PrioPD", "PrioritizePD", "PrioritisePD" -> PrioritizePDTag(weapon, Settings.prioXModifier())
+        "PrioBig" -> PrioritizeBigTag(weapon)
         "NoPD" -> NoPDTag(weapon)
         "Fighter" -> FighterTag(weapon)
         "AvoidShield", "AvoidShields" -> AvoidShieldTag(weapon)
@@ -563,8 +565,8 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
         "ConservePDAmmo", "CnsrvPDAmmo" -> ConservePDAmmoTag(weapon, Settings.conservePDAmmo())
         "Opportunist" -> OpportunistTag(weapon)
         "AvoidDebris" -> AvoidDebrisTag(weapon)
-        "BigShip", "BigShips" -> BigShipTag(weapon)
-        "SmallShip", "SmallShips" -> SmallShipTag(weapon)
+        "TargetBig", "BigShip", "BigShips" -> BigShipTag(weapon)
+        "TargetSmall", "SmallShip", "SmallShips" -> SmallShipTag(weapon)
         "ForceAutoFire", "ForceAF" -> ForceAutofireTag(weapon)
         "AvoidPhased" -> AvoidPhaseTag(weapon)
         "TargetPhase" -> TargetPhaseTag(weapon)
@@ -623,6 +625,12 @@ fun tagNameToRegexName(tag: String): String {
         opportunistAmmoRegex.matches(canonicalTag) -> "Opportunist(A<N%)"
         canonicalTag == "ConservePDAmmo" -> "PD(A<N%)"
         pdAmmoRegex.matches(canonicalTag) -> "PD(A<N%)"
+        canonicalTag == "PrioPD" -> "PrioSmall"
+        canonicalTag == "PrioSmall" -> "PrioSmall"
+        canonicalTag == "BigShip" -> "TargetBig"
+        canonicalTag == "TargetBig" -> "TargetBig"
+        canonicalTag == "SmallShip" -> "TargetSmall"
+        canonicalTag == "TargetSmall" -> "TargetSmall"
         noPdWasteRegex.matches(canonicalTag) -> "NoPD(Waste>N%)"
         noPdHealthRegex.matches(canonicalTag) -> "NoPD(H<N>)"
         canonicalTag == "IgnoreMinorPD" -> "NoPD(H<N>)"
@@ -660,11 +668,12 @@ val tagIncompatibility = mapOf(
         "PD(SF>N%)",
         "PD(HF>N%)",
         "PD(A<N%)",
-        "BigShip",
-        "SmallShip",
-        "PrioPD"
+        "TargetBig",
+        "TargetSmall",
+        "PrioSmall"
     ),
-    "PrioPD" to listOf("Opportunist", "NoPD", "BigShip", "SmallShip", "Fighter", "PD"),
+    "PrioSmall" to listOf("Opportunist", "NoPD", "TargetBig", "TargetSmall", "Fighter", "PD", "PrioBig"),
+    "PrioBig" to listOf("PrioSmall", "TargetSmall"),
     "Fighter" to listOf(
         "PD",
         "NoFighter",
@@ -674,11 +683,11 @@ val tagIncompatibility = mapOf(
         "PD(SF>N%)",
         "PD(HF>N%)",
         "PD(A<N%)",
-        "BigShip",
-        "SmallShip",
-        "PrioPD",
+        "TargetBig",
+        "TargetSmall",
+        "PrioSmall",
     ),
-    "NoPD" to listOf("PD", "Fighter", "PD(TF>N%)", "PD(SF>N%)", "PD(HF>N%)", "PD(A<N%)", "PrioPD"),
+    "NoPD" to listOf("PD", "Fighter", "PD(TF>N%)", "PD(SF>N%)", "PD(HF>N%)", "PD(A<N%)", "PrioSmall"),
     "ShieldOff" to shieldTagIncompatibilities("ShieldOff"),
     "AvoidShield" to shieldTagIncompatibilities("AvoidShield"),
     "TargetShield" to shieldTagIncompatibilities("TargetShield"),
@@ -691,14 +700,14 @@ val tagIncompatibility = mapOf(
     "TargetShield(SF>N%)" to shieldTagIncompatibilities("TargetShield(SF>N%)"),
     "TargetShield(HF>N%)" to shieldTagIncompatibilities("TargetShield(HF>N%)"),
     "NoFighter" to listOf("Fighter", "Opportunist", "Opportunist(A<N%)"),
-    "PD(A<N%)" to listOf("PD", "Fighter", "NoPD", "Opportunist", "Opportunist(A<N%)", "BigShip", "SmallShip"),
-    "Opportunist" to listOf("Fighter", "PD", "NoFighter", "PD(TF>N%)", "PD(SF>N%)", "PD(HF>N%)", "PD(A<N%)", "PrioPD", "Opportunist(A<N%)", "NoMissile"),
-    "Opportunist(A<N%)" to listOf("Fighter", "PD", "NoFighter", "PD(TF>N%)", "PD(SF>N%)", "PD(HF>N%)", "PD(A<N%)", "PrioPD", "Opportunist", "NoMissile"),
-    "PD(TF>N%)" to listOf("Fighter", "Opportunist", "Opportunist(A<N%)", "NoPD", "PD", "BigShip", "SmallShip"),
-    "PD(SF>N%)" to listOf("Fighter", "Opportunist", "Opportunist(A<N%)", "NoPD", "PD", "BigShip", "SmallShip"),
-    "PD(HF>N%)" to listOf("Fighter", "Opportunist", "Opportunist(A<N%)", "NoPD", "PD", "BigShip", "SmallShip"),
-    "SmallShip" to listOf("BigShip", "PD", "Fighter", "PD(TF>N%)", "PD(SF>N%)", "PD(HF>N%)", "PD(A<N%)", "PrioPD"),
-    "BigShip" to listOf("SmallShip", "PD", "Fighter", "PD(TF>N%)", "PD(SF>N%)", "PD(HF>N%)", "PD(A<N%)", "PrioPD"),
+    "PD(A<N%)" to listOf("PD", "Fighter", "NoPD", "Opportunist", "Opportunist(A<N%)", "TargetBig", "TargetSmall"),
+    "Opportunist" to listOf("Fighter", "PD", "NoFighter", "PD(TF>N%)", "PD(SF>N%)", "PD(HF>N%)", "PD(A<N%)", "PrioSmall", "Opportunist(A<N%)", "NoMissile"),
+    "Opportunist(A<N%)" to listOf("Fighter", "PD", "NoFighter", "PD(TF>N%)", "PD(SF>N%)", "PD(HF>N%)", "PD(A<N%)", "PrioSmall", "Opportunist", "NoMissile"),
+    "PD(TF>N%)" to listOf("Fighter", "Opportunist", "Opportunist(A<N%)", "NoPD", "PD", "TargetBig", "TargetSmall"),
+    "PD(SF>N%)" to listOf("Fighter", "Opportunist", "Opportunist(A<N%)", "NoPD", "PD", "TargetBig", "TargetSmall"),
+    "PD(HF>N%)" to listOf("Fighter", "Opportunist", "Opportunist(A<N%)", "NoPD", "PD", "TargetBig", "TargetSmall"),
+    "TargetSmall" to listOf("TargetBig", "PD", "Fighter", "PD(TF>N%)", "PD(SF>N%)", "PD(HF>N%)", "PD(A<N%)", "PrioSmall", "PrioBig"),
+    "TargetBig" to listOf("TargetSmall", "PD", "Fighter", "PD(TF>N%)", "PD(SF>N%)", "PD(HF>N%)", "PD(A<N%)", "PrioSmall"),
     "NoMissile" to listOf("Opportunist", "Opportunist(A<N%)"),
     "TargetPhase" to listOf("AvoidPhased"),
     "AvoidPhased" to listOf("TargetPhase"),

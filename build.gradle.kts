@@ -238,17 +238,17 @@ tasks {
                    |   #                                 #### TAG LIST ####
                    |   # Determines which tags will be shown in the GUIs. Feel free to add/remove tags as you see fit.
                    |   # Allowed values are: (replace N with a number; percent forms usually use 0-100, raw-value forms use literal values like H<145)
-                   |   # "PD", "NoPD", "NoMissile", "PD(TF>N%)", "PD(SF>N%)", "PD(HF>N%)", "PrioPD", "Fighter", "NoFighter",
+                   |   # "PD", "NoPD", "NoMissile", "PD(TF>N%)", "PD(SF>N%)", "PD(HF>N%)", "PrioSmall", "PrioBig", "Fighter", "NoFighter",
                    |   # "AvoidShield", "TargetShield", "AvoidShield+", "TargetShield+",
                    |   # "AvoidShield(TF>N%)", "AvoidShield(SF>N%)", "AvoidShield(HF>N%)", "TargetShield(TF>N%)", "TargetShield(SF>N%)", "TargetShield(HF>N%)",
                    |   # "AvoidArmor(N%)", "AvoidDebris", "ShieldOff", "Opportunist", "HoldFire(TF>N%)", "HoldFire(SF>N%)", "HoldFire(HF>N%)",
                    |   # "Opportunist(A<N%)", "PD(A<N%)", "ConserveAmmo", "ConserveAmmo(A<N%)", "ConservePDAmmo", "ConservePDAmmo(A<N%)", "CnsrvPDAmmo", "ShipTarget", "AvoidPhased", "TargetPhase", "SyncWindow", "SyncVolley", "Ambush",
-                   |   # "NoPD(Waste>N%)", "NoPD(H<N>)", "IgnoreMinorPD", "IgnoreMinorPD(H<N>)", "BigShip", "SmallShip", "Panic(H<N%)", "Range<N%", "ForceAutoFire", "Force(TF<N%)", "Force(SF<N%)", "Force(HF<N%)",
+                   |   # "NoPD(Waste>N%)", "NoPD(H<N>)", "IgnoreMinorPD", "IgnoreMinorPD(H<N>)", "TargetBig", "TargetSmall", "Panic(H<N%)", "Range<N%", "ForceAutoFire", "Force(TF<N%)", "Force(SF<N%)", "Force(HF<N%)",
                    |   # "Overloaded", "Merge", "PrioFighter", "PrioMissile", "PrioShip", "PrioWounded", "PrioHealthy",
                    |   # "BlockBeams", "CustomAI", "LowRoF(N%)", "PrioDense"
                    |   
                    |   # Flux notation inside parentheses: TF = total flux, HF = hard flux, SF = soft flux.
-                   |   # Legacy tags such as Hold(TF>N%), Hold(SF>N%), Hold(HF>N%), Hold(Flx>N%), HoldSFT(F>N%), ForceAF, and AvShldFT(F<N%) are still accepted for saved-loadout compatibility.
+                   |   # Legacy tags such as Hold(TF>N%), Hold(SF>N%), Hold(HF>N%), Hold(Flx>N%), HoldSFT(F>N%), ForceAF, PrioPD, PrioritisePD, PrioritizePD, BigShip, BigShips, SmallShip, SmallShips, and AvShldFT(F<N%) are still accepted for saved-loadout compatibility.
                    |   
                    |   # Choose which of the following lists will be used. Valid options are: "classic", "novice" and "complete"
                    |   # If you are using LunaSettings, adjust the lists below
@@ -263,8 +263,8 @@ tasks {
                    |                "ForceAutoFire", "Force(TF<10%)", "Force(TF<25%)", "Force(TF<50%)", "Force(TF<75%)", "Force(SF<10%)", "Force(SF<20%)", "Force(HF<20%)",
                    |                "PD", "NoPD", "PD(TF>50%)", "PD(SF>10%)", "PD(SF>20%)", "PD(HF>20%)",
                    |                "Merge", "SyncWindow", "SyncVolley", "Ambush",
-                   |                "PrioPD", "PrioFighter", "PrioMissile", "PrioShip", "PrioWounded", "PrioHealthy",
-                   |                "Fighter", "NoMissile", "NoFighter", "BigShip", "SmallShip", "ShipTarget",
+                   |                "PrioSmall", "PrioBig", "PrioFighter", "PrioMissile", "PrioShip", "PrioWounded", "PrioHealthy",
+                   |                "Fighter", "NoMissile", "NoFighter", "TargetBig", "TargetSmall", "ShipTarget",
                    |                "Opportunist", "Opportunist(A<80%)", "PD(A<80%)",
                    |                "NoPD(Waste>40%)", "Panic(H<25%)", "Range<60%", "Range<90%",
                    |                "Overloaded", "LowRoF(200%)", "CustomAI", "PrioDense", "AvoidDebris", "BlockBeams"
@@ -276,7 +276,7 @@ tasks {
                    |                "HoldFire(TF>90%)", "HoldFire(TF>75%)", "HoldFire(SF>10%)", "Merge", "SyncWindow", "SyncVolley", "Ambush",
                    |                "AvoidPhased", "TargetPhase", "ShipTarget", 
                    |                "ForceAutoFire", "Force(TF<50%)", "Force(SF<5%)",
-                   |                "PrioPD", "PrioFighter", "PrioMissile",
+                   |                "PrioSmall", "PrioBig", "PrioFighter", "PrioMissile",
                    |                "NoMissile", "NoFighter",
                    |                "Opportunist", "Panic(H<25%)", "Range<60%",
                    |                "Opportunist(A<80%)", "PD(A<80%)", "PD(SF>10%)", "NoPD(Waste>40%)",
@@ -455,7 +455,7 @@ tasks {
                    |   ,"conservePDAmmo_ammo" : 0.9 # Only allow firing at fighters and missiles when ammo < X
                    |   ,"noPDWasteCleanupDamageCap" : 100 # NoPD(Waste>N%) ignores waste filtering for weapons at or below this estimated attack packet damage
                    |   
-                   |   # If true, the BigShip/SmallShip tags will exclusively target Destroyers and bigger/smaller
+                   |   # If true, the TargetBig/TargetSmall tags will exclusively target Destroyers and bigger/smaller
                    |   ,"strictBigSmallShipMode" : false
                    |   
                    |   # When set to true, the mod will periodically (~1/s) check if the custom ship AI has been stripped
