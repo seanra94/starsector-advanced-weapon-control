@@ -19,6 +19,7 @@ object Values {
     const val distToAngularDistEvaluationFactor = 1f / 400f
     const val CUSTOM_SUGGESTED_TAG_JSON_FILE_NAME = "AGC_customSuggestedTags.json"
     const val WEAPON_COMP_GLOBAL_TAGS_JSON_FILE_NAME = "AGC_weaponCompGlobalTags.json"
+    const val WEAPON_COMP_TAG_PRESETS_JSON_FILE_NAME = "AGC_weaponCompTagPresets.json"
     const val CUSTOM_SHIP_DATA_ARE_WEAPONS_MERGED_KEY = "AGC_WeaponsMerged"
     var storageIndex = 0
     const val HELP_TEXT =
