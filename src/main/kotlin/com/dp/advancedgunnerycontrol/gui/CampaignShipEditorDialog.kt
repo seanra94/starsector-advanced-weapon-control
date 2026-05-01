@@ -95,6 +95,7 @@ class CampaignShipEditorPanelPlugin(
     private var contentPanel: CustomPanelAPI? = null
     private var shipView: ShipView? = null
     private var persistedTagScrollOffsets: Map<Int, Int> = emptyMap()
+    private var persistedPresetStatusMessages: Map<Int, String> = emptyMap()
 
     private var currentActions: List<GUIAction> = emptyList()
     private var currentOptionRows: List<CampaignOptionRow> = emptyList()
@@ -152,6 +153,7 @@ class CampaignShipEditorPanelPlugin(
         val root = panel ?: return
         try {
             persistedTagScrollOffsets = shipView?.captureTagScrollOffsets() ?: persistedTagScrollOffsets
+            persistedPresetStatusMessages = shipView?.capturePresetStatusMessages() ?: persistedPresetStatusMessages
             contentPanel?.let(root::removeComponent)
             contentPanel = null
             shipView = null
@@ -176,7 +178,13 @@ class CampaignShipEditorPanelPlugin(
                     attributes.tagView,
                     enableTagScroll = false,
                     drawFrame = false,
-                    initialTagScrollOffsets = persistedTagScrollOffsets
+                    initialTagScrollOffsets = persistedTagScrollOffsets,
+                    initialPresetStatusMessages = persistedPresetStatusMessages,
+                    onPresetStatusUpdate = { groupIndex, message ->
+                        val updated = persistedPresetStatusMessages.toMutableMap()
+                        updated[groupIndex] = message
+                        persistedPresetStatusMessages = updated
+                    }
                 )
             )
             root.addComponent(content).inTL(CampaignGuiStyle.MAIN_PADDING, CampaignGuiStyle.MAIN_PADDING)
