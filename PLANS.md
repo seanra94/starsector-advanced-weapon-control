@@ -4,9 +4,9 @@
 
 Tag-system naming/logic review wave.
 
-Current status: baseline list curation, TF/SF helper groundwork, ammo-threshold canonicalization, preferred `NoPD(Waste>...)`, retained `NoPD(H<...)` support, burst-beam packet-estimation remediation, HF support, LunaSettings exposure of `SFTUpperFluxLimit`, weapon-relative `NoPD(H<...>)` durability, first static tooltip/text consistency pass, `HoldFire(...)` canonicalization, `ForceAutoFire` canonicalization, and generated allowed-values repair are complete.
+Current status: baseline list curation, TF/SF helper groundwork, ammo-threshold canonicalization, preferred `NoPD(Waste>...)`, retained `NoPD(H<...)` support, burst-beam packet-estimation remediation, HF support, LunaSettings exposure of `SFTUpperFluxLimit`, weapon-relative `NoPD(H<...>)` durability, first static tooltip/text consistency pass, `HoldFire(...)` canonicalization, `ForceAutoFire` canonicalization, generated allowed-values repair, `PrioSmall` canonicalization, `PrioBig` implementation, and `TargetBig` / `TargetSmall` canonicalization are complete.
 
-The active implementation focus is now the remaining naming/logic wave and then README/tag-table audit.
+The active implementation focus is now the remaining `TargetPhase -> PrioPhase` semantic review and then README/tag-table audit.
 
 ## Goal
 
@@ -23,6 +23,9 @@ Current canonical names:
 - Simpler retained health-threshold minor-PD suppression: `NoPD(H<...)`
 - Hold-fire flux gates: `HoldFire(TF>...%)`, `HoldFire(SF>...%)`, `HoldFire(HF>...%)`
 - Force autofire tag/mode: `ForceAutoFire`
+- Small-target priority: `PrioSmall`
+- Big-target priority: `PrioBig`
+- Target-size restrictions: `TargetBig`, `TargetSmall`
 
 Compatibility aliases remain important:
 - `ConserveAmmo` / `ConserveAmmo(A<...%)`
@@ -31,6 +34,9 @@ Compatibility aliases remain important:
 - `IgnoreMinorPD` / `IgnoreMinorPD(H<...)`
 - `Hold(...)` legacy forms and older hold flux spellings
 - `ForceAF`
+- `PrioPD` / `PrioritisePD` / `PrioritizePD`
+- `BigShip` / `BigShips`
+- `SmallShip` / `SmallShips`
 
 `NoPD(Waste>...)` uses bounded waste: `max(0, estimatedAttackPacketDamage - estimatedTargetDamageRequired) / estimatedAttackPacketDamage`. Continuous beams estimate attack packet damage as `beamDps * 0.5s`. Burst beams estimate one committed burst packet: `beamDps * (burstDuration + beamChargeupTime / 3 + beamChargedownTime / 3)`.
 
@@ -41,9 +47,6 @@ Compatibility aliases remain important:
 ## Near-term queue
 
 1. Naming/logic review wave:
-   - add `PrioBig`
-   - review/canonicalize `PrioPD -> PrioSmall` while preserving aliases
-   - review/canonicalize `BigShip/SmallShip -> TargetBig/TargetSmall` while preserving aliases
    - review `TargetPhase -> PrioPhase` only if semantics match prioritization
 2. Review/audit wave:
    - tag incompatibility review
@@ -72,9 +75,9 @@ Compatibility aliases remain important:
 - [x] `HoldFire(...)` canonicalization preserves `Hold(...)` aliases.
 - [x] `ForceAutoFire` canonicalization preserves `ForceAF` tag/mode aliases.
 - [x] Generated allowed-values comments include visible canonical tags after the HoldFire/ForceAutoFire rename packet.
-- [ ] `PrioBig` is implemented if semantics are clear and useful.
-- [ ] `PrioPD -> PrioSmall` is reviewed/canonicalized if semantics match.
-- [ ] `BigShip/SmallShip -> TargetBig/TargetSmall` is reviewed/canonicalized if semantics match.
+- [x] `PrioBig` is implemented as priority-only with no added targeting restrictions.
+- [x] `PrioPD -> PrioSmall` is reviewed/canonicalized with aliases preserved.
+- [x] `BigShip/SmallShip -> TargetBig/TargetSmall` is reviewed/canonicalized with aliases preserved.
 - [ ] `TargetPhase -> PrioPhase` is reviewed only if semantics match prioritization.
 - [ ] Incompatibility definitions are audited against current canonical families and legacy aliases.
 - [ ] Remaining tooltips are audited for canonical names, thresholds, ammo/flux notation, and legacy behavior.
@@ -114,6 +117,7 @@ Then copy to `C:\Games\Starsector\mods\Advanced-Gunnery-Control-Fork` using the 
 - `NoPD(Waste>...)` must not treat burst beams as short continuous cleanup beams; Phase Lance/Tachyon Lance-style weapons should estimate as high committed burst packets.
 - LunaSettings and Settings.editme defaults for `SFTUpperFluxLimit` must remain aligned at `0.9`.
 - Scoped Luna/default audit left some mismatches unchanged as ambiguous: `targetShields_threshold`, `avoidShields_threshold`, `strictBigSmallShipMode`, and nearby custom-AI defaults. Do not normalize these blindly.
-- `PrioPD` behavior is semantically "small/PD priority," not pure point-defense; verify semantics before canonicalizing to `PrioSmall`.
-- `BigShip` / `SmallShip` appear to restrict valid targets, so `TargetBig` / `TargetSmall` may be more accurate than `PrioBig` / `PrioSmall` for those tags.
+- `PrioSmall` is canonical for former `PrioPD` behavior; legacy `PrioPD` / `PrioritisePD` / `PrioritizePD` aliases must remain accepted.
+- `PrioBig` must remain priority-only and must not restrict non-ship target validity.
+- `TargetBig` / `TargetSmall` are canonical for former `BigShip` / `SmallShip` target-restriction tags; legacy aliases must remain accepted.
 - `TargetPhase` should become `PrioPhase` only if it is primarily prioritization and does not impose targeting semantics that make `TargetPhase` more accurate.
