@@ -326,7 +326,7 @@ custom data and the original entry will be removed.
 
 #### Block AGC from assigning ship modes ####
 
-Ship modes (and the ForceAF tag) replace the default ship AI of ships. The replacement AI delegates most calls 
+Ship modes and the `ForceAutoFire` tag replace the default ship AI of ships. The replacement AI delegates most calls 
 to the original AI, so in most cases, this shouldn't pose a problem. If you, however, replace the ship AI with your 
 own custom AI and need to access that AI from another script, that will cause problems.
 You can circumvent that by simply storing a reference to your custom AI somewhere (e.g. in custom ship data).
@@ -353,8 +353,8 @@ Has been moved to changelog.txt
 
 ## Acknowledgements ##
 
-Special thanks to Seanra for contributing the option to ignore fighter shields and the legacy shield-threshold tags plus PrioPD
-and ConservePDAmmo tags!
+Special thanks to Seanra for contributing the option to ignore fighter shields and the legacy shield-threshold tags plus the tags
+now known as `PrioSmall` and `PD(A<N%)`!
 
 Special thanks to Genir for fixing an issue where weapons that should be aimed were incorrectly assumed to be non-aimable.
 And many more thanks to Genir for his efforts of refactoring, improving code quality and performance!
