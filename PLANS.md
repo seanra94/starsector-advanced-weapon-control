@@ -2,13 +2,15 @@
 
 ## Active task
 
-Tag-system review/audit wave.
+Tag-system naming/logic review wave.
 
-Current status: baseline list curation, TF/SF helper groundwork, ammo-threshold canonicalization, preferred `NoPD(Waste>...)`, retained `NoPD(H<...)` support, burst-beam packet-estimation remediation, HF support, LunaSettings exposure of `SFTUpperFluxLimit`, and a first static tooltip/text consistency pass are complete. The active implementation focus is now the remaining review/audit wave and the bounded `NoPD(H<...>)` health-estimation refinement.
+Current status: baseline list curation, TF/SF helper groundwork, ammo-threshold canonicalization, preferred `NoPD(Waste>...)`, retained `NoPD(H<...)` support, burst-beam packet-estimation remediation, HF support, LunaSettings exposure of `SFTUpperFluxLimit`, weapon-relative `NoPD(H<...>)` durability, first static tooltip/text consistency pass, `HoldFire(...)` canonicalization, `ForceAutoFire` canonicalization, and generated allowed-values repair are complete.
+
+The active implementation focus is now the remaining naming/logic wave and then README/tag-table audit.
 
 ## Goal
 
-Keep the tag system compatibility-safe and user-understandable after the recent canonicalization work. Finish the visible/user-facing audit, then stage behavior and naming refinements without breaking saved tags or legacy aliases.
+Keep the tag system compatibility-safe and user-understandable after canonicalization. Finish remaining naming/logic work without breaking saved tags or legacy aliases, then synchronize user-facing README tag documentation and examples.
 
 ## Current understanding
 
@@ -19,40 +21,37 @@ Current canonical names:
 - Ammo-gated PD reservation behavior: `PD(A<...%)`
 - Preferred minor-PD suppression: `NoPD(Waste>...)`
 - Simpler retained health-threshold minor-PD suppression: `NoPD(H<...)`
+- Hold-fire flux gates: `HoldFire(TF>...%)`, `HoldFire(SF>...%)`, `HoldFire(HF>...%)`
+- Force autofire tag/mode: `ForceAutoFire`
 
 Compatibility aliases remain important:
 - `ConserveAmmo` / `ConserveAmmo(A<...%)`
 - `ConservePDAmmo` / `ConservePDAmmo(A<...%)`
 - `CnsrvPDAmmo` / `CnsrvPDAmmo(A<...%)`
 - `IgnoreMinorPD` / `IgnoreMinorPD(H<...)`
+- `Hold(...)` legacy forms and older hold flux spellings
+- `ForceAF`
 
-`NoPD(Waste>...)` uses bounded waste: `max(0, estimatedAttackPacketDamage - estimatedTargetDamageRequired) / estimatedAttackPacketDamage`. Continuous beams estimate attack packet damage as `beamDps * 0.5s`. Burst beams estimate one committed burst packet: `beamDps * (burstDuration + beamChargeupTime / 3 + beamChargedownTime / 3)`. This predicts Phase Lance at `1000 * (1.0 + 0.375/3 + 0.375/3) = 1250` and Tachyon Lance at `750 * (2.5 + 0.75/3 + 0.75/3) = 2250`, matching expected vanilla burst damage within rounding.
+`NoPD(Waste>...)` uses bounded waste: `max(0, estimatedAttackPacketDamage - estimatedTargetDamageRequired) / estimatedAttackPacketDamage`. Continuous beams estimate attack packet damage as `beamDps * 0.5s`. Burst beams estimate one committed burst packet: `beamDps * (burstDuration + beamChargeupTime / 3 + beamChargedownTime / 3)`.
 
-Future `NoPD(H<...>)` refinement: replace the fixed effective-health model with a weapon-relative health estimate similar to `NoPD(Waste>...)` target-damage-required logic. The intended rule is bad-matchup penalty only: weapons that are weak against hull, armor, or shields may see the PD target as having more effective health, but weapons that are strong against a component should not reduce apparent health below the baseline hull + armor + shield estimate. Keep the estimate cheap and avoid exact armor-grid impact prediction.
+`NoPD(H<...>)` and `NoPD(Waste>...)` fighter durability use the shared cheap weapon-relative estimate `hull + armorRating * armorPenalty + remainingShieldBuffer * shieldPenalty`. Bad damage matchups may increase apparent armor or shield durability; favorable matchups do not reduce durability below baseline. Missiles remain simple hitpoints.
 
 `SFTUpperFluxLimit` / `Settings.softFluxTotalFluxCap()` is Luna-exposed with default `0.9`; Settings.editme fallback remains supported. It is the total-flux safety cap used by soft-flux conditional tags.
 
 ## Near-term queue
 
-1. Bounded `NoPD(H<...>)` refinement:
-   - reuse or extract the bad-matchup-only target-durability estimate from `NoPD(Waste>...)`
-   - preserve `NoPD(H<...>)`, `IgnoreMinorPD`, and `IgnoreMinorPD(H<...>)` compatibility
-   - keep missile handling simple unless local evidence supports a better model
-   - update the tooltip only after behavior changes
+1. Naming/logic review wave:
+   - add `PrioBig`
+   - review/canonicalize `PrioPD -> PrioSmall` while preserving aliases
+   - review/canonicalize `BigShip/SmallShip -> TargetBig/TargetSmall` while preserving aliases
+   - review `TargetPhase -> PrioPhase` only if semantics match prioritization
 2. Review/audit wave:
    - tag incompatibility review
    - remaining tooltip accuracy/consistency review
    - README tag table canonical-name and alias synchronization
    - README tag table examples column: add one realistic grounded example/use case for every tag
    - text consistency sweep, for example `Avd -> Avoid`
-3. Naming/logic review wave:
-   - `Hold -> HoldFire`, preserving `Hold(...)` aliases
-   - `ForceAF -> ForceAutoFire`, preserving `ForceAF` alias
-   - add `PrioBig`
-   - review `PrioPD -> PrioSmall`
-   - review `BigShip/SmallShip -> TargetBig/TargetSmall`
-   - review `TargetPhase -> PrioPhase`, only if semantics match prioritization
-4. Larger system work:
+3. Larger system work:
    - rotate-toward-closest-valid-target behavior as ship mode rather than global aiming behavior
    - deep dive on priority-system consistency/transparency
    - broader LunaLib/settings migration strategy
@@ -67,9 +66,16 @@ Future `NoPD(H<...>)` refinement: replace the fixed effective-health model with 
 - [x] Parameterized ammo-threshold tags are implemented with plain-tag compatibility preserved.
 - [x] `NoPD(Waste>...)` is implemented with `NoPD(H<...)` and `IgnoreMinorPD` compatibility retained.
 - [x] `NoPD(Waste>...)` estimates burst beams as one committed burst packet rather than as a short continuous-beam slice.
+- [x] `NoPD(H<...>)` uses weapon-relative bad-matchup-only effective durability.
 - [x] LunaSettings exposes the soft-flux total-flux cap (`SFTUpperFluxLimit`) with default `0.9`.
 - [x] First static tooltip/text consistency pass fixed obvious drift.
-- [ ] `NoPD(H<...>)` uses weapon-relative bad-matchup-only effective durability.
+- [x] `HoldFire(...)` canonicalization preserves `Hold(...)` aliases.
+- [x] `ForceAutoFire` canonicalization preserves `ForceAF` tag/mode aliases.
+- [x] Generated allowed-values comments include visible canonical tags after the HoldFire/ForceAutoFire rename packet.
+- [ ] `PrioBig` is implemented if semantics are clear and useful.
+- [ ] `PrioPD -> PrioSmall` is reviewed/canonicalized if semantics match.
+- [ ] `BigShip/SmallShip -> TargetBig/TargetSmall` is reviewed/canonicalized if semantics match.
+- [ ] `TargetPhase -> PrioPhase` is reviewed only if semantics match prioritization.
 - [ ] Incompatibility definitions are audited against current canonical families and legacy aliases.
 - [ ] Remaining tooltips are audited for canonical names, thresholds, ammo/flux notation, and legacy behavior.
 - [ ] README tag table is synchronized with current canonical names and important aliases.
@@ -103,10 +109,11 @@ Then copy to `C:\Games\Starsector\mods\Advanced-Gunnery-Control-Fork` using the 
 ## Risks and open questions
 
 - Settings comment blocks can drift from actual support if list/regex updates are not mirrored in `build.gradle.kts`.
-- Large rename waves should be staged only after behavior confirmation to avoid compatibility regressions.
-- `NoPD(H<...)` must continue to describe `H` as effective durability, not literal hull. Future refinement should make this effective durability weapon-relative using bad-matchup penalties only, matching the `NoPD(Waste>...)` target-damage-required model without making health appear lower for favorable damage types.
+- Large rename waves should be staged and compatibility-preserving because persisted saves/settings/loadouts may contain old tag strings.
+- `NoPD(H<...)` must continue to describe `H` as effective durability, not literal hull.
 - `NoPD(Waste>...)` must not treat burst beams as short continuous cleanup beams; Phase Lance/Tachyon Lance-style weapons should estimate as high committed burst packets.
 - LunaSettings and Settings.editme defaults for `SFTUpperFluxLimit` must remain aligned at `0.9`.
 - Scoped Luna/default audit left some mismatches unchanged as ambiguous: `targetShields_threshold`, `avoidShields_threshold`, `strictBigSmallShipMode`, and nearby custom-AI defaults. Do not normalize these blindly.
-- The rename requests are intentionally deferred until logic confirmation.
-- `HoldFire` / `ForceAutoFire` canonical rename work should watch for UI density and button-label length constraints, especially outside the campaign GUI.
+- `PrioPD` behavior is semantically "small/PD priority," not pure point-defense; verify semantics before canonicalizing to `PrioSmall`.
+- `BigShip` / `SmallShip` appear to restrict valid targets, so `TargetBig` / `TargetSmall` may be more accurate than `PrioBig` / `PrioSmall` for those tags.
+- `TargetPhase` should become `PrioPhase` only if it is primarily prioritization and does not impose targeting semantics that make `TargetPhase` more accurate.
