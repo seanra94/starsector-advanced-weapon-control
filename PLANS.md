@@ -4,10 +4,9 @@
 
 Documentation/text consistency wave.
 
-Current status: baseline list curation, TF/SF helper groundwork, ammo-threshold canonicalization, preferred `NoPD(Waste>...)`, retained `NoPD(H<...)` support, burst-beam packet-estimation remediation, HF support, LunaSettings exposure of `SFTUpperFluxLimit`, weapon-relative `NoPD(H<...>)` durability, first static tooltip/text consistency pass, `HoldFire(...)` canonicalization, `ForceAutoFire` canonicalization, generated allowed-values repair, `PrioSmall` canonicalization, `PrioBig` implementation, `TargetBig` / `TargetSmall` canonicalization, `TargetPhase` semantic review, code-side incompatibility/family mapping audit, and narrow non-phase tooltip cleanup are complete.
+Current status: baseline list curation, TF/SF helper groundwork, ammo-threshold canonicalization, preferred `NoPD(Waste>...)`, retained `NoPD(H<...)` support, burst-beam packet-estimation remediation, HF support, LunaSettings exposure of `SFTUpperFluxLimit`, weapon-relative `NoPD(H<...>)` durability, first static tooltip/text consistency pass, `HoldFire(...)` canonicalization, `ForceAutoFire` canonicalization, generated allowed-values repair, `PrioSmall` canonicalization, `PrioBig` implementation, `TargetBig` / `TargetSmall` canonicalization, `TargetPhase` semantic review, code-side incompatibility/family mapping audit, narrow non-phase tooltip cleanup, and ship-mode local storage key/index repair are complete.
 
 The active implementation focus is now README tag-table synchronization, README examples, and remaining text consistency. Phase-tag behavior questions are deliberately deferred to the bottom of the priority list.
-
 ## Goal
 
 Keep the tag system compatibility-safe and user-understandable after canonicalization. Synchronize user-facing README tag documentation and examples with the current canonical tag set, while preserving important legacy-alias information.
@@ -89,6 +88,7 @@ The latest code-side audit found no clear rename-wave drift requiring mapping or
 - [x] `TargetPhase -> PrioPhase` was reviewed and rejected for now; `TargetPhase` remains canonical because behavior is not priority-only.
 - [x] Incompatibility definitions were audited against current canonical families and legacy aliases; no clear rename-wave drift required code changes.
 - [x] Non-phase priority/targeting tooltip cleanup is complete for the narrow code-side pass.
+- [x] Ship-mode local storage key/index audit is complete: local ship-mode custom data uses `AGC_ShipTags`, type-compatible wrong-key local data migrates once from `AGC_Tags`, and persistent mode add/remove uses the passed loadout index.
 - [ ] README tag table is synchronized with current canonical names and important aliases.
 - [ ] README tag table examples column is staged or implemented with realistic use cases.
 - [ ] Remaining text consistency sweep is complete.
