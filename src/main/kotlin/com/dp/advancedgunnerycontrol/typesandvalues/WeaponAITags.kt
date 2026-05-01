@@ -27,10 +27,13 @@ val pdAmmoTags = listOf("ConservePDAmmo", "PD(A<N%)")
 
 private const val LEGACY_TOTAL_FLUX_TOKEN = "Fl?u?x?"
 
-val holdTotalFluxRegex = Regex("Hold\\(TF>(\\d+)%\\)")
+val holdTotalFluxRegex = Regex("HoldFire\\(TF>(\\d+)%\\)")
+val holdTotalFluxAliasRegex = Regex("Hold\\(TF>(\\d+)%\\)")
 val holdTotalFluxLegacyRegex = Regex("Hold(?:FT)?\\($LEGACY_TOTAL_FLUX_TOKEN>(\\d+)%\\)")
-val holdSoftFluxRegex = Regex("Hold\\(SF>(\\d+)%\\)")
-val holdHardFluxRegex = Regex("Hold\\(HF>(\\d+)%\\)")
+val holdSoftFluxRegex = Regex("HoldFire\\(SF>(\\d+)%\\)")
+val holdSoftFluxAliasRegex = Regex("Hold\\(SF>(\\d+)%\\)")
+val holdHardFluxRegex = Regex("HoldFire\\(HF>(\\d+)%\\)")
+val holdHardFluxAliasRegex = Regex("Hold\\(HF>(\\d+)%\\)")
 val holdSoftFluxLegacyRegex = Regex("HoldSFT\\($LEGACY_TOTAL_FLUX_TOKEN>(\\d+)%\\)")
 val forceFireTotalFluxRegex = Regex("Force\\(TF<(\\d+)%\\)")
 val forceFireTotalFluxLegacyRegex = Regex("Force(?:F|FT)\\($LEGACY_TOTAL_FLUX_TOKEN<(\\d+)%\\)")
@@ -78,8 +81,6 @@ private data class ThresholdCanonicalizationRule(
 )
 
 private val thresholdCanonicalizationRules = listOf(
-    ThresholdCanonicalizationRule(holdTotalFluxRegex, holdTotalFluxLegacyRegex, "Hold(TF>"),
-    ThresholdCanonicalizationRule(holdSoftFluxRegex, holdSoftFluxLegacyRegex, "Hold(SF>"),
     ThresholdCanonicalizationRule(forceFireTotalFluxRegex, forceFireTotalFluxLegacyRegex, "Force(TF<"),
     ThresholdCanonicalizationRule(forceFireSoftFluxRegex, forceFireSoftFluxLegacyRegex, "Force(SF<"),
     ThresholdCanonicalizationRule(avoidShieldTotalFluxRegex, avoidShieldTotalFluxLegacyRegex, "AvoidShield(TF>", invertLegacyThreshold = true),
@@ -249,9 +250,9 @@ val tagTooltips = mapOf(
             if (Settings.strictBigSmall()) " and won't target anything smaller than destroyers." else ".",
     "SmallShip" to "Weapon will ignore missiles and prioritize small ships (including fighters)" +
             if (Settings.strictBigSmall()) " and won't target anything bigger than destroyers." else ".",
-    "ForceAF" to "Will force AI-controlled ships to set this group to autofire, like the ForceAF ship mode does to all groups." +
-            "\nNote: This will modify the ShipAI, as the Starsector API doesn't allow to directly set a weapon group to autofire." +
-            "\n      The ShipAI might still try to select this weapon group, but will be forced to deselect it again.",
+    "ForceAutoFire" to "Forces AI-controlled ships to keep this weapon group on autofire, similar to the ForceAutoFire ship mode for all groups." +
+            "\nNote: This modifies the ShipAI because the API cannot directly set a weapon group to autofire." +
+            "\n      The ShipAI may still try to select this weapon group, but will be forced to deselect it again.",
     "AvoidPhased" to "Weapon will ignore phase-ships, unless they are unable to avoid the shot by phasing (due to flux or cooldown)." +
             "\nWhen used to fight phase-ships, it's best to use this on high-impact weapons and set some rapid-fire or beam weapons on TargetPhase." +
             "\nNo targeting restrictions.",
@@ -286,6 +287,17 @@ val tagTooltips = mapOf(
 )
 
 fun canonicalizeWeaponTagName(tag: String): String {
+    when {
+        holdTotalFluxRegex.matches(tag) -> return tag
+        holdTotalFluxAliasRegex.matches(tag) -> return "HoldFire(TF>${extractRegexThresholdAsPercentageString(holdTotalFluxAliasRegex, tag)})"
+        holdTotalFluxLegacyRegex.matches(tag) -> return "HoldFire(TF>${extractRegexThresholdAsPercentageString(holdTotalFluxLegacyRegex, tag)})"
+        holdSoftFluxRegex.matches(tag) -> return tag
+        holdSoftFluxAliasRegex.matches(tag) -> return "HoldFire(SF>${extractRegexThresholdAsPercentageString(holdSoftFluxAliasRegex, tag)})"
+        holdSoftFluxLegacyRegex.matches(tag) -> return "HoldFire(SF>${extractRegexThresholdAsPercentageString(holdSoftFluxLegacyRegex, tag)})"
+        holdHardFluxRegex.matches(tag) -> return tag
+        holdHardFluxAliasRegex.matches(tag) -> return "HoldFire(HF>${extractRegexThresholdAsPercentageString(holdHardFluxAliasRegex, tag)})"
+    }
+
     thresholdCanonicalizationRules.forEach { rule ->
         canonicalizeThresholdTag(
             inputTag = tag,
@@ -313,6 +325,7 @@ fun canonicalizeWeaponTagName(tag: String): String {
         noPdHealthRegex.matches(tag) -> tag
         ignoreMinorPDRegex.matches(tag) -> "NoPD(H<${extractRawRegexThreshold(ignoreMinorPDRegex, tag).toInt()})"
         avoidArmorRegex.matches(tag) -> "AvoidArmor(${extractRegexThresholdAsPercentageString(avoidArmorRegex, tag)})"
+        tag == "ForceAF" -> "ForceAutoFire"
         tag == "PrioritisePD" -> "PrioPD"
         tag == "PrioritizePD" -> "PrioPD"
         tag == "CnsrvPDAmmo" -> "ConservePDAmmo"
@@ -469,7 +482,7 @@ fun getTagTooltip(tag: String): String {
 
         panicFireRegex.matches(canonicalTag) -> "Weapon will blindly fire without considering if/what the shot will hit as long as the ship" +
                 " hull level is below ${extractRegexThresholdAsPercentageString(panicFireRegex, canonicalTag)}." +
-                "\nFor AI-controlled ships, this will put the weapon group into ForceAF-mode once the hull threshold has been reached."
+                "\nFor AI-controlled ships, this will put the weapon group into ForceAutoFire-mode once the hull threshold has been reached."
 
         rangeRegex.matches(canonicalTag) -> "Weapon will only target and fire at targets if they are closer than ${
             extractRegexThresholdAsPercentageString(
@@ -552,7 +565,7 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
         "AvoidDebris" -> AvoidDebrisTag(weapon)
         "BigShip", "BigShips" -> BigShipTag(weapon)
         "SmallShip", "SmallShips" -> SmallShipTag(weapon)
-        "ForceAF" -> ForceAutofireTag(weapon)
+        "ForceAutoFire", "ForceAF" -> ForceAutofireTag(weapon)
         "AvoidPhased" -> AvoidPhaseTag(weapon)
         "TargetPhase" -> TargetPhaseTag(weapon)
         "ShipTarget" -> ShipTargetTag(weapon)
@@ -591,9 +604,9 @@ fun createTag(name: String, weapon: WeaponAPI): WeaponAITagBase? {
 fun tagNameToRegexName(tag: String): String {
     val canonicalTag = canonicalizeWeaponTagName(tag)
     return when {
-        holdTotalFluxRegex.matches(canonicalTag) -> "Hold(TF>N%)"
-        holdSoftFluxRegex.matches(canonicalTag) -> "Hold(SF>N%)"
-        holdHardFluxRegex.matches(canonicalTag) -> "Hold(HF>N%)"
+        holdTotalFluxRegex.matches(canonicalTag) -> "HoldFire(TF>N%)"
+        holdSoftFluxRegex.matches(canonicalTag) -> "HoldFire(SF>N%)"
+        holdHardFluxRegex.matches(canonicalTag) -> "HoldFire(HF>N%)"
         forceFireTotalFluxRegex.matches(canonicalTag) -> "Force(TF<N%)"
         forceFireSoftFluxRegex.matches(canonicalTag) -> "Force(SF<N%)"
         forceFireHardFluxRegex.matches(canonicalTag) -> "Force(HF<N%)"

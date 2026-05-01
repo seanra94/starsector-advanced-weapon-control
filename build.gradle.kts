@@ -241,14 +241,14 @@ tasks {
                    |   # "PD", "NoPD", "NoMissile", "PD(TF>N%)", "PD(SF>N%)", "PD(HF>N%)", "PrioPD", "Fighter", "NoFighter",
                    |   # "AvoidShield", "TargetShield", "AvoidShield+", "TargetShield+",
                    |   # "AvoidShield(TF>N%)", "AvoidShield(SF>N%)", "AvoidShield(HF>N%)", "TargetShield(TF>N%)", "TargetShield(SF>N%)", "TargetShield(HF>N%)",
-                   |   # "AvoidArmor(N%)", "AvoidDebris", "ShieldOff", "Opportunist", "Hold(TF>N%)", "Hold(SF>N%)", "Hold(HF>N%)",
+                   |   # "AvoidArmor(N%)", "AvoidDebris", "ShieldOff", "Opportunist", "HoldFire(TF>N%)", "HoldFire(SF>N%)", "HoldFire(HF>N%)",
                    |   # "Opportunist(A<N%)", "PD(A<N%)", "ConserveAmmo", "ConserveAmmo(A<N%)", "ConservePDAmmo", "ConservePDAmmo(A<N%)", "CnsrvPDAmmo", "ShipTarget", "AvoidPhased", "TargetPhase", "SyncWindow", "SyncVolley", "Ambush",
                    |   # "NoPD(Waste>N%)", "NoPD(H<N>)", "IgnoreMinorPD", "IgnoreMinorPD(H<N>)", "BigShip", "SmallShip", "Panic(H<N%)", "Range<N%", "Force(TF<N%)", "Force(SF<N%)", "Force(HF<N%)",
                    |   # "Overloaded", "Merge", "PrioFighter", "PrioMissile", "PrioShip", "PrioWounded", "PrioHealthy",
                    |   # "BlockBeams", "CustomAI", "LowRoF(N%)", "PrioDense"
                    |   
                    |   # Flux notation inside parentheses: TF = total flux, HF = hard flux, SF = soft flux.
-                   |   # Legacy tags such as Hold(Flx>N%), HoldSFT(F>N%), and AvShldFT(F<N%) are still accepted for saved-loadout compatibility.
+                   |   # Legacy tags such as Hold(TF>N%), Hold(SF>N%), Hold(HF>N%), Hold(Flx>N%), HoldSFT(F>N%), and AvShldFT(F<N%) are still accepted for saved-loadout compatibility.
                    |   
                    |   # Choose which of the following lists will be used. Valid options are: "classic", "novice" and "complete"
                    |   # If you are using LunaSettings, adjust the lists below
@@ -259,8 +259,8 @@ tasks {
                    |                "TargetShield", "TargetShield+", "TargetShield(TF>10%)", "TargetShield(SF>10%)", "TargetShield(HF>10%)",
                    |                "ShieldOff",
                    |                "AvoidArmor(33%)", "AvoidArmor(75%)", "AvoidPhased", "TargetPhase",
-                   |                "Hold(TF>90%)", "Hold(TF>75%)", "Hold(TF>50%)", "Hold(SF>10%)", "Hold(SF>20%)", "Hold(HF>20%)",
-                   |                "ForceAF", "Force(TF<10%)", "Force(TF<25%)", "Force(TF<50%)", "Force(TF<75%)", "Force(SF<10%)", "Force(SF<20%)", "Force(HF<20%)",
+                   |                "HoldFire(TF>90%)", "HoldFire(TF>75%)", "HoldFire(TF>50%)", "HoldFire(SF>10%)", "HoldFire(SF>20%)", "HoldFire(HF>20%)",
+                   |                "ForceAutoFire", "Force(TF<10%)", "Force(TF<25%)", "Force(TF<50%)", "Force(TF<75%)", "Force(SF<10%)", "Force(SF<20%)", "Force(HF<20%)",
                    |                "PD", "NoPD", "PD(TF>50%)", "PD(SF>10%)", "PD(SF>20%)", "PD(HF>20%)",
                    |                "Merge", "SyncWindow", "SyncVolley", "Ambush",
                    |                "PrioPD", "PrioFighter", "PrioMissile", "PrioShip", "PrioWounded", "PrioHealthy",
@@ -273,9 +273,9 @@ tasks {
                    |   ,"classicTagList" : [
                    |                "PD", "PD(TF>50%)",
                    |                "AvoidShield", "TargetShield", "AvoidArmor(33%)", "AvoidShield(TF>80%)", "AvoidShield(SF>90%)", "TargetShield(TF>80%)", "TargetShield(SF>90%)",
-                   |                "Hold(TF>90%)", "Hold(TF>75%)", "Hold(SF>10%)", "Merge", "SyncWindow", "SyncVolley", "Ambush",
+                   |                "HoldFire(TF>90%)", "HoldFire(TF>75%)", "HoldFire(SF>10%)", "Merge", "SyncWindow", "SyncVolley", "Ambush",
                    |                "AvoidPhased", "TargetPhase", "ShipTarget", 
-                   |                "ForceAF", "Force(TF<50%)", "Force(SF<5%)",
+                   |                "ForceAutoFire", "Force(TF<50%)", "Force(SF<5%)",
                    |                "PrioPD", "PrioFighter", "PrioMissile",
                    |                "NoMissile", "NoFighter",
                    |                "Opportunist", "Panic(H<25%)", "Range<60%",
@@ -286,9 +286,9 @@ tasks {
                    |   ,"noviceTagList" : [
                    |                "PD",
                    |                "AvoidShield", "TargetShield", "AvoidArmor(33%)", 
-                   |                "Hold(TF>90%)",
+                   |                "HoldFire(TF>90%)",
                    |                "AvoidPhased", "ShipTarget", 
-                   |                "ForceAF", "Force(TF<50%)",
+                   |                "ForceAutoFire", "Force(TF<50%)",
                    |                "NoMissile", "NoFighter",
                    |                "Range<60%"
                    |                ]   
@@ -298,10 +298,10 @@ tasks {
                    |   ,"allowHotLoadingTags" : true
                    |   
                    |   # Tags to display in simple mode. 
-                   |   , "simpleTagList" : [ "PD", "AvoidShield", "TargetShield", "AvoidArmor(33%)", "Hold(TF>90%)", "NoFighter" ]
+                   |   , "simpleTagList" : [ "PD", "AvoidShield", "TargetShield", "AvoidArmor(33%)", "HoldFire(TF>90%)", "NoFighter" ]
                    |   
                    |   # Determines which ship modes will be shown in the GUIs. Modes that do not exist will be discarded
-                   |   # Allowed Values: "DEFAULT", "LowShield", "ShieldUp", "Vent(TF>75%)", "VentA(TF>25%)", "Run(HP<50%)", "NoSystem", "SpamSystem", "Charge", "ForceAF", "NeverVent", "FarAway", "StayAway"
+                   |   # Allowed Values: "DEFAULT", "LowShield", "ShieldUp", "Vent(TF>75%)", "VentA(TF>25%)", "Run(HP<50%)", "NoSystem", "SpamSystem", "Charge", "ForceAutoFire", "NeverVent", "FarAway", "StayAway"
                    |   # Note that "DEFAULT" is not a real mode but instead a shortcut to disable all other modes. It's kind of deprecated and only still exists for compatibility reasons.
                    |   
                    |   ,"shipModeList" : ["LowShield", "ShieldUp", "Vent(TF>75%)", "VentA(TF>25%)", "Run(HP<50%)", "NoSystem", "SpamSystem", "Charge", "FarAway", "StayAway", "NeverVent"]
@@ -476,7 +476,7 @@ tasks {
                    |   # Sets the legacy free-fire threshold for old "AvdShieldsFT"; canonical tags should use AvoidShield(TF>N%).
                    |   ,"avoidShieldsAtFT_flux" : 0.2
                    |   
-                   |   # Soft-flux tags such as "Hold(SF>N%)" will still stop firing once total flux reaches this value.
+                   |   # Soft-flux tags such as "HoldFire(SF>N%)" will still stop firing once total flux reaches this value.
                    |   ,"SFTUpperFluxLimit" : 0.9
                    |   
                    |   # The PrioFighters/Missiles/Ships/PD tags will multiply the priority of the target type by this value.

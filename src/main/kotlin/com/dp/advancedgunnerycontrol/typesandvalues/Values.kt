@@ -42,7 +42,7 @@ object Values {
                 "\n---Tips---" +
                 "\n - Tags are mainly a flux management tool. If your ship is already flux-neutral, you probably won't need many tags." +
                 "\n - If you want a weapon group to fire as much as possible, give it no tags." +
-                " In my experience, no tags or just the Hold(TF>90%) tag is the right choice for many weapon groups" +
+                " In my experience, no tags or just the HoldFire(TF>90%) tag is the right choice for many weapon groups" +
                 "\n - Consider leaving one loadout blank (all default) to give you a fallback option." +
                 "\n - Be very careful with ship modes! Force disabling shields might sound cool until you run into a HIL." +
                 "\n - Most values/thresholds can be adjusted in Settings.editme or via LunaSettings, if you don't like the default values."

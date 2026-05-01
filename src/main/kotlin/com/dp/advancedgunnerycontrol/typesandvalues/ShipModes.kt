@@ -20,7 +20,7 @@ const val defaultShipMode = "DEFAULT"
 
 private val canonicalShipModeFromString = mapOf(
     "DEFAULT" to ShipModes.DEFAULT,
-    "ForceAF" to ShipModes.FORCE_AUTOFIRE,
+    "ForceAutoFire" to ShipModes.FORCE_AUTOFIRE,
     "LowShield" to ShipModes.SHIELDS_OFF,
     "Vent(TF>75%)" to ShipModes.VENT,
     "VentA(TF>25%)" to ShipModes.VENT_AGGRESSIVE,
@@ -36,6 +36,7 @@ private val canonicalShipModeFromString = mapOf(
 )
 
 private val legacyShipModeAliases = mapOf(
+    "ForceAF" to ShipModes.FORCE_AUTOFIRE,
     "LowShields" to ShipModes.SHIELDS_OFF,
     "Vent(Flx>75%)" to ShipModes.VENT,
     "Vent(Flux>75%)" to ShipModes.VENT,
