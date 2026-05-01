@@ -190,9 +190,9 @@ private fun tooltipWithActivationCondition(base: String, condition: String): Str
 }
 
 private fun noPdHealthTooltip(canonicalTag: String): String {
-    return "Does not target fighters or missiles while this weapon estimates target health is less than ${
+    return "Does not target fighters or missiles when this weapon estimates their health is below ${
         extractRawRegexThreshold(noPdHealthRegex, canonicalTag).toInt()
-    }. Ineffective damage types may count armor or shields as more durable; effective damage types do not reduce health below the baseline estimate."
+    }. Poor damage matchups count armor or shields as tougher; strong matchups do not lower the estimate."
 }
 
 val tagTooltips = mapOf(

@@ -6,12 +6,11 @@ import com.fs.starfarer.api.combat.ShipAPI
 import com.fs.starfarer.api.combat.WeaponAPI
 import kotlin.math.max
 
-private const val ARMOR_HEALTH_MULTIPLIER = 2f
 private const val EPSILON = 0.0001f
 
 fun estimateFighterEffectiveDurabilityForWeapon(weapon: WeaponAPI, fighter: ShipAPI): Float {
     val hull = fighter.hitpoints.coerceAtLeast(0f)
-    val armorBase = (fighter.armorGrid?.armorRating ?: 0f).coerceAtLeast(0f) * ARMOR_HEALTH_MULTIPLIER
+    val armorBase = (fighter.armorGrid?.armorRating ?: 0f).coerceAtLeast(0f)
     val shieldBase = estimateRemainingShieldBuffer(fighter)
 
     // Bad-matchup penalty only: ineffective matchups can increase required damage,
