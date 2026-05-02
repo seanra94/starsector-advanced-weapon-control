@@ -100,6 +100,7 @@ class ShipView(
     private val pendingPresetActionByGroup = initialPendingPresetActions.toMutableMap()
     private var campaignScrollDirty = false
     private var observedTagSelectionVersion = TagButton.campaignTagSelectionVersion
+    private var observedShipModeSelectionVersion = ShipModeButton.campaignShipModeSelectionVersion
 
     private class CampaignMomentaryButton(
         button: com.fs.starfarer.api.ui.ButtonAPI,
@@ -139,6 +140,7 @@ class ShipView(
     fun shouldRegenerate(): Boolean {
         return campaignScrollDirty ||
             observedTagSelectionVersion != TagButton.campaignTagSelectionVersion ||
+            observedShipModeSelectionVersion != ShipModeButton.campaignShipModeSelectionVersion ||
             (enableTagScroll && tagView.hasChanged())
     }
 
@@ -906,6 +908,7 @@ class ShipView(
         tagScrollRegions.clear()
         campaignScrollDirty = false
         observedTagSelectionVersion = TagButton.campaignTagSelectionVersion
+        observedShipModeSelectionVersion = ShipModeButton.campaignShipModeSelectionVersion
         Settings.hotAddTags(loadAllTags(ship))
 
         val miscWidth = min(MISC_WIDTH_MAX, max(MISC_WIDTH_MIN, panel.position.width * MISC_WIDTH_FRACTION))

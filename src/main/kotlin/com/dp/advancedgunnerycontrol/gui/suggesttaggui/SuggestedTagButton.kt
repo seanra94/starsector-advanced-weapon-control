@@ -89,7 +89,7 @@ class SuggestedTagButton(private val weaponId: String, tag: String, button: Butt
                 val otherSelectedTags = selectedTags.toMutableList().apply { remove(tag) }
                 val unavailable = !pinned && isIncompatibleWithExistingTags(tag, otherSelectedTags)
                 val rowFillColor = when {
-                    pinned -> CampaignGuiStyle.SELECTED_STATE_BACKGROUND_COLOR
+                    pinned -> CampaignGuiStyle.TOGGLE_SELECTED_IDLE_COLOR
                     unavailable -> null
                     else -> null
                 }
@@ -107,19 +107,19 @@ class SuggestedTagButton(private val weaponId: String, tag: String, button: Butt
 
                 val inner = itemPanel.createUIElement(metrics.itemWidth, metrics.itemHeight, false)
                 val baseColor = when {
-                    pinned -> CampaignGuiStyle.SELECTED_STATE_BACKGROUND_COLOR
+                    pinned -> CampaignGuiStyle.TOGGLE_SELECTED_IDLE_COLOR
                     unavailable -> CampaignGuiStyle.DISABLED_TAG_BACKGROUND_COLOR
-                    else -> CampaignGuiStyle.NEUTRAL_TAG_BACKGROUND_COLOR
+                    else -> CampaignGuiStyle.TOGGLE_UNSELECTED_IDLE_COLOR
                 }
                 val darkColor = when {
-                    pinned -> CampaignGuiStyle.SELECTED_STATE_DARK_COLOR
+                    pinned -> CampaignGuiStyle.TOGGLE_SELECTED_HOVER_COLOR
                     unavailable -> CampaignGuiStyle.DISABLED_TAG_DARK_COLOR
-                    else -> CampaignGuiStyle.NEUTRAL_TAG_DARK_COLOR
+                    else -> CampaignGuiStyle.TOGGLE_UNSELECTED_HOVER_COLOR
                 }
                 val brightColor = when {
-                    pinned -> CampaignGuiStyle.SELECTED_STATE_BRIGHT_COLOR
+                    pinned -> CampaignGuiStyle.TOGGLE_SELECTED_HOVER_COLOR
                     unavailable -> CampaignGuiStyle.DISABLED_TAG_BRIGHT_COLOR
-                    else -> CampaignGuiStyle.NEUTRAL_TAG_BRIGHT_COLOR
+                    else -> CampaignGuiStyle.TOGGLE_UNSELECTED_HOVER_COLOR
                 }
                 val createdButton = inner.addAreaCheckbox(
                     "",

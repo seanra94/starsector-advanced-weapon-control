@@ -60,12 +60,10 @@ object CampaignGuiStyle {
     val ACTION_LOAD_BACKGROUND_COLOR: Color = Color(145, 125, 25, 225)
     val ACTION_LOAD_DARK_COLOR: Color = Color(95, 80, 14, 225)
     val ACTION_LOAD_BRIGHT_COLOR: Color = Color(205, 180, 70, 225)
-    val SELECTED_STATE_BACKGROUND_COLOR: Color = Color(0, 191, 255, 225) // #00BFFF
-    val SELECTED_STATE_DARK_COLOR: Color = Color(0, 140, 200, 225)
-    val SELECTED_STATE_BRIGHT_COLOR: Color = Color(90, 215, 255, 225)
-    val NEUTRAL_TAG_BACKGROUND_COLOR: Color = Color(95, 95, 95, 225)
-    val NEUTRAL_TAG_DARK_COLOR: Color = Color(62, 62, 62, 225)
-    val NEUTRAL_TAG_BRIGHT_COLOR: Color = Color(148, 148, 148, 225)
+    val TOGGLE_UNSELECTED_IDLE_COLOR: Color = Color(0, 0, 0, 225)
+    val TOGGLE_UNSELECTED_HOVER_COLOR: Color = Color(0, 69, 92, 225)
+    val TOGGLE_SELECTED_IDLE_COLOR: Color = Color(0, 69, 92, 225)
+    val TOGGLE_SELECTED_HOVER_COLOR: Color = Color(0, 109, 145, 225)
 
     const val MAIN_PADDING = 0f
     const val PANEL_PADDING = 4f

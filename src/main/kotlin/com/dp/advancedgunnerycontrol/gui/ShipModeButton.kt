@@ -16,6 +16,9 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
     ButtonBase<ShipModes>(mode, button, false) {
 
     companion object {
+        var campaignShipModeSelectionVersion = 0
+            private set
+
         fun createModeButtonGroup(
             ship: FleetMemberAPI,
             panel: CustomPanelAPI,
@@ -90,6 +93,7 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
                 )
             }
             val toReturn = mutableListOf<ShipModeButton>()
+            val activeModes = loadPersistedShipModes(ship.id, AGCGUI.storageIndex).toSet()
 
             modes.forEachIndexed { index, mode ->
                 val itemPanel = panel.createCustomPanel(
@@ -108,6 +112,8 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
                     false
                 )
                 val label = truncateLabel(shipModeToString[mode] ?: defaultShipMode, itemWidth, 24f)
+                val modeName = shipModeToString[mode] ?: defaultShipMode
+                val isActiveMode = activeModes.contains(modeName)
                 toReturn.add(
                     ShipModeButton(
                         ship,
@@ -115,9 +121,9 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
                         inner.addAreaCheckbox(
                             "",
                             mode,
-                            CampaignGuiStyle.SELECTED_STATE_BACKGROUND_COLOR,
-                            CampaignGuiStyle.SELECTED_STATE_DARK_COLOR,
-                            CampaignGuiStyle.SELECTED_STATE_BRIGHT_COLOR,
+                            if (isActiveMode) CampaignGuiStyle.TOGGLE_SELECTED_IDLE_COLOR else CampaignGuiStyle.TOGGLE_UNSELECTED_IDLE_COLOR,
+                            if (isActiveMode) CampaignGuiStyle.TOGGLE_SELECTED_IDLE_COLOR else CampaignGuiStyle.TOGGLE_UNSELECTED_IDLE_COLOR,
+                            if (isActiveMode) CampaignGuiStyle.TOGGLE_SELECTED_HOVER_COLOR else CampaignGuiStyle.TOGGLE_UNSELECTED_HOVER_COLOR,
                             itemWidth,
                             itemHeight,
                             0f
@@ -150,10 +156,12 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
     override fun executeCallbackIfChecked() {
         if (!active && button.isChecked) {
             check()
+            campaignShipModeSelectionVersion++
             sameGroupButtons.forEach { (it as? ShipModeButton)?.updateIfCheckedBasedOnData() }
         } else if (active && !button.isChecked) {
             removePersistentShipMode(ship.id, AGCGUI.storageIndex, shipModeToString[associatedValue] ?: defaultShipMode)
             uncheck()
+            campaignShipModeSelectionVersion++
             sameGroupButtons.forEach { (it as? ShipModeButton)?.updateIfCheckedBasedOnData() }
         }
         button.isChecked = active
