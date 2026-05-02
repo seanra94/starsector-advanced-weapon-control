@@ -11,7 +11,6 @@ import com.dp.advancedgunnerycontrol.gui.addAgcText
 import com.dp.advancedgunnerycontrol.gui.addCustomContainerHeading
 import com.dp.advancedgunnerycontrol.gui.addStyledCampaignActionRow
 import com.dp.advancedgunnerycontrol.gui.applyAgcDefaultTextStyle
-import com.dp.advancedgunnerycontrol.gui.computeWrappedLabelLayout
 import com.dp.advancedgunnerycontrol.settings.LunaSettingHandler
 import com.dp.advancedgunnerycontrol.settings.Settings
 import com.dp.advancedgunnerycontrol.typesandvalues.Values
@@ -58,24 +57,7 @@ class SuggestedTagGui : InteractionDialogPlugin {
 
     companion object {
         private const val SECTION_HEADER_HEIGHT = 20f
-        private const val ACTION_ROW_GAP = 2f
-        private const val ACTION_ROW_PADDING = 4f
-        private const val ACTION_LABEL_APPROX_CHAR_WIDTH = 6.8f
-        private const val ACTION_LABEL_LINE_HEIGHT = 15f
         private const val ACTION_LABEL_MAX_LINES = 2
-        private val ACTION_SHORTCUT_HIGHLIGHTS = listOf(
-            "[TAB]",
-            "[DELETE]",
-            "[DEL]",
-            "[ESCAPE]",
-            "[LEFT]",
-            "[LEFT ARROW]",
-            "[D]",
-            "[A]",
-            "[RIGHT]",
-            "[RIGHT ARROW]",
-            "[F]",
-        )
     }
 
     private data class SuggestedGuiAction(
@@ -219,15 +201,15 @@ class SuggestedTagGui : InteractionDialogPlugin {
                     height = rowHeight,
                     kind = action.style.toButtonKind(action.active),
                     labelText = label,
-                    highlightTokens = ACTION_SHORTCUT_HIGHLIGHTS,
+                    highlightTokens = CampaignGuiStyle.ACTION_SHORTCUT_HIGHLIGHTS,
                     tooltip = action.tooltip,
-                    textPadding = ACTION_ROW_PADDING,
+                    textPadding = CampaignGuiStyle.ACTION_ROW_PADDING,
                 )
                 val button = buttonShell.button
                 button.isChecked = action.active
                 bindButton(button)
                 actionButtons[button] = action
-                currentTop += rowHeight + ACTION_ROW_GAP
+                currentTop += rowHeight + CampaignGuiStyle.ACTION_ROW_GAP
             }
 
             val infoPanel = panel.createUIElement(width, max(40f, panel.position.height - currentTop - CampaignGuiStyle.PANEL_PADDING), false)
@@ -239,29 +221,8 @@ class SuggestedTagGui : InteractionDialogPlugin {
         }
 
         private fun actionLabelLayout(action: SuggestedGuiAction, width: Float): WrappedLabelLayout {
-            val shortcutText = action.shortcuts.joinToString("") { "[${formatShortcutName(it)}]" }
-            val suffix = if (shortcutText.isBlank()) "" else " $shortcutText"
-            return computeWrappedLabelLayout(
-                text = action.name + suffix,
-                rowWidth = width - 2f * ACTION_ROW_PADDING,
-                minButtonHeight = 18f,
-                horizontalPadding = 2f * ACTION_ROW_PADDING,
-                verticalPadding = 2f * ACTION_ROW_PADDING,
-                approxCharWidthPx = ACTION_LABEL_APPROX_CHAR_WIDTH,
-                lineHeightPx = ACTION_LABEL_LINE_HEIGHT,
-                maxLines = ACTION_LABEL_MAX_LINES
-            )
-        }
-
-        private fun formatShortcutName(keyCode: Int): String {
-            val rawName = Keyboard.getKeyName(keyCode)
-            val uppercase = rawName.uppercase()
-            return when {
-                uppercase == "DELETE" -> "DEL"
-                uppercase.contains("RIGHT") -> "RIGHT"
-                uppercase.contains("LEFT") -> "LEFT"
-                else -> uppercase
-            }
+            val labelText = CampaignGuiStyle.actionLabelText(action.name, action.shortcuts)
+            return CampaignGuiStyle.actionLabelLayout(labelText, width, ACTION_LABEL_MAX_LINES)
         }
 
         private fun bindButton(button: ButtonAPI) {

@@ -8,6 +8,7 @@ import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI.TooltipLocation
 import com.fs.starfarer.api.util.Misc
+import org.lwjgl.input.Keyboard
 import java.lang.reflect.Method
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -129,7 +130,24 @@ object CampaignGuiStyle {
     const val ITEM_TEXT_TOP_PADDING = 2f
     const val ITEM_HIGHLIGHT_X_OFFSET = -3f
     const val HEADING_CHAR_WIDTH_ESTIMATE = 7.2f
+    const val ACTION_ROW_GAP = 2f
+    const val ACTION_ROW_PADDING = 4f
+    const val ACTION_LABEL_APPROX_CHAR_WIDTH = 6.8f
+    const val ACTION_LABEL_LINE_HEIGHT = 15f
     private const val TAG_MODE_BORDER_THICKNESS = -1f
+    val ACTION_SHORTCUT_HIGHLIGHTS = listOf(
+        "[TAB]",
+        "[DELETE]",
+        "[DEL]",
+        "[ESCAPE]",
+        "[LEFT]",
+        "[LEFT ARROW]",
+        "[D]",
+        "[A]",
+        "[RIGHT]",
+        "[RIGHT ARROW]",
+        "[F]",
+    )
 
     fun checkboxColorsForButton(colors: ButtonStateColors): CheckboxColors {
         return CheckboxColors(
@@ -152,6 +170,35 @@ object CampaignGuiStyle {
 
     fun shouldFillActionButtonIdle(kind: CampaignActionButtonKind): Boolean {
         return kind != CampaignActionButtonKind.UNCOLOURED
+    }
+
+    fun formatActionShortcutName(keyCode: Int): String {
+        val rawName = Keyboard.getKeyName(keyCode)
+        val uppercase = rawName.uppercase()
+        return when {
+            uppercase == "DELETE" -> "DEL"
+            uppercase.contains("RIGHT") -> "RIGHT"
+            uppercase.contains("LEFT") -> "LEFT"
+            else -> uppercase
+        }
+    }
+
+    fun actionLabelText(label: String, shortcuts: List<Int>): String {
+        val shortcutText = shortcuts.joinToString("") { "[${formatActionShortcutName(it)}]" }
+        return if (shortcutText.isBlank()) label else "$label $shortcutText"
+    }
+
+    fun actionLabelLayout(labelText: String, width: Float, maxLines: Int): WrappedLabelLayout {
+        return computeWrappedLabelLayout(
+            text = labelText,
+            rowWidth = width - 2f * ACTION_ROW_PADDING,
+            minButtonHeight = 18f,
+            horizontalPadding = 2f * ACTION_ROW_PADDING,
+            verticalPadding = 2f * ACTION_ROW_PADDING,
+            approxCharWidthPx = ACTION_LABEL_APPROX_CHAR_WIDTH,
+            lineHeightPx = ACTION_LABEL_LINE_HEIGHT,
+            maxLines = maxLines
+        )
     }
 
     /**
@@ -488,7 +535,7 @@ fun addStyledCampaignActionRow(
     labelText: String,
     highlightTokens: List<String>,
     tooltip: String? = null,
-    textPadding: Float = 4f,
+    textPadding: Float = CampaignGuiStyle.ACTION_ROW_PADDING,
 ): StyledCampaignButtonShell {
     val shell = addStyledCampaignButtonShell(
         parent = parent,

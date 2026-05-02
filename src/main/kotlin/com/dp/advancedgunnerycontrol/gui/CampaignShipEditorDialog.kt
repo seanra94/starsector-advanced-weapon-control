@@ -84,27 +84,10 @@ class CampaignShipEditorPanelPlugin(
 
     companion object {
         private const val SECTION_HEADER_HEIGHT = 20f
-        private const val ACTION_ROW_GAP = 2f
-        private const val ACTION_ROW_PADDING = 4f
-        private const val ACTION_LABEL_APPROX_CHAR_WIDTH = 6.8f
-        private const val ACTION_LABEL_LINE_HEIGHT = 15f
         private const val ACTION_LABEL_MAX_LINES = 3
         private const val MODIFIERS_MAX_LINES = 6
         private const val MODIFIERS_TOP_GAP = 2f
         private const val MODIFIERS_TEXT = "MODIFIERS:\n[SHIFT] = FLEET\n[CTRL] = ALL LOADOUTS"
-        private val ACTION_SHORTCUT_HIGHLIGHTS = listOf(
-            "[TAB]",
-            "[DELETE]",
-            "[DEL]",
-            "[ESCAPE]",
-            "[LEFT]",
-            "[LEFT ARROW]",
-            "[D]",
-            "[A]",
-            "[RIGHT]",
-            "[RIGHT ARROW]",
-            "[F]",
-        )
     }
 
     private val log = Global.getLogger(CampaignShipEditorPanelPlugin::class.java)
@@ -266,7 +249,7 @@ class CampaignShipEditorPanelPlugin(
             renderActionRow(panel, width, row, rowLayout.wrappedText, currentTop, rowLayout.rowHeight)
             currentTop += rowLayout.rowHeight
             if (index < layout.rows.lastIndex) {
-                currentTop += ACTION_ROW_GAP
+                currentTop += CampaignGuiStyle.ACTION_ROW_GAP
             }
         }
         if (layout.rows.isNotEmpty()) {
@@ -305,9 +288,9 @@ class CampaignShipEditorPanelPlugin(
             height = rowHeight,
             kind = action.style.toButtonKind(),
             labelText = labelText,
-            highlightTokens = ACTION_SHORTCUT_HIGHLIGHTS,
+            highlightTokens = CampaignGuiStyle.ACTION_SHORTCUT_HIGHLIGHTS,
             tooltip = action.tooltip,
-            textPadding = ACTION_ROW_PADDING,
+            textPadding = CampaignGuiStyle.ACTION_ROW_PADDING,
         )
         val button = buttonShell.button
         bindButton(button)
@@ -315,17 +298,8 @@ class CampaignShipEditorPanelPlugin(
     }
 
     private fun actionLabelLayout(action: CampaignOptionRow, width: Float): WrappedLabelLayout {
-        val shortcut = action.shortcut?.let { " [${formatShortcutName(it)}]" } ?: ""
-        return computeWrappedLabelLayout(
-            text = action.label + shortcut,
-            rowWidth = width - 2f * ACTION_ROW_PADDING,
-            minButtonHeight = 18f,
-            horizontalPadding = 2f * ACTION_ROW_PADDING,
-            verticalPadding = 2f * ACTION_ROW_PADDING,
-            approxCharWidthPx = ACTION_LABEL_APPROX_CHAR_WIDTH,
-            lineHeightPx = ACTION_LABEL_LINE_HEIGHT,
-            maxLines = ACTION_LABEL_MAX_LINES
-        )
+        val labelText = CampaignGuiStyle.actionLabelText(action.label, action.shortcut?.let(::listOf) ?: emptyList())
+        return CampaignGuiStyle.actionLabelLayout(labelText, width, ACTION_LABEL_MAX_LINES)
     }
 
     private fun modifiersLabelLayout(width: Float): WrappedLabelLayout {
@@ -335,8 +309,8 @@ class CampaignShipEditorPanelPlugin(
             minButtonHeight = 0f,
             horizontalPadding = 0f,
             verticalPadding = 0f,
-            approxCharWidthPx = ACTION_LABEL_APPROX_CHAR_WIDTH,
-            lineHeightPx = ACTION_LABEL_LINE_HEIGHT,
+            approxCharWidthPx = CampaignGuiStyle.ACTION_LABEL_APPROX_CHAR_WIDTH,
+            lineHeightPx = CampaignGuiStyle.ACTION_LABEL_LINE_HEIGHT,
             maxLines = MODIFIERS_MAX_LINES
         )
     }
@@ -344,7 +318,7 @@ class CampaignShipEditorPanelPlugin(
     private fun computeOptionsLayout(width: Float): CampaignOptionsLayout {
         val rowLayouts = currentOptionRows.map { row -> row to actionLabelLayout(row, width) }
         val rowsHeight = rowLayouts.sumOf { (_, layout) -> layout.rowHeight.toDouble() }.toFloat()
-        val rowGapsHeight = max(0, rowLayouts.size - 1) * ACTION_ROW_GAP
+        val rowGapsHeight = max(0, rowLayouts.size - 1) * CampaignGuiStyle.ACTION_ROW_GAP
         val modifiersTopGap = if (rowLayouts.isEmpty()) 0f else MODIFIERS_TOP_GAP
         val modifiersLayout = modifiersLabelLayout(width)
         val requiredHeight =
@@ -429,11 +403,6 @@ class CampaignShipEditorPanelPlugin(
             }
         }
         return rows
-    }
-
-    private fun formatShortcutName(keyCode: Int): String {
-        val name = Keyboard.getKeyName(keyCode)
-        return if (name.equals("DELETE", ignoreCase = true)) "DEL" else name.uppercase()
     }
 
     private fun actionFamilyStyle(action: GUIAction): CampaignOptionRowStyle {
