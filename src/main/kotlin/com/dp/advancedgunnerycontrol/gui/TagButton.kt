@@ -26,9 +26,11 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
 
         private fun sanitizePersistedTags(ship: FleetMemberAPI, group: Int): MutableList<String> {
             val allTags = Settings.getCurrentWeaponTagList()
-            val sanitized = loadPersistentTags(ship.id, ship, group, AGCGUI.storageIndex)
+            val loaded = loadPersistentTags(ship.id, ship, group, AGCGUI.storageIndex)
+            val sanitized = loaded
                 .filter { allTags.contains(it) }
                 .toMutableList()
+            var shouldPersist = sanitized != loaded
             var changed = true
             while (changed) {
                 changed = false
@@ -37,10 +39,13 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
                     if (isIncompatibleWithExistingTags(persistedTag, otherTags) || shouldTagBeDisabled(group, ship, persistedTag)) {
                         sanitized.remove(persistedTag)
                         changed = true
+                        shouldPersist = true
                     }
                 }
             }
-            persistTags(ship.id, ship, group, AGCGUI.storageIndex, sanitized)
+            if (shouldPersist) {
+                persistTags(ship.id, ship, group, AGCGUI.storageIndex, sanitized)
+            }
             return sanitized
         }
 
@@ -154,9 +159,6 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
             }
             toReturn.forEach {
                 it.sameGroupButtons = toReturn
-            }
-            toReturn.forEach {
-                it.updateDisabledButtons()
             }
             return toReturn
         }

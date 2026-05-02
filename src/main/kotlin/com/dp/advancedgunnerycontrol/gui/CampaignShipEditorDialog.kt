@@ -173,8 +173,6 @@ class CampaignShipEditorPanelPlugin(
             val rootHeight = root.position.height
             val mainWidth = max(300f, rootWidth - 2f * CampaignGuiStyle.MAIN_PADDING)
             val mainHeight = max(300f, rootHeight - 2f * CampaignGuiStyle.MAIN_PADDING)
-            log.info("[AGC_CAMPAIGN_UI] rebuild root=${rootWidth}x${rootHeight} inner=${mainWidth}x${mainHeight}")
-
             val content = root.createCustomPanel(
                 mainWidth,
                 mainHeight,

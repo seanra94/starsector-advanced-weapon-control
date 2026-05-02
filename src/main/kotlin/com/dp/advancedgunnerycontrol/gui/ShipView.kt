@@ -923,11 +923,6 @@ class ShipView(
         val optionsHeight = min(desiredOptionsHeight, panel.position.height - pictureHeight - minimumShipModeHeight)
         val shipModeHeight = max(minimumShipModeHeight, panel.position.height - pictureHeight - optionsHeight)
 
-        log.info(
-            "[AGC_CAMPAIGN_UI] ShipView.buildIn ship=${ship.shipName} panel=${panel.position.width}x${panel.position.height} " +
-                "miscW=$miscWidth groupsW=$weaponGroupsWidth optionsH=$optionsHeight groups=${ship.variant.weaponGroups.size}"
-        )
-
         val miscPanel = panel.createCustomPanel(
             miscWidth,
             panel.position.height,
