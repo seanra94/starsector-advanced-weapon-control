@@ -17,6 +17,8 @@ import kotlin.math.max
 class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: ButtonAPI) :
     ButtonBase<String>(tag, button, false) {
 
+    private var visualStateChecked: Boolean? = null
+
     companion object {
         private var storage = Settings.tagStorage[AGCGUI.storageIndex]
         var campaignTagSelectionVersion = 0
@@ -115,7 +117,6 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
             val toReturn = mutableListOf<TagButton>()
             tags.forEachIndexed { index, tag ->
                 val otherSelectedTags = sanitizedTags.toMutableList().apply { remove(tag) }
-                val isActiveTag = sanitizedTags.contains(tag)
                 val unavailable = !pinned && (
                     isIncompatibleWithExistingTags(tag, otherSelectedTags) ||
                         shouldTagBeDisabled(group, ship, tag)
@@ -138,37 +139,40 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
                 )
                 val toggleColors = CampaignGuiStyle.toggleableCheckboxColors()
                 val baseColor = when {
-                    pinned -> CampaignGuiStyle.TOGGLE_SELECTED_IDLE_COLOR
                     unavailable -> CampaignGuiStyle.DISABLED_TAG_BACKGROUND_COLOR
                     else -> toggleColors.base
                 }
                 val darkColor = when {
-                    pinned -> CampaignGuiStyle.TOGGLE_SELECTED_IDLE_COLOR
                     unavailable -> CampaignGuiStyle.DISABLED_TAG_DARK_COLOR
                     else -> toggleColors.bg
                 }
                 val brightColor = when {
-                    pinned -> CampaignGuiStyle.TOGGLE_SELECTED_HOVER_COLOR
                     unavailable -> CampaignGuiStyle.DISABLED_TAG_BRIGHT_COLOR
                     else -> toggleColors.bright
                 }
+                val createdButton = inner.addAreaCheckbox(
+                    "",
+                    tag,
+                    baseColor,
+                    darkColor,
+                    brightColor,
+                    metrics.itemWidth,
+                    metrics.itemHeight,
+                    0f
+                )
                 toReturn.add(
                     TagButton(
                         ship,
                         group,
                         tag,
-                        inner.addAreaCheckbox(
-                            "",
-                            tag,
-                            baseColor,
-                            darkColor,
-                            brightColor,
-                            metrics.itemWidth,
-                            metrics.itemHeight,
-                            0f
-                        )
+                        createdButton
                     )
                 )
+                if (unavailable) {
+                    CampaignGuiStyle.applyUnavailableCheckboxVisualState(createdButton)
+                } else {
+                    CampaignGuiStyle.applyToggleableCheckboxVisualState(createdButton)
+                }
                 inner.addTooltipToPrevious(
                     AGCGUI.makeTooltip(getTagTooltip(tag)),
                     TooltipMakerAPI.TooltipLocation.BELOW
@@ -200,6 +204,18 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
     private fun setCheckedFromPersistence(checked: Boolean) {
         active = checked
         button.isChecked = checked
+        applyToggleableVisualState(force = true)
+    }
+
+    private fun applyToggleableVisualState(force: Boolean = false) {
+        if (!force && visualStateChecked == button.isChecked) return
+        CampaignGuiStyle.applyToggleableCheckboxVisualState(button)
+        visualStateChecked = button.isChecked
+    }
+
+    private fun applyUnavailableVisualState() {
+        CampaignGuiStyle.applyUnavailableCheckboxVisualState(button)
+        visualStateChecked = null
     }
 
     private fun updateDisabledButtons() {
@@ -211,6 +227,9 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
             disable()
             button.isChecked = false
             active = false
+            applyUnavailableVisualState()
+        } else {
+            applyToggleableVisualState()
         }
         sameGroupButtons.forEach {
             val tagButton = it as? TagButton ?: return@forEach
@@ -225,6 +244,9 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
                 tagButton.disable()
                 tagButton.button.isChecked = false
                 tagButton.active = false
+                tagButton.applyUnavailableVisualState()
+            } else {
+                tagButton.applyToggleableVisualState()
             }
         }
     }
@@ -242,6 +264,7 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
             updateDisabledButtons()
         }
         button.isChecked = active
+        applyToggleableVisualState()
     }
 
     override fun onActivate() {

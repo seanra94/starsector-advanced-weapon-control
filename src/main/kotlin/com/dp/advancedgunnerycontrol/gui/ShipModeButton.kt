@@ -15,6 +15,8 @@ import kotlin.math.max
 class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAPI) :
     ButtonBase<ShipModes>(mode, button, false) {
 
+    private var visualStateChecked: Boolean? = null
+
     companion object {
         var campaignShipModeSelectionVersion = 0
             private set
@@ -131,6 +133,7 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
                         )
                     )
                 )
+                toReturn.last().applyToggleableVisualState(force = true)
                 inner.addTooltipToPrevious(
                     AGCGUI.makeTooltip(detailedShipModeDescriptions[mode] ?: ""),
                     TooltipMakerAPI.TooltipLocation.BELOW
@@ -166,6 +169,7 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
             sameGroupButtons.forEach { (it as? ShipModeButton)?.updateIfCheckedBasedOnData() }
         }
         button.isChecked = active
+        applyToggleableVisualState()
     }
 
     private fun updateIfCheckedBasedOnData() {
@@ -174,6 +178,13 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
         } else {
             uncheck()
         }
+        applyToggleableVisualState()
+    }
+
+    private fun applyToggleableVisualState(force: Boolean = false) {
+        if (!force && visualStateChecked == button.isChecked) return
+        CampaignGuiStyle.applyToggleableCheckboxVisualState(button)
+        visualStateChecked = button.isChecked
     }
 
     override fun onActivate() {

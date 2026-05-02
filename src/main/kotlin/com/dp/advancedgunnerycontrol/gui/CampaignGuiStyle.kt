@@ -1,6 +1,8 @@
 package com.dp.advancedgunnerycontrol.gui
 
 import java.awt.Color
+import com.dp.advancedgunnerycontrol.utils.invokeMethodByName
+import com.fs.starfarer.api.ui.ButtonAPI
 import com.fs.starfarer.api.ui.LabelAPI
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
@@ -43,13 +45,6 @@ object CampaignGuiStyle {
         val base: Color,
         val bg: Color,
         val bright: Color,
-    )
-
-    data class ToggleableStateColors(
-        val uncheckedIdle: Color,
-        val uncheckedHover: Color,
-        val checkedIdle: Color,
-        val checkedHover: Color,
     )
     val TOOLTIP_TEXT_COLOR: Color = Color(245, 230, 150)
     val INACTIVE_ROW_BACKGROUND_COLOR: Color = Color(115, 115, 115, 225)
@@ -96,34 +91,62 @@ object CampaignGuiStyle {
     const val ITEM_TEXT_TOP_PADDING = 2f
     const val ITEM_HIGHLIGHT_X_OFFSET = -3f
     const val HEADING_CHAR_WIDTH_ESTIMATE = 7.2f
-    private const val TOGGLE_COLOR_PROBE_ENABLED = false
-
-    private fun targetToggleableColors(): ToggleableStateColors = ToggleableStateColors(
-        uncheckedIdle = TOGGLE_UNSELECTED_IDLE_COLOR,
-        uncheckedHover = TOGGLE_UNSELECTED_HOVER_COLOR,
-        checkedIdle = TOGGLE_SELECTED_IDLE_COLOR,
-        checkedHover = TOGGLE_SELECTED_HOVER_COLOR
-    )
-
-    private fun probeToggleableColors(): ToggleableStateColors = ToggleableStateColors(
-        uncheckedIdle = Color(255, 0, 255, 225),
-        uncheckedHover = Color(255, 255, 0, 225),
-        checkedIdle = Color(255, 255, 0, 225),
-        checkedHover = Color(0, 255, 255, 225)
-    )
 
     /**
-     * Runtime slot mapping determined for addAreaCheckbox(base, bg, bright):
-     * - base  -> unchecked idle
-     * - bg    -> unchecked hover + checked idle
-     * - bright-> checked hover
+     * Decompiled addAreaCheckbox(base, bg, bright) behavior:
+     * - base controls the hover/glow color.
+     * - bg controls checked fill and border.
+     * - bright controls the built-in label text color, which AGC leaves blank here.
      */
     fun toggleableCheckboxColors(): CheckboxColors {
-        val state = if (TOGGLE_COLOR_PROBE_ENABLED) probeToggleableColors() else targetToggleableColors()
         return CheckboxColors(
-            base = state.uncheckedIdle,
-            bg = state.checkedIdle,
-            bright = state.checkedHover
+            base = TOGGLE_UNSELECTED_HOVER_COLOR,
+            bg = TOGGLE_SELECTED_IDLE_COLOR,
+            bright = TOGGLE_SELECTED_HOVER_COLOR
+        )
+    }
+
+    fun applyToggleableCheckboxVisualState(button: ButtonAPI) {
+        val glowColor = if (button.isChecked) TOGGLE_SELECTED_HOVER_COLOR else TOGGLE_UNSELECTED_HOVER_COLOR
+        val borderColor = if (button.isChecked) TOGGLE_SELECTED_IDLE_COLOR else TOGGLE_UNSELECTED_IDLE_COLOR
+        invokeMethodByName(
+            "setGlowOverride",
+            button,
+            glowColor,
+            narrativeContext = "Set AGC toggleable checkbox hover glow"
+        )
+        invokeMethodByName(
+            "setBgOverride",
+            button,
+            TOGGLE_SELECTED_IDLE_COLOR,
+            narrativeContext = "Set AGC toggleable checkbox checked fill"
+        )
+        invokeMethodByName(
+            "setBorderOverride",
+            button,
+            borderColor,
+            narrativeContext = "Set AGC toggleable checkbox border"
+        )
+    }
+
+    fun applyUnavailableCheckboxVisualState(button: ButtonAPI) {
+        invokeMethodByName(
+            "setGlowOverride",
+            button,
+            DISABLED_TAG_BRIGHT_COLOR,
+            narrativeContext = "Set AGC unavailable checkbox hover glow"
+        )
+        invokeMethodByName(
+            "setBgOverride",
+            button,
+            DISABLED_TAG_BACKGROUND_COLOR,
+            narrativeContext = "Set AGC unavailable checkbox checked fill"
+        )
+        invokeMethodByName(
+            "setBorderOverride",
+            button,
+            DISABLED_TAG_BORDER_COLOR,
+            narrativeContext = "Set AGC unavailable checkbox border"
         )
     }
 }
