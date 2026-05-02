@@ -317,7 +317,7 @@ class CampaignShipEditorPanelPlugin(
                 isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
                 action.style == CampaignOptionRowStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BACKGROUND_COLOR
                 action.style == CampaignOptionRowStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BACKGROUND_COLOR
-                else -> CampaignGuiStyle.NEUTRAL_BUTTON_IDLE_COLOR
+                else -> CampaignGuiStyle.NEUTRAL_BUTTON_HOVER_COLOR
             },
             when {
                 isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_DARK_COLOR

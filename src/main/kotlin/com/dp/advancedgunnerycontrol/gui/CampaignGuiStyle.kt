@@ -73,9 +73,9 @@ object CampaignGuiStyle {
     val NEUTRAL_BUTTON_IDLE_COLOR: Color = Color(70, 70, 70, 225)
     val NEUTRAL_BUTTON_HOVER_COLOR: Color = Color(255, 255, 255, 225)
     val SHARED_TAG_MODE_UNSELECTED_IDLE_COLOR: Color = Color(0, 0, 0, 225)
-    val SHARED_TAG_MODE_UNSELECTED_HOVER_COLOR: Color = Color(255, 165, 0, 225)
-    val SHARED_TAG_MODE_SELECTED_IDLE_COLOR: Color = Color(170, 90, 0, 225)
-    val SHARED_TAG_MODE_SELECTED_HOVER_COLOR: Color = Color(255, 165, 0, 225)
+    val SHARED_TAG_MODE_UNSELECTED_HOVER_COLOR: Color = Color(174, 153, 60, 225)
+    val SHARED_TAG_MODE_SELECTED_IDLE_COLOR: Color = Color(123, 106, 21, 225)
+    val SHARED_TAG_MODE_SELECTED_HOVER_COLOR: Color = Color(174, 153, 60, 225)
     val TOGGLE_UNSELECTED_IDLE_COLOR: Color = SHARED_TAG_MODE_UNSELECTED_IDLE_COLOR
     val TOGGLE_UNSELECTED_HOVER_COLOR: Color = SHARED_TAG_MODE_UNSELECTED_HOVER_COLOR
     val TOGGLE_SELECTED_IDLE_COLOR: Color = SHARED_TAG_MODE_SELECTED_IDLE_COLOR
@@ -116,6 +116,7 @@ object CampaignGuiStyle {
     private data class ButtonOverrideMethods(
         val setGlowOverride: Method,
         val setBorderOverride: Method,
+        val setBorderThickness: Method,
     )
 
     private val buttonOverrideMethodsByClass = mutableMapOf<Class<*>, ButtonOverrideMethods?>()
@@ -126,6 +127,7 @@ object CampaignGuiStyle {
                 ButtonOverrideMethods(
                     setGlowOverride = button.javaClass.getMethod("setGlowOverride", Color::class.java),
                     setBorderOverride = button.javaClass.getMethod("setBorderOverride", Color::class.java),
+                    setBorderThickness = button.javaClass.getMethod("setBorderThickness", java.lang.Float.TYPE),
                 )
             } catch (ex: Throwable) {
                 log.warn("AGC could not cache area-checkbox color override methods for ${button.javaClass.name}", ex)
@@ -139,6 +141,14 @@ object CampaignGuiStyle {
             method.invoke(button, color)
         } catch (ex: Throwable) {
             log.warn("AGC failed to apply area-checkbox color override ${method.name}", ex)
+        }
+    }
+
+    private fun invokeFloatOverride(button: ButtonAPI, method: Method, value: Float) {
+        try {
+            method.invoke(button, value)
+        } catch (ex: Throwable) {
+            log.warn("AGC failed to apply area-checkbox float override ${method.name}", ex)
         }
     }
 
@@ -156,12 +166,14 @@ object CampaignGuiStyle {
         }
         invokeColorOverride(button, methods.setGlowOverride, glowColor)
         invokeColorOverride(button, methods.setBorderOverride, borderColor)
+        invokeFloatOverride(button, methods.setBorderThickness, 0f)
     }
 
     fun applyUnavailableCheckboxVisualState(button: ButtonAPI) {
         val methods = buttonOverrideMethods(button) ?: return
         invokeColorOverride(button, methods.setGlowOverride, DISABLED_TAG_BRIGHT_COLOR)
         invokeColorOverride(button, methods.setBorderOverride, DISABLED_TAG_BORDER_COLOR)
+        invokeFloatOverride(button, methods.setBorderThickness, 1f)
     }
 }
 

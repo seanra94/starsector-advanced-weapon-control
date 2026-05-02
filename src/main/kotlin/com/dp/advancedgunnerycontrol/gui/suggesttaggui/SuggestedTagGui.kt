@@ -223,7 +223,7 @@ class SuggestedTagGui : InteractionDialogPlugin {
                     isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
                     action.style == SuggestedActionStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BACKGROUND_COLOR
                     action.style == SuggestedActionStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BACKGROUND_COLOR
-                    else -> CampaignGuiStyle.NEUTRAL_BUTTON_IDLE_COLOR
+                    else -> CampaignGuiStyle.NEUTRAL_BUTTON_HOVER_COLOR
                 }
                 val darkColor = when {
                     isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_DARK_COLOR
