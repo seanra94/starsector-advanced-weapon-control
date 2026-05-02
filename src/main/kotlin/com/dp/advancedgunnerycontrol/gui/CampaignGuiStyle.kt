@@ -39,6 +39,11 @@ val campaignBorderModeByType = mapOf(
 ).withDefault { CampaignBorderMode.NONE }
 
 object CampaignGuiStyle {
+    data class CheckboxColors(
+        val base: Color,
+        val dark: Color,
+        val bright: Color,
+    )
     val TOOLTIP_TEXT_COLOR: Color = Color(245, 230, 150)
     val INACTIVE_ROW_BACKGROUND_COLOR: Color = Color(115, 115, 115, 225)
     val DISABLED_TAG_BACKGROUND_COLOR: Color = Color(28, 28, 28, 235)
@@ -60,12 +65,12 @@ object CampaignGuiStyle {
     val ACTION_LOAD_BACKGROUND_COLOR: Color = Color(145, 125, 25, 225)
     val ACTION_LOAD_DARK_COLOR: Color = Color(95, 80, 14, 225)
     val ACTION_LOAD_BRIGHT_COLOR: Color = Color(205, 180, 70, 225)
-    val NEUTRAL_BUTTON_IDLE_COLOR: Color = Color(72, 72, 72, 225)
-    val NEUTRAL_BUTTON_HOVER_COLOR: Color = Color(132, 132, 132, 225)
+    val NEUTRAL_BUTTON_IDLE_COLOR: Color = Color(70, 70, 70, 225)
+    val NEUTRAL_BUTTON_HOVER_COLOR: Color = Color(122, 122, 122, 225)
     val TOGGLE_UNSELECTED_IDLE_COLOR: Color = Color(0, 0, 0, 225)
-    val TOGGLE_UNSELECTED_HOVER_COLOR: Color = Color(0, 69, 92, 225)
-    val TOGGLE_SELECTED_IDLE_COLOR: Color = Color(0, 69, 92, 225)
-    val TOGGLE_SELECTED_HOVER_COLOR: Color = Color(0, 109, 145, 225)
+    val TOGGLE_UNSELECTED_HOVER_COLOR: Color = Color(0, 74, 98, 225)
+    val TOGGLE_SELECTED_IDLE_COLOR: Color = Color(0, 74, 98, 225)
+    val TOGGLE_SELECTED_HOVER_COLOR: Color = Color(0, 95, 125, 225)
 
     const val MAIN_PADDING = 0f
     const val PANEL_PADDING = 4f
@@ -84,6 +89,15 @@ object CampaignGuiStyle {
     const val ITEM_TEXT_TOP_PADDING = 2f
     const val ITEM_HIGHLIGHT_X_OFFSET = -3f
     const val HEADING_CHAR_WIDTH_ESTIMATE = 7.2f
+
+    fun toggleableCheckboxColors(isActive: Boolean): CheckboxColors {
+        val hover = if (isActive) TOGGLE_SELECTED_HOVER_COLOR else TOGGLE_UNSELECTED_HOVER_COLOR
+        return CheckboxColors(
+            base = if (isActive) TOGGLE_SELECTED_IDLE_COLOR else TOGGLE_UNSELECTED_IDLE_COLOR,
+            dark = hover,
+            bright = hover
+        )
+    }
 }
 
 fun TooltipMakerAPI.applyAgcDefaultTextStyle() {

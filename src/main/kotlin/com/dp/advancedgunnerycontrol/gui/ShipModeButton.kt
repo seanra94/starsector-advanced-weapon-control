@@ -99,6 +99,7 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
                 val label = truncateLabel(shipModeToString[mode] ?: defaultShipMode, itemWidth, 24f)
                 val modeName = shipModeToString[mode] ?: defaultShipMode
                 val isActiveMode = activeModes.contains(modeName)
+                val toggleColors = CampaignGuiStyle.toggleableCheckboxColors(isActiveMode)
                 val itemPanel = panel.createCustomPanel(
                     itemWidth,
                     itemHeight,
@@ -124,9 +125,9 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
                         inner.addAreaCheckbox(
                             "",
                             mode,
-                            if (isActiveMode) CampaignGuiStyle.TOGGLE_SELECTED_IDLE_COLOR else CampaignGuiStyle.TOGGLE_UNSELECTED_IDLE_COLOR,
-                            if (isActiveMode) CampaignGuiStyle.TOGGLE_SELECTED_HOVER_COLOR else CampaignGuiStyle.TOGGLE_UNSELECTED_HOVER_COLOR,
-                            if (isActiveMode) CampaignGuiStyle.TOGGLE_SELECTED_HOVER_COLOR else CampaignGuiStyle.TOGGLE_UNSELECTED_HOVER_COLOR,
+                            toggleColors.base,
+                            toggleColors.dark,
+                            toggleColors.bright,
                             itemWidth,
                             itemHeight,
                             0f
