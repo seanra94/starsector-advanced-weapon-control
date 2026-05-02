@@ -26,6 +26,13 @@ enum class WeaponCompositionPresetLoadStatus {
     FAILED
 }
 
+enum class WeaponCompositionPresetPeekStatus {
+    FOUND,
+    NO_WEAPON_GROUP_KEY,
+    NO_PRESET_FOUND,
+    FAILED
+}
+
 data class WeaponCompositionPresetSaveResult(
     val status: WeaponCompositionPresetSaveStatus,
     val weaponKey: String? = null,
@@ -35,6 +42,13 @@ data class WeaponCompositionPresetSaveResult(
 
 data class WeaponCompositionPresetLoadResult(
     val status: WeaponCompositionPresetLoadStatus,
+    val weaponKey: String? = null,
+    val tags: List<String> = emptyList(),
+    val error: String? = null
+)
+
+data class WeaponCompositionPresetPeekResult(
+    val status: WeaponCompositionPresetPeekStatus,
     val weaponKey: String? = null,
     val tags: List<String> = emptyList(),
     val error: String? = null
@@ -122,6 +136,42 @@ fun loadExternalWeaponCompositionPreset(
         )
     }
 }
+
+fun peekExternalWeaponCompositionPreset(
+    member: FleetMemberAPI,
+    groupIndex: Int,
+    loadoutIndex: Int,
+    file: String = Values.WEAPON_COMP_TAG_PRESETS_JSON_FILE_NAME
+): WeaponCompositionPresetPeekResult {
+    val key = getWeaponCompositionPresetKey(member, groupIndex)
+        ?: return WeaponCompositionPresetPeekResult(WeaponCompositionPresetPeekStatus.NO_WEAPON_GROUP_KEY)
+    return try {
+        val fileData = loadPresetData(file)
+        val savedTags = fileData.presetsByLoadout[loadoutIndex]?.get(key)
+            ?: return WeaponCompositionPresetPeekResult(
+                status = WeaponCompositionPresetPeekStatus.NO_PRESET_FOUND,
+                weaponKey = key
+            )
+        WeaponCompositionPresetPeekResult(
+            status = WeaponCompositionPresetPeekStatus.FOUND,
+            weaponKey = key,
+            tags = sanitizeTagsForWeaponGroup(member, groupIndex, savedTags)
+        )
+    } catch (ex: Exception) {
+        logPresetWarn("Failed peeking external weapon preset for key=$key, loadout=$loadoutIndex", ex)
+        WeaponCompositionPresetPeekResult(
+            status = WeaponCompositionPresetPeekStatus.FAILED,
+            weaponKey = key,
+            error = ex.message
+        )
+    }
+}
+
+fun sanitizeWeaponCompositionPresetTagsForGroup(
+    member: FleetMemberAPI,
+    groupIndex: Int,
+    tags: List<String>
+): List<String> = sanitizeTagsForWeaponGroup(member, groupIndex, tags)
 
 private fun sanitizeTagsForWeaponGroup(member: FleetMemberAPI, groupIndex: Int, tags: List<String>): List<String> {
     val allVisibleTags = Settings.getCurrentWeaponTagList()

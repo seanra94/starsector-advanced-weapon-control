@@ -5,9 +5,13 @@ import com.dp.advancedgunnerycontrol.typesandvalues.TagListView
 import com.dp.advancedgunnerycontrol.utils.loadAllTags
 import com.dp.advancedgunnerycontrol.utils.loadPersistentTags
 import com.dp.advancedgunnerycontrol.utils.loadExternalWeaponCompositionPreset
+import com.dp.advancedgunnerycontrol.utils.peekExternalWeaponCompositionPreset
 import com.dp.advancedgunnerycontrol.utils.saveExternalWeaponCompositionPreset
 import com.dp.advancedgunnerycontrol.utils.WeaponCompositionPresetLoadStatus
+import com.dp.advancedgunnerycontrol.utils.WeaponCompositionPresetPeekStatus
 import com.dp.advancedgunnerycontrol.utils.WeaponCompositionPresetSaveStatus
+import com.dp.advancedgunnerycontrol.utils.generateUniversalFleetMemberId
+import com.dp.advancedgunnerycontrol.utils.sanitizeWeaponCompositionPresetTagsForGroup
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.fleet.FleetMemberAPI
 import com.fs.starfarer.api.input.InputEventAPI
@@ -582,9 +586,11 @@ class ShipView(
         relativeGroupTopOffset: Float,
         contentHeight: Float,
     ) {
-        addSectionHeading(panel, "Group ${groupIndex + 1}", fillColor = WEAPON_GROUP_HEADER_COLOR)
         val group = ship.variant.weaponGroups.getOrNull(groupIndex)
         val entries = group?.let { aggregateWeapons(it, ship) }.orEmpty()
+        val isDirty = entries.isNotEmpty() && isPresetDirtyForGroup(ship, groupIndex)
+        val headerSuffix = if (isDirty) " (*)" else ""
+        addSectionHeading(panel, "Group ${groupIndex + 1}$headerSuffix", fillColor = WEAPON_GROUP_HEADER_COLOR)
         if (entries.isEmpty()) return
 
         val topContent = CampaignGuiStyle.PANEL_PADDING + SECTION_HEADER_HEIGHT
@@ -669,6 +675,10 @@ class ShipView(
             PRESET_BUTTON_HEIGHT,
             0f
         )
+        saveInner.addTooltipToPrevious(
+            AGCGUI.makeTooltip("Save the current tags from this weapon group as the external preset for this weapon combination and active loadout. Other matching groups do not change until you explicitly load the preset there."),
+            TooltipMakerAPI.TooltipLocation.BELOW
+        )
         savePanel.addUIElement(saveInner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
         renderCenteredPresetLabel(savePanel, "Save", buttonWidth, PRESET_BUTTON_HEIGHT)
         buttons.add(
@@ -696,6 +706,10 @@ class ShipView(
             buttonWidth,
             PRESET_BUTTON_HEIGHT,
             0f
+        )
+        loadInner.addTooltipToPrevious(
+            AGCGUI.makeTooltip("Load the external preset for this weapon combination and active loadout into this weapon group. This only changes this group."),
+            TooltipMakerAPI.TooltipLocation.BELOW
         )
         loadPanel.addUIElement(loadInner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
         renderCenteredPresetLabel(loadPanel, "Load", buttonWidth, PRESET_BUTTON_HEIGHT)
@@ -729,14 +743,6 @@ class ShipView(
             buttonWidth,
             PRESET_CONFIRM_HEIGHT,
             0f
-        )
-        val confirmTooltip = when (pendingAction) {
-            PendingPresetAction.SAVE -> "Save the current tags from this weapon group as the external preset for this weapon combination and active loadout. Other matching groups do not change until you explicitly load the preset there."
-            PendingPresetAction.LOAD -> "Load the external preset for this weapon combination and active loadout into this weapon group. This only changes this group."
-        }
-        confirmInner.addTooltipToPrevious(
-            AGCGUI.makeTooltip(confirmTooltip),
-            TooltipMakerAPI.TooltipLocation.BELOW
         )
         confirmPanel.addUIElement(confirmInner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
         renderTagLabel(
@@ -805,14 +811,6 @@ class ShipView(
             PRESET_CONFIRM_HEIGHT,
             0f
         )
-        val cancelTooltip = when (pendingAction) {
-            PendingPresetAction.SAVE -> "Cancel saving this preset. No changes will be made."
-            PendingPresetAction.LOAD -> "Cancel loading this preset. No changes will be made."
-        }
-        cancelInner.addTooltipToPrevious(
-            AGCGUI.makeTooltip(cancelTooltip),
-            TooltipMakerAPI.TooltipLocation.BELOW
-        )
         cancelPanel.addUIElement(cancelInner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
         renderTagLabel(
             cancelPanel,
@@ -849,6 +847,19 @@ class ShipView(
             left,
             CampaignGuiStyle.ITEM_TEXT_TOP_PADDING
         )
+    }
+
+    private fun isPresetDirtyForGroup(ship: FleetMemberAPI, groupIndex: Int): Boolean {
+        val shipId = generateUniversalFleetMemberId(ship)
+        val currentTags = loadPersistentTags(shipId, ship, groupIndex, AGCGUI.storageIndex)
+        val currentSanitized = sanitizeWeaponCompositionPresetTagsForGroup(ship, groupIndex, currentTags).toSet()
+        val presetResult = peekExternalWeaponCompositionPreset(ship, groupIndex, AGCGUI.storageIndex)
+        return when (presetResult.status) {
+            WeaponCompositionPresetPeekStatus.FOUND -> currentSanitized != presetResult.tags.toSet()
+            WeaponCompositionPresetPeekStatus.NO_PRESET_FOUND,
+            WeaponCompositionPresetPeekStatus.NO_WEAPON_GROUP_KEY,
+            WeaponCompositionPresetPeekStatus.FAILED -> true
+        }
     }
 
     private fun buildWeaponGroupsContainer(panel: CustomPanelAPI, ship: FleetMemberAPI, contentHeight: Float, miscWidth: Float) {
