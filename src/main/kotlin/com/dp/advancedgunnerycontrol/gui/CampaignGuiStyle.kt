@@ -1,11 +1,12 @@
 package com.dp.advancedgunnerycontrol.gui
 
 import java.awt.Color
-import com.dp.advancedgunnerycontrol.utils.invokeMethodByName
+import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.ui.ButtonAPI
 import com.fs.starfarer.api.ui.LabelAPI
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
+import java.lang.reflect.Method
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.max
@@ -41,6 +42,8 @@ val campaignBorderModeByType = mapOf(
 ).withDefault { CampaignBorderMode.NONE }
 
 object CampaignGuiStyle {
+    private val log = Global.getLogger(CampaignGuiStyle::class.java)
+
     data class CheckboxColors(
         val base: Color,
         val bg: Color,
@@ -70,7 +73,7 @@ object CampaignGuiStyle {
     val NEUTRAL_BUTTON_IDLE_COLOR: Color = Color(70, 70, 70, 225)
     val NEUTRAL_BUTTON_HOVER_COLOR: Color = Color(122, 122, 122, 225)
     val TOGGLE_UNSELECTED_IDLE_COLOR: Color = Color(0, 0, 0, 225)
-    val TOGGLE_UNSELECTED_HOVER_COLOR: Color = Color(0, 69, 92, 225)
+    val TOGGLE_UNSELECTED_HOVER_COLOR: Color = Color(0, 109, 145, 225)
     val TOGGLE_SELECTED_IDLE_COLOR: Color = Color(0, 69, 92, 225)
     val TOGGLE_SELECTED_HOVER_COLOR: Color = Color(0, 109, 145, 225)
 
@@ -106,48 +109,47 @@ object CampaignGuiStyle {
         )
     }
 
+    private data class ButtonOverrideMethods(
+        val setGlowOverride: Method,
+        val setBorderOverride: Method,
+    )
+
+    private val buttonOverrideMethodsByClass = mutableMapOf<Class<*>, ButtonOverrideMethods?>()
+
+    private fun buttonOverrideMethods(button: ButtonAPI): ButtonOverrideMethods? {
+        return buttonOverrideMethodsByClass.getOrPut(button.javaClass) {
+            try {
+                ButtonOverrideMethods(
+                    setGlowOverride = button.javaClass.getMethod("setGlowOverride", Color::class.java),
+                    setBorderOverride = button.javaClass.getMethod("setBorderOverride", Color::class.java),
+                )
+            } catch (ex: Throwable) {
+                log.warn("AGC could not cache area-checkbox color override methods for ${button.javaClass.name}", ex)
+                null
+            }
+        }
+    }
+
+    private fun invokeColorOverride(button: ButtonAPI, method: Method, color: Color) {
+        try {
+            method.invoke(button, color)
+        } catch (ex: Throwable) {
+            log.warn("AGC failed to apply area-checkbox color override ${method.name}", ex)
+        }
+    }
+
     fun applyToggleableCheckboxVisualState(button: ButtonAPI) {
+        val methods = buttonOverrideMethods(button) ?: return
         val glowColor = if (button.isChecked) TOGGLE_SELECTED_HOVER_COLOR else TOGGLE_UNSELECTED_HOVER_COLOR
         val borderColor = if (button.isChecked) TOGGLE_SELECTED_IDLE_COLOR else TOGGLE_UNSELECTED_IDLE_COLOR
-        invokeMethodByName(
-            "setGlowOverride",
-            button,
-            glowColor,
-            narrativeContext = "Set AGC toggleable checkbox hover glow"
-        )
-        invokeMethodByName(
-            "setBgOverride",
-            button,
-            TOGGLE_SELECTED_IDLE_COLOR,
-            narrativeContext = "Set AGC toggleable checkbox checked fill"
-        )
-        invokeMethodByName(
-            "setBorderOverride",
-            button,
-            borderColor,
-            narrativeContext = "Set AGC toggleable checkbox border"
-        )
+        invokeColorOverride(button, methods.setGlowOverride, glowColor)
+        invokeColorOverride(button, methods.setBorderOverride, borderColor)
     }
 
     fun applyUnavailableCheckboxVisualState(button: ButtonAPI) {
-        invokeMethodByName(
-            "setGlowOverride",
-            button,
-            DISABLED_TAG_BRIGHT_COLOR,
-            narrativeContext = "Set AGC unavailable checkbox hover glow"
-        )
-        invokeMethodByName(
-            "setBgOverride",
-            button,
-            DISABLED_TAG_BACKGROUND_COLOR,
-            narrativeContext = "Set AGC unavailable checkbox checked fill"
-        )
-        invokeMethodByName(
-            "setBorderOverride",
-            button,
-            DISABLED_TAG_BORDER_COLOR,
-            narrativeContext = "Set AGC unavailable checkbox border"
-        )
+        val methods = buttonOverrideMethods(button) ?: return
+        invokeColorOverride(button, methods.setGlowOverride, DISABLED_TAG_BRIGHT_COLOR)
+        invokeColorOverride(button, methods.setBorderOverride, DISABLED_TAG_BORDER_COLOR)
     }
 }
 
