@@ -791,7 +791,7 @@ class ShipView(
         val confirmPanel = panel.createCustomPanel(
             buttonWidth,
             PRESET_CONFIRM_HEIGHT,
-            CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR)
+            CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = CampaignGuiStyle.CONFIRM_BACKGROUND_COLOR)
         )
         panel.addComponent(confirmPanel)
         confirmPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, top + PRESET_BUTTON_HEIGHT + PRESET_BUTTON_GAP)
@@ -799,9 +799,9 @@ class ShipView(
         val confirmButton = confirmInner.addAreaCheckbox(
             "",
             "preset_confirm_$groupIndex",
-            CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR,
-            CampaignGuiStyle.ACTIVE_GREEN_DARK_COLOR,
-            CampaignGuiStyle.ACTIVE_GREEN_BRIGHT_COLOR,
+            CampaignGuiStyle.CONFIRM_BACKGROUND_COLOR,
+            CampaignGuiStyle.CONFIRM_DARK_COLOR,
+            CampaignGuiStyle.CONFIRM_BRIGHT_COLOR,
             buttonWidth,
             PRESET_CONFIRM_HEIGHT,
             0f
@@ -858,7 +858,7 @@ class ShipView(
         val cancelPanel = panel.createCustomPanel(
             buttonWidth,
             PRESET_CONFIRM_HEIGHT,
-            CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR)
+            CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = CampaignGuiStyle.CANCEL_BACKGROUND_COLOR)
         )
         panel.addComponent(cancelPanel)
         cancelPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING + buttonWidth + PRESET_BUTTON_HGAP, top + PRESET_BUTTON_HEIGHT + PRESET_BUTTON_GAP)
@@ -866,9 +866,9 @@ class ShipView(
         val cancelButton = cancelInner.addAreaCheckbox(
             "",
             "preset_cancel_$groupIndex",
-            CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR,
-            CampaignGuiStyle.UNAVAILABLE_TAG_DARK_COLOR,
-            CampaignGuiStyle.UNAVAILABLE_TAG_BRIGHT_COLOR,
+            CampaignGuiStyle.CANCEL_BACKGROUND_COLOR,
+            CampaignGuiStyle.CANCEL_DARK_COLOR,
+            CampaignGuiStyle.CANCEL_BRIGHT_COLOR,
             buttonWidth,
             PRESET_CONFIRM_HEIGHT,
             0f

@@ -200,11 +200,13 @@ class SuggestedTagGui : InteractionDialogPlugin {
                 val labelLayout = actionLabelLayout(action, width)
                 val label = labelLayout.wrappedText
                 val rowHeight = labelLayout.rowHeight
-                val isGreen = action.active || action.style == SuggestedActionStyle.GREEN
+                val isActive = action.active
+                val isGreen = action.style == SuggestedActionStyle.GREEN
                 val isRed = action.style == SuggestedActionStyle.RED
                 val rowFillColor = when {
-                    isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
-                    isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
+                    isRed -> CampaignGuiStyle.CANCEL_BACKGROUND_COLOR
+                    isGreen -> CampaignGuiStyle.CONFIRM_BACKGROUND_COLOR
+                    isActive -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
                     action.style == SuggestedActionStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BACKGROUND_COLOR
                     action.style == SuggestedActionStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BACKGROUND_COLOR
                     else -> null
@@ -219,22 +221,25 @@ class SuggestedTagGui : InteractionDialogPlugin {
 
                 val inner = itemPanel.createUIElement(width, rowHeight, false)
                 val baseColor = when {
-                    isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
-                    isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
+                    isRed -> CampaignGuiStyle.CANCEL_BACKGROUND_COLOR
+                    isGreen -> CampaignGuiStyle.CONFIRM_BACKGROUND_COLOR
+                    isActive -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
                     action.style == SuggestedActionStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BACKGROUND_COLOR
                     action.style == SuggestedActionStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BACKGROUND_COLOR
                     else -> CampaignGuiStyle.NEUTRAL_BUTTON_HOVER_COLOR
                 }
                 val darkColor = when {
-                    isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_DARK_COLOR
-                    isGreen -> CampaignGuiStyle.ACTIVE_GREEN_DARK_COLOR
+                    isRed -> CampaignGuiStyle.CANCEL_DARK_COLOR
+                    isGreen -> CampaignGuiStyle.CONFIRM_DARK_COLOR
+                    isActive -> CampaignGuiStyle.ACTIVE_GREEN_DARK_COLOR
                     action.style == SuggestedActionStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_DARK_COLOR
                     action.style == SuggestedActionStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_DARK_COLOR
                     else -> CampaignGuiStyle.NEUTRAL_BUTTON_HOVER_COLOR
                 }
                 val brightColor = when {
-                    isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BRIGHT_COLOR
-                    isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BRIGHT_COLOR
+                    isRed -> CampaignGuiStyle.CANCEL_BRIGHT_COLOR
+                    isGreen -> CampaignGuiStyle.CONFIRM_BRIGHT_COLOR
+                    isActive -> CampaignGuiStyle.ACTIVE_GREEN_BRIGHT_COLOR
                     action.style == SuggestedActionStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BRIGHT_COLOR
                     action.style == SuggestedActionStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BRIGHT_COLOR
                     else -> CampaignGuiStyle.NEUTRAL_BUTTON_HOVER_COLOR

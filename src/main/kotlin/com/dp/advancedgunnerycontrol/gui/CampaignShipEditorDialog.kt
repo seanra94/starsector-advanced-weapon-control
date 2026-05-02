@@ -291,8 +291,8 @@ class CampaignShipEditorPanelPlugin(
         val isGreen = action.style == CampaignOptionRowStyle.GREEN
         val isRed = action.style == CampaignOptionRowStyle.RED
         val rowFillColor = when {
-            isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
-            isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
+            isRed -> CampaignGuiStyle.CANCEL_BACKGROUND_COLOR
+            isGreen -> CampaignGuiStyle.CONFIRM_BACKGROUND_COLOR
             action.style == CampaignOptionRowStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BACKGROUND_COLOR
             action.style == CampaignOptionRowStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BACKGROUND_COLOR
             else -> null
@@ -313,22 +313,22 @@ class CampaignShipEditorPanelPlugin(
             "",
             action,
             when {
-                isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
-                isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
+                isRed -> CampaignGuiStyle.CANCEL_BACKGROUND_COLOR
+                isGreen -> CampaignGuiStyle.CONFIRM_BACKGROUND_COLOR
                 action.style == CampaignOptionRowStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BACKGROUND_COLOR
                 action.style == CampaignOptionRowStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BACKGROUND_COLOR
                 else -> CampaignGuiStyle.NEUTRAL_BUTTON_HOVER_COLOR
             },
             when {
-                isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_DARK_COLOR
-                isGreen -> CampaignGuiStyle.ACTIVE_GREEN_DARK_COLOR
+                isRed -> CampaignGuiStyle.CANCEL_DARK_COLOR
+                isGreen -> CampaignGuiStyle.CONFIRM_DARK_COLOR
                 action.style == CampaignOptionRowStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_DARK_COLOR
                 action.style == CampaignOptionRowStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_DARK_COLOR
                 else -> CampaignGuiStyle.NEUTRAL_BUTTON_HOVER_COLOR
             },
             when {
-                isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BRIGHT_COLOR
-                isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BRIGHT_COLOR
+                isRed -> CampaignGuiStyle.CANCEL_BRIGHT_COLOR
+                isGreen -> CampaignGuiStyle.CONFIRM_BRIGHT_COLOR
                 action.style == CampaignOptionRowStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BRIGHT_COLOR
                 action.style == CampaignOptionRowStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BRIGHT_COLOR
                 else -> CampaignGuiStyle.NEUTRAL_BUTTON_HOVER_COLOR
