@@ -63,7 +63,8 @@ class ShipView(
         private const val PRESET_CONFIRM_HEIGHT = 18f
         private const val PRESET_BUTTON_GAP = 1f
         private const val PRESET_BUTTON_HGAP = 1f
-        private val WEAPON_GROUP_HEADER_COLOR = java.awt.Color(125, 125, 125, 225)
+        private val WEAPON_GROUP_STALE_HEADER_COLOR = java.awt.Color(60, 60, 60, 225)
+        private const val GROUP_HEADING_CHAR_WIDTH_ESTIMATE = 7.2f
         private const val PRESET_LABEL_CHAR_WIDTH_ESTIMATE = 6.6f
         private const val TAG_ELLIPSIS_HEIGHT = CampaignGuiStyle.TAG_ITEM_HEIGHT
         private const val TAG_SCROLL_STEP = 1
@@ -193,6 +194,39 @@ class ShipView(
         )
         header.addSectionHeading(title, Alignment.MID, 0f)
         headerPanel.addUIElement(header).inTL(0f, 0f)
+    }
+
+    private fun addWeaponGroupHeading(
+        panel: CustomPanelAPI,
+        title: String,
+        isDirty: Boolean,
+        yOffset: Float = CampaignGuiStyle.PANEL_PADDING,
+    ) {
+        val headerPanel = panel.createCustomPanel(
+            panel.position.width - 2f * CampaignGuiStyle.PANEL_PADDING,
+            SECTION_HEADER_HEIGHT,
+            CampaignPanelPlugin(
+                CampaignContainerType.HEADER,
+                fillColor = if (isDirty) WEAPON_GROUP_STALE_HEADER_COLOR else null,
+            )
+        )
+        panel.addComponent(headerPanel)
+        headerPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, yOffset)
+
+        val estimatedLabelWidth = title.length * GROUP_HEADING_CHAR_WIDTH_ESTIMATE
+        val textLeft = ((headerPanel.position.width - estimatedLabelWidth) / 2f)
+            .coerceAtLeast(CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING)
+        val centeredTextWidth =
+            (headerPanel.position.width - textLeft - CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING).coerceAtLeast(16f)
+
+        renderTagLabel(
+            headerPanel,
+            title,
+            centeredTextWidth,
+            SECTION_HEADER_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+            textLeft,
+            CampaignGuiStyle.ITEM_TEXT_TOP_PADDING
+        )
     }
 
     private fun estimateShipModePanelHeight(miscWidth: Float): Float {
@@ -590,11 +624,7 @@ class ShipView(
         val entries = group?.let { aggregateWeapons(it, ship) }.orEmpty()
         val isDirty = entries.isNotEmpty() && isPresetDirtyForGroup(ship, groupIndex)
         val headerSuffix = if (isDirty) " (*)" else ""
-        addSectionHeading(
-            panel,
-            "Group ${groupIndex + 1}$headerSuffix",
-            fillColor = WEAPON_GROUP_HEADER_COLOR
-        )
+        addWeaponGroupHeading(panel, "Group ${groupIndex + 1}$headerSuffix", isDirty = isDirty)
         if (entries.isEmpty()) return
 
         val topContent = CampaignGuiStyle.PANEL_PADDING + SECTION_HEADER_HEIGHT

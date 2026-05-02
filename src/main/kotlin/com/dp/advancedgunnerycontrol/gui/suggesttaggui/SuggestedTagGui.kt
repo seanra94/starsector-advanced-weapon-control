@@ -38,6 +38,11 @@ class SuggestedTagGui : InteractionDialogPlugin {
         RED,
     }
 
+    private enum class PendingDangerousSuggestedAction {
+        BACKUP,
+        RESTORE,
+    }
+
     companion object {
         private const val SECTION_HEADER_HEIGHT = 20f
         private const val ACTION_ROW_GAP = 2f
@@ -314,6 +319,7 @@ class SuggestedTagGui : InteractionDialogPlugin {
     private var weaponListView = WeaponListView(7)
     private var isFilterView = false
     private var resetConfirmationPending = false
+    private var pendingDangerousAction: PendingDangerousSuggestedAction? = null
 
     override fun init(i: InteractionDialogAPI?) {
         if (Settings.customSuggestedTags.isEmpty()) Settings.customSuggestedTags = Settings.defaultSuggestedTags
@@ -337,6 +343,7 @@ class SuggestedTagGui : InteractionDialogPlugin {
 
     private fun buildActions(callbacks: CustomVisualDialogDelegate.DialogCallbacks?): List<SuggestedGuiAction> {
         if (isFilterView) {
+            pendingDangerousAction = null
             val actions = mutableListOf<SuggestedGuiAction>()
             actions.add(SuggestedGuiAction("Next Page", listOf(Keyboard.KEY_RIGHT, Keyboard.KEY_D), "Display the next set of weapons.") { weaponListView.cycle() })
             actions.add(SuggestedGuiAction("Prev Page", listOf(Keyboard.KEY_LEFT, Keyboard.KEY_A), "Display the previous set of weapons.") { weaponListView.cycleBackwards() })
@@ -362,6 +369,7 @@ class SuggestedTagGui : InteractionDialogPlugin {
         actions.add(SuggestedGuiAction("Prev Page", listOf(Keyboard.KEY_LEFT, Keyboard.KEY_A), "Display the previous set of weapons.") { weaponListView.cycleBackwards() })
         actions.add(SuggestedGuiAction("Filter...", listOf(Keyboard.KEY_F), "Display filter options for the weapon list.") {
             resetConfirmationPending = false
+            pendingDangerousAction = null
             isFilterView = true
         })
         if (resetConfirmationPending) {
@@ -400,22 +408,82 @@ class SuggestedTagGui : InteractionDialogPlugin {
                 }
             )
         }
-        actions.add(
-            SuggestedGuiAction(
-                "Backup",
-                tooltip = "Save currently configured suggested tags to saves/common/${Values.CUSTOM_SUGGESTED_TAG_JSON_FILE_NAME}."
-            ) {
-                backupSuggestedTagsToJson()
+        when (pendingDangerousAction) {
+            PendingDangerousSuggestedAction.BACKUP -> {
+                actions.add(
+                    SuggestedGuiAction(
+                        "Confirm",
+                        tooltip = "",
+                        style = SuggestedActionStyle.GREEN
+                    ) {
+                        backupSuggestedTagsToJson()
+                        pendingDangerousAction = null
+                    }
+                )
+                actions.add(
+                    SuggestedGuiAction(
+                        "Cancel",
+                        tooltip = "",
+                        style = SuggestedActionStyle.RED
+                    ) { pendingDangerousAction = null }
+                )
+                actions.add(
+                    SuggestedGuiAction(
+                        "Restore",
+                        tooltip = "Load tags previously saved via Backup."
+                    ) {
+                        pendingDangerousAction = PendingDangerousSuggestedAction.RESTORE
+                    }
+                )
             }
-        )
-        actions.add(
-            SuggestedGuiAction(
-                "Restore",
-                tooltip = "Load tags previously saved via Backup."
-            ) {
-                restoreSuggestedTagsFromJson()
+
+            PendingDangerousSuggestedAction.RESTORE -> {
+                actions.add(
+                    SuggestedGuiAction(
+                        "Backup",
+                        tooltip = "Save currently configured suggested tags to saves/common/${Values.CUSTOM_SUGGESTED_TAG_JSON_FILE_NAME}."
+                    ) {
+                        pendingDangerousAction = PendingDangerousSuggestedAction.BACKUP
+                    }
+                )
+                actions.add(
+                    SuggestedGuiAction(
+                        "Confirm",
+                        tooltip = "",
+                        style = SuggestedActionStyle.GREEN
+                    ) {
+                        restoreSuggestedTagsFromJson()
+                        pendingDangerousAction = null
+                    }
+                )
+                actions.add(
+                    SuggestedGuiAction(
+                        "Cancel",
+                        tooltip = "",
+                        style = SuggestedActionStyle.RED
+                    ) { pendingDangerousAction = null }
+                )
             }
-        )
+
+            null -> {
+                actions.add(
+                    SuggestedGuiAction(
+                        "Backup",
+                        tooltip = "Save currently configured suggested tags to saves/common/${Values.CUSTOM_SUGGESTED_TAG_JSON_FILE_NAME}."
+                    ) {
+                        pendingDangerousAction = PendingDangerousSuggestedAction.BACKUP
+                    }
+                )
+                actions.add(
+                    SuggestedGuiAction(
+                        "Restore",
+                        tooltip = "Load tags previously saved via Backup."
+                    ) {
+                        pendingDangerousAction = PendingDangerousSuggestedAction.RESTORE
+                    }
+                )
+            }
+        }
         actions.add(SuggestedGuiAction("Back", listOf(Keyboard.KEY_ESCAPE), "Return to the AGC ship editor.", rebuildAfter = false) { backToAgc(callbacks) })
         actions.add(SuggestedGuiAction("Exit", tooltip = "Close AGC.", rebuildAfter = false) { callbacks?.dismissDialog(); dialog?.dismiss() })
         return actions
