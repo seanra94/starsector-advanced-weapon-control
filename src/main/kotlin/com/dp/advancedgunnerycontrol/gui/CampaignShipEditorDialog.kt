@@ -233,7 +233,7 @@ class CampaignShipEditorPanelPlugin(
         element.addPara(
             "The campaign editor failed to build. Press [Esc] or the AGC GUI hotkey to exit this screen.",
             6f,
-            Misc.getNegativeHighlightColor(),
+            CampaignGuiStyle.CANCEL_BUTTON_HOVER_COLOR,
             "[Esc]"
         )
         element.addAgcText("Reason: ${ex.javaClass.simpleName}: ${ex.message ?: "no message"}", 6f)
@@ -270,7 +270,7 @@ class CampaignShipEditorPanelPlugin(
         infoPanel.addPara(
             MODIFIERS_TEXT,
             0f,
-            Misc.getHighlightColor(),
+            CampaignGuiStyle.MODIFIER_TEXT_COLOUR,
             "[SHIFT]",
             "[CTRL]"
         )
@@ -290,11 +290,15 @@ class CampaignShipEditorPanelPlugin(
     ) {
         val isGreen = action.style == CampaignOptionRowStyle.GREEN
         val isRed = action.style == CampaignOptionRowStyle.RED
+        val buttonColors = when {
+            isRed -> CampaignGuiStyle.CANCEL_BUTTON_COLORS
+            isGreen -> CampaignGuiStyle.CONFIRM_BUTTON_COLORS
+            action.style == CampaignOptionRowStyle.SAVE -> CampaignGuiStyle.SAVE_BUTTON_COLORS
+            action.style == CampaignOptionRowStyle.LOAD -> CampaignGuiStyle.LOAD_BUTTON_COLORS
+            else -> CampaignGuiStyle.UNCOLOURED_BUTTON_COLORS
+        }
         val rowFillColor = when {
-            isRed -> CampaignGuiStyle.CANCEL_BACKGROUND_COLOR
-            isGreen -> CampaignGuiStyle.CONFIRM_BACKGROUND_COLOR
-            action.style == CampaignOptionRowStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BACKGROUND_COLOR
-            action.style == CampaignOptionRowStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BACKGROUND_COLOR
+            isRed || isGreen || action.style == CampaignOptionRowStyle.SAVE || action.style == CampaignOptionRowStyle.LOAD -> buttonColors.idle
             else -> null
         }
         val itemPanel = panel.createCustomPanel(
@@ -309,30 +313,13 @@ class CampaignShipEditorPanelPlugin(
         )
 
         val inner = itemPanel.createUIElement(width, rowHeight, false)
+        val checkboxColors = CampaignGuiStyle.checkboxColorsForButton(buttonColors)
         val button = inner.addAreaCheckbox(
             "",
             action,
-            when {
-                isRed -> CampaignGuiStyle.CANCEL_BACKGROUND_COLOR
-                isGreen -> CampaignGuiStyle.CONFIRM_BACKGROUND_COLOR
-                action.style == CampaignOptionRowStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BACKGROUND_COLOR
-                action.style == CampaignOptionRowStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BACKGROUND_COLOR
-                else -> CampaignGuiStyle.NEUTRAL_BUTTON_HOVER_COLOR
-            },
-            when {
-                isRed -> CampaignGuiStyle.CANCEL_DARK_COLOR
-                isGreen -> CampaignGuiStyle.CONFIRM_DARK_COLOR
-                action.style == CampaignOptionRowStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_DARK_COLOR
-                action.style == CampaignOptionRowStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_DARK_COLOR
-                else -> CampaignGuiStyle.NEUTRAL_BUTTON_HOVER_COLOR
-            },
-            when {
-                isRed -> CampaignGuiStyle.CANCEL_BRIGHT_COLOR
-                isGreen -> CampaignGuiStyle.CONFIRM_BRIGHT_COLOR
-                action.style == CampaignOptionRowStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BRIGHT_COLOR
-                action.style == CampaignOptionRowStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BRIGHT_COLOR
-                else -> CampaignGuiStyle.NEUTRAL_BUTTON_HOVER_COLOR
-            },
+            checkboxColors.base,
+            checkboxColors.bg,
+            checkboxColors.bright,
             width,
             rowHeight,
             0f
@@ -352,7 +339,7 @@ class CampaignShipEditorPanelPlugin(
             false
         )
         if (isRed || isGreen) {
-            addActionLabel(textPanel, labelText, CampaignGuiStyle.UNAVAILABLE_TAG_TEXT_COLOR)
+            addActionLabel(textPanel, labelText, CampaignGuiStyle.DEFAULT_TEXT_COLOUR)
         } else {
             addActionLabel(textPanel, labelText)
         }
@@ -414,14 +401,14 @@ class CampaignShipEditorPanelPlugin(
         baseColor: java.awt.Color? = null,
     ) {
         val label = if (baseColor == null) {
-            panel.addAgcText(labelText, 0f)
+            panel.addAgcText(labelText, 0f, CampaignGuiStyle.DEFAULT_TEXT_COLOUR)
         } else {
             panel.addAgcText(labelText, 0f, baseColor)
         }
         val highlights = ACTION_SHORTCUT_HIGHLIGHTS.filter { labelText.contains(it) }
         if (highlights.isNotEmpty()) {
             label.setHighlight(*highlights.toTypedArray())
-            label.setHighlightColors(*Array(highlights.size) { Misc.getHighlightColor() })
+            label.setHighlightColors(*Array(highlights.size) { CampaignGuiStyle.MODIFIER_TEXT_COLOUR })
         }
     }
 

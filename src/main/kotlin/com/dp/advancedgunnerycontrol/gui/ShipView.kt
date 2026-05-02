@@ -62,7 +62,6 @@ class ShipView(
         private const val PRESET_CONFIRM_HEIGHT = 18f
         private const val PRESET_BUTTON_GAP = 1f
         private const val PRESET_BUTTON_HGAP = 1f
-        private val WEAPON_GROUP_STALE_HEADER_COLOR = java.awt.Color(80, 80, 80, 225)
         private const val TAG_ELLIPSIS_HEIGHT = CampaignGuiStyle.TAG_ITEM_HEIGHT
         private const val TAG_SCROLL_STEP = 1
         private const val PICTURE_INFO_ROW_HEIGHT = 32f
@@ -183,7 +182,11 @@ class ShipView(
             panel = panel,
             title = title,
             top = yOffset,
-            fillColor = if (isDirty) WEAPON_GROUP_STALE_HEADER_COLOR else CampaignGuiStyle.DEFAULT_HEADING_BACKGROUND_COLOR,
+            fillColor = if (isDirty) {
+                CampaignGuiStyle.STALE_WEAPON_CONTAINER_HEADING_COLOUR
+            } else {
+                CampaignGuiStyle.CONTAINER_HEADING_COLOUR
+            },
             headingHeight = SECTION_HEADER_HEIGHT
         )
     }
@@ -704,11 +707,13 @@ class ShipView(
         pendingAction: PendingPresetAction?,
     ) {
         val buttonWidth = (width - PRESET_BUTTON_HGAP) / 2f
+        val saveCheckboxColors = CampaignGuiStyle.checkboxColorsForButton(CampaignGuiStyle.SAVE_BUTTON_COLORS)
+        val loadCheckboxColors = CampaignGuiStyle.checkboxColorsForButton(CampaignGuiStyle.LOAD_BUTTON_COLORS)
 
         val savePanel = panel.createCustomPanel(
             buttonWidth,
             PRESET_BUTTON_HEIGHT,
-            CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = CampaignGuiStyle.ACTION_SAVE_BACKGROUND_COLOR)
+            CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = CampaignGuiStyle.SAVE_BUTTON_IDLE_COLOR)
         )
         panel.addComponent(savePanel)
         savePanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, top)
@@ -716,9 +721,9 @@ class ShipView(
         val saveButton = saveInner.addAreaCheckbox(
             "",
             "save_preset_$groupIndex",
-            CampaignGuiStyle.ACTION_SAVE_BACKGROUND_COLOR,
-            CampaignGuiStyle.ACTION_SAVE_DARK_COLOR,
-            CampaignGuiStyle.ACTION_SAVE_BRIGHT_COLOR,
+            saveCheckboxColors.base,
+            saveCheckboxColors.bg,
+            saveCheckboxColors.bright,
             buttonWidth,
             PRESET_BUTTON_HEIGHT,
             0f
@@ -747,7 +752,7 @@ class ShipView(
         val loadPanel = panel.createCustomPanel(
             buttonWidth,
             PRESET_BUTTON_HEIGHT,
-            CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = CampaignGuiStyle.ACTION_LOAD_BACKGROUND_COLOR)
+            CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = CampaignGuiStyle.LOAD_BUTTON_IDLE_COLOR)
         )
         panel.addComponent(loadPanel)
         loadPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING + buttonWidth + PRESET_BUTTON_HGAP, top)
@@ -755,9 +760,9 @@ class ShipView(
         val loadButton = loadInner.addAreaCheckbox(
             "",
             "load_preset_$groupIndex",
-            CampaignGuiStyle.ACTION_LOAD_BACKGROUND_COLOR,
-            CampaignGuiStyle.ACTION_LOAD_DARK_COLOR,
-            CampaignGuiStyle.ACTION_LOAD_BRIGHT_COLOR,
+            loadCheckboxColors.base,
+            loadCheckboxColors.bg,
+            loadCheckboxColors.bright,
             buttonWidth,
             PRESET_BUTTON_HEIGHT,
             0f
@@ -791,17 +796,18 @@ class ShipView(
         val confirmPanel = panel.createCustomPanel(
             buttonWidth,
             PRESET_CONFIRM_HEIGHT,
-            CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = CampaignGuiStyle.CONFIRM_BACKGROUND_COLOR)
+            CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = CampaignGuiStyle.CONFIRM_BUTTON_IDLE_COLOR)
         )
         panel.addComponent(confirmPanel)
         confirmPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, top + PRESET_BUTTON_HEIGHT + PRESET_BUTTON_GAP)
         val confirmInner = confirmPanel.createUIElement(buttonWidth, PRESET_CONFIRM_HEIGHT, false)
+        val confirmCheckboxColors = CampaignGuiStyle.checkboxColorsForButton(CampaignGuiStyle.CONFIRM_BUTTON_COLORS)
         val confirmButton = confirmInner.addAreaCheckbox(
             "",
             "preset_confirm_$groupIndex",
-            CampaignGuiStyle.CONFIRM_BACKGROUND_COLOR,
-            CampaignGuiStyle.CONFIRM_DARK_COLOR,
-            CampaignGuiStyle.CONFIRM_BRIGHT_COLOR,
+            confirmCheckboxColors.base,
+            confirmCheckboxColors.bg,
+            confirmCheckboxColors.bright,
             buttonWidth,
             PRESET_CONFIRM_HEIGHT,
             0f
@@ -814,7 +820,7 @@ class ShipView(
             PRESET_CONFIRM_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
             CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
             CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
-            textColor = CampaignGuiStyle.UNAVAILABLE_TAG_TEXT_COLOR
+            textColor = CampaignGuiStyle.DEFAULT_TEXT_COLOUR
         )
         buttons.add(
             CampaignMomentaryButton(confirmButton) {
@@ -858,17 +864,18 @@ class ShipView(
         val cancelPanel = panel.createCustomPanel(
             buttonWidth,
             PRESET_CONFIRM_HEIGHT,
-            CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = CampaignGuiStyle.CANCEL_BACKGROUND_COLOR)
+            CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = CampaignGuiStyle.CANCEL_BUTTON_IDLE_COLOR)
         )
         panel.addComponent(cancelPanel)
         cancelPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING + buttonWidth + PRESET_BUTTON_HGAP, top + PRESET_BUTTON_HEIGHT + PRESET_BUTTON_GAP)
         val cancelInner = cancelPanel.createUIElement(buttonWidth, PRESET_CONFIRM_HEIGHT, false)
+        val cancelCheckboxColors = CampaignGuiStyle.checkboxColorsForButton(CampaignGuiStyle.CANCEL_BUTTON_COLORS)
         val cancelButton = cancelInner.addAreaCheckbox(
             "",
             "preset_cancel_$groupIndex",
-            CampaignGuiStyle.CANCEL_BACKGROUND_COLOR,
-            CampaignGuiStyle.CANCEL_DARK_COLOR,
-            CampaignGuiStyle.CANCEL_BRIGHT_COLOR,
+            cancelCheckboxColors.base,
+            cancelCheckboxColors.bg,
+            cancelCheckboxColors.bright,
             buttonWidth,
             PRESET_CONFIRM_HEIGHT,
             0f
@@ -881,7 +888,7 @@ class ShipView(
             PRESET_CONFIRM_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
             CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
             CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
-            textColor = CampaignGuiStyle.UNAVAILABLE_TAG_TEXT_COLOR
+            textColor = CampaignGuiStyle.DEFAULT_TEXT_COLOUR
         )
         buttons.add(
             CampaignMomentaryButton(cancelButton) {

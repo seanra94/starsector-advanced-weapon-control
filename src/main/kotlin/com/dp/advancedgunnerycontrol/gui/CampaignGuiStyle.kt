@@ -6,6 +6,7 @@ import com.fs.starfarer.api.ui.ButtonAPI
 import com.fs.starfarer.api.ui.LabelAPI
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
+import com.fs.starfarer.api.util.Misc
 import java.lang.reflect.Method
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -49,6 +50,15 @@ object CampaignGuiStyle {
         val bg: Color,
         val bright: Color,
     )
+    data class ButtonStateColors(
+        val idle: Color,
+        val hover: Color,
+    )
+
+    val DEFAULT_TEXT_COLOUR: Color = Color(220, 220, 220)
+    val MODIFIER_TEXT_COLOUR: Color = Misc.getHighlightColor()
+    val DEFAULT_TEXT_FONT: String? = null
+
     val TOOLTIP_TEXT_COLOR: Color = Color(245, 230, 150)
     val INACTIVE_ROW_BACKGROUND_COLOR: Color = Color(115, 115, 115, 225)
     val DISABLED_TAG_BACKGROUND_COLOR: Color = Color(28, 28, 28, 235)
@@ -60,32 +70,37 @@ object CampaignGuiStyle {
     val UNAVAILABLE_TAG_DARK_COLOR: Color = Color(205, 70, 65)
     val UNAVAILABLE_TAG_BRIGHT_COLOR: Color = Color(255, 155, 145)
     val UNAVAILABLE_TAG_TEXT_COLOR: Color = Color(220, 220, 220)
+    val SAVE_BUTTON_IDLE_COLOR: Color = Color(105, 80, 125, 225)
+    val SAVE_BUTTON_HOVER_COLOR: Color = Color(160, 135, 180, 225)
+    val LOAD_BUTTON_IDLE_COLOR: Color = Color(145, 135, 70, 225)
+    val LOAD_BUTTON_HOVER_COLOR: Color = Color(205, 195, 130, 225)
+    val CONFIRM_BUTTON_IDLE_COLOR: Color = Color(80, 120, 84, 225)
+    val CONFIRM_BUTTON_HOVER_COLOR: Color = Color(122, 165, 126, 225)
+    val CANCEL_BUTTON_IDLE_COLOR: Color = Color(170, 80, 75, 225)
+    val CANCEL_BUTTON_HOVER_COLOR: Color = Color(185, 120, 116, 225)
+    val UNCOLOURED_BUTTON_IDLE_COLOR: Color = Color(70, 70, 70, 225)
+    val UNCOLOURED_BUTTON_HOVER_COLOR: Color = Color(180, 180, 180, 225)
+
+    val UNSELECTED_WEAPON_SHIP_IDLE_COLOR: Color = UNCOLOURED_BUTTON_IDLE_COLOR
+    val UNSELECTED_WEAPON_SHIP_HOVER_COLOR: Color = UNCOLOURED_BUTTON_HOVER_COLOR
+    val SELECTED_WEAPON_SHIP_IDLE_COLOR: Color = Color(35, 73, 86, 225)
+    val SELECTED_WEAPON_SHIP_HOVER_COLOR: Color = Color(35, 73, 86, 225)
+
+    val CONTAINER_HEADING_COLOUR: Color = Color(40, 40, 40, 225)
+    val STALE_WEAPON_CONTAINER_HEADING_COLOUR: Color = Color(80, 80, 80, 225)
+
     val ACTIVE_GREEN_BACKGROUND_COLOR: Color = Color(86, 145, 92)
     val ACTIVE_GREEN_DARK_COLOR: Color = Color(48, 92, 54)
     val ACTIVE_GREEN_BRIGHT_COLOR: Color = Color(140, 205, 145)
-    val CONFIRM_BACKGROUND_COLOR: Color = Color(80, 120, 84, 225)
-    val CONFIRM_DARK_COLOR: Color = Color(48, 74, 50, 225)
-    val CONFIRM_BRIGHT_COLOR: Color = Color(122, 165, 126, 225)
-    val CANCEL_BACKGROUND_COLOR: Color = Color(170, 80, 75, 225)
-    val CANCEL_DARK_COLOR: Color = Color(140, 60, 58, 225)
-    val CANCEL_BRIGHT_COLOR: Color = Color(185, 120, 116, 225)
-    val DEFAULT_HEADING_BACKGROUND_COLOR: Color = Color(40, 40, 40, 225)
-    val ACTION_SAVE_BACKGROUND_COLOR: Color = Color(105, 80, 125, 225)
-    val ACTION_SAVE_DARK_COLOR: Color = Color(72, 56, 84, 225)
-    val ACTION_SAVE_BRIGHT_COLOR: Color = Color(160, 135, 180, 225)
-    val ACTION_LOAD_BACKGROUND_COLOR: Color = Color(145, 135, 70, 225)
-    val ACTION_LOAD_DARK_COLOR: Color = Color(98, 90, 48, 225)
-    val ACTION_LOAD_BRIGHT_COLOR: Color = Color(205, 195, 130, 225)
-    val NEUTRAL_BUTTON_IDLE_COLOR: Color = Color(70, 70, 70, 225)
-    val NEUTRAL_BUTTON_HOVER_COLOR: Color = Color(180, 180, 180, 225)
-    val SHARED_TAG_MODE_UNSELECTED_IDLE_COLOR: Color = Color(0, 0, 0, 225)
-    val SHARED_TAG_MODE_UNSELECTED_HOVER_COLOR: Color = NEUTRAL_BUTTON_HOVER_COLOR
-    val SHARED_TAG_MODE_SELECTED_IDLE_COLOR: Color = Color(35, 73, 86, 225)
-    val SHARED_TAG_MODE_SELECTED_HOVER_COLOR: Color = Color(35, 73, 86, 225)
-    val TOGGLE_UNSELECTED_IDLE_COLOR: Color = SHARED_TAG_MODE_UNSELECTED_IDLE_COLOR
-    val TOGGLE_UNSELECTED_HOVER_COLOR: Color = SHARED_TAG_MODE_UNSELECTED_HOVER_COLOR
-    val TOGGLE_SELECTED_IDLE_COLOR: Color = SHARED_TAG_MODE_SELECTED_IDLE_COLOR
-    val TOGGLE_SELECTED_HOVER_COLOR: Color = SHARED_TAG_MODE_SELECTED_HOVER_COLOR
+    val DEFAULT_HEADING_BACKGROUND_COLOR: Color = CONTAINER_HEADING_COLOUR
+
+    val SAVE_BUTTON_COLORS = ButtonStateColors(SAVE_BUTTON_IDLE_COLOR, SAVE_BUTTON_HOVER_COLOR)
+    val LOAD_BUTTON_COLORS = ButtonStateColors(LOAD_BUTTON_IDLE_COLOR, LOAD_BUTTON_HOVER_COLOR)
+    val CONFIRM_BUTTON_COLORS = ButtonStateColors(CONFIRM_BUTTON_IDLE_COLOR, CONFIRM_BUTTON_HOVER_COLOR)
+    val CANCEL_BUTTON_COLORS = ButtonStateColors(CANCEL_BUTTON_IDLE_COLOR, CANCEL_BUTTON_HOVER_COLOR)
+    val UNCOLOURED_BUTTON_COLORS = ButtonStateColors(UNCOLOURED_BUTTON_IDLE_COLOR, UNCOLOURED_BUTTON_HOVER_COLOR)
+    val UNSELECTED_WEAPON_SHIP_COLORS = ButtonStateColors(UNSELECTED_WEAPON_SHIP_IDLE_COLOR, UNSELECTED_WEAPON_SHIP_HOVER_COLOR)
+    val SELECTED_WEAPON_SHIP_COLORS = ButtonStateColors(SELECTED_WEAPON_SHIP_IDLE_COLOR, SELECTED_WEAPON_SHIP_HOVER_COLOR)
 
     const val MAIN_PADDING = 0f
     const val PANEL_PADDING = 4f
@@ -106,6 +121,14 @@ object CampaignGuiStyle {
     const val HEADING_CHAR_WIDTH_ESTIMATE = 7.2f
     private const val TAG_MODE_BORDER_THICKNESS = -1f
 
+    fun checkboxColorsForButton(colors: ButtonStateColors): CheckboxColors {
+        return CheckboxColors(
+            base = colors.hover,
+            bg = colors.idle,
+            bright = colors.hover
+        )
+    }
+
     /**
      * Decompiled addAreaCheckbox(base, bg, bright) behavior:
      * - base controls the hover/glow color.
@@ -124,9 +147,9 @@ object CampaignGuiStyle {
      */
     fun toggleableCheckboxColors(): CheckboxColors {
         return CheckboxColors(
-            base = SHARED_TAG_MODE_UNSELECTED_HOVER_COLOR,
-            bg = SHARED_TAG_MODE_SELECTED_IDLE_COLOR,
-            bright = SHARED_TAG_MODE_SELECTED_HOVER_COLOR
+            base = UNSELECTED_WEAPON_SHIP_HOVER_COLOR,
+            bg = SELECTED_WEAPON_SHIP_IDLE_COLOR,
+            bright = SELECTED_WEAPON_SHIP_HOVER_COLOR
         )
     }
 
@@ -172,14 +195,14 @@ object CampaignGuiStyle {
     fun applyToggleableCheckboxVisualState(button: ButtonAPI) {
         val methods = buttonOverrideMethods(button) ?: return
         val glowColor = if (button.isChecked) {
-            SHARED_TAG_MODE_SELECTED_HOVER_COLOR
+            SELECTED_WEAPON_SHIP_HOVER_COLOR
         } else {
-            SHARED_TAG_MODE_UNSELECTED_HOVER_COLOR
+            UNSELECTED_WEAPON_SHIP_HOVER_COLOR
         }
         val borderColor = if (button.isChecked) {
-            SHARED_TAG_MODE_SELECTED_IDLE_COLOR
+            SELECTED_WEAPON_SHIP_IDLE_COLOR
         } else {
-            SHARED_TAG_MODE_UNSELECTED_IDLE_COLOR
+            UNSELECTED_WEAPON_SHIP_IDLE_COLOR
         }
         invokeColorOverride(button, methods.setGlowOverride, glowColor)
         invokeColorOverride(button, methods.setBorderOverride, borderColor)
@@ -195,7 +218,7 @@ object CampaignGuiStyle {
 }
 
 fun TooltipMakerAPI.applyAgcDefaultTextStyle() {
-    // Intentionally no-op: preserve Starsector's native paragraph font/style.
+    CampaignGuiStyle.DEFAULT_TEXT_FONT?.let { setParaFont(it) }
 }
 
 fun TooltipMakerAPI.addAgcText(
@@ -376,7 +399,7 @@ fun renderTagLabel(
     textColor: Color? = null,
 ) {
     val element = panel.createUIElement(width, height, false)
-    element.addAgcText(text, 0f, textColor)
+    element.addAgcText(text, 0f, textColor ?: CampaignGuiStyle.DEFAULT_TEXT_COLOUR)
     panel.addUIElement(element).inTL(x, y)
 }
 
@@ -410,7 +433,7 @@ fun addCustomContainerHeading(
     panel: CustomPanelAPI,
     title: String,
     top: Float = CampaignGuiStyle.PANEL_PADDING,
-    fillColor: Color = CampaignGuiStyle.DEFAULT_HEADING_BACKGROUND_COLOR,
+    fillColor: Color = CampaignGuiStyle.CONTAINER_HEADING_COLOUR,
     textColor: Color? = null,
     headingHeight: Float = 20f,
 ) {

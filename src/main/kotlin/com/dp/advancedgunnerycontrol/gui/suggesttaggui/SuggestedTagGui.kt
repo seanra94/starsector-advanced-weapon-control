@@ -184,7 +184,7 @@ class SuggestedTagGui : InteractionDialogPlugin {
             element.addPara(
                 "The suggested-tags editor failed to build. Press [Esc] to return.",
                 6f,
-                Misc.getNegativeHighlightColor(),
+                CampaignGuiStyle.CANCEL_BUTTON_HOVER_COLOR,
                 "[Esc]"
             )
             element.addAgcText("Reason: ${ex.javaClass.simpleName}: ${ex.message ?: "no message"}", 6f)
@@ -203,12 +203,16 @@ class SuggestedTagGui : InteractionDialogPlugin {
                 val isActive = action.active
                 val isGreen = action.style == SuggestedActionStyle.GREEN
                 val isRed = action.style == SuggestedActionStyle.RED
+                val buttonColors = when {
+                    isRed -> CampaignGuiStyle.CANCEL_BUTTON_COLORS
+                    isGreen -> CampaignGuiStyle.CONFIRM_BUTTON_COLORS
+                    isActive -> CampaignGuiStyle.CONFIRM_BUTTON_COLORS
+                    action.style == SuggestedActionStyle.SAVE -> CampaignGuiStyle.SAVE_BUTTON_COLORS
+                    action.style == SuggestedActionStyle.LOAD -> CampaignGuiStyle.LOAD_BUTTON_COLORS
+                    else -> CampaignGuiStyle.UNCOLOURED_BUTTON_COLORS
+                }
                 val rowFillColor = when {
-                    isRed -> CampaignGuiStyle.CANCEL_BACKGROUND_COLOR
-                    isGreen -> CampaignGuiStyle.CONFIRM_BACKGROUND_COLOR
-                    isActive -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
-                    action.style == SuggestedActionStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BACKGROUND_COLOR
-                    action.style == SuggestedActionStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BACKGROUND_COLOR
+                    isRed || isGreen || isActive || action.style == SuggestedActionStyle.SAVE || action.style == SuggestedActionStyle.LOAD -> buttonColors.idle
                     else -> null
                 }
                 val itemPanel = panel.createCustomPanel(
@@ -220,36 +224,13 @@ class SuggestedTagGui : InteractionDialogPlugin {
                 itemPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, currentTop)
 
                 val inner = itemPanel.createUIElement(width, rowHeight, false)
-                val baseColor = when {
-                    isRed -> CampaignGuiStyle.CANCEL_BACKGROUND_COLOR
-                    isGreen -> CampaignGuiStyle.CONFIRM_BACKGROUND_COLOR
-                    isActive -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
-                    action.style == SuggestedActionStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BACKGROUND_COLOR
-                    action.style == SuggestedActionStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BACKGROUND_COLOR
-                    else -> CampaignGuiStyle.NEUTRAL_BUTTON_HOVER_COLOR
-                }
-                val darkColor = when {
-                    isRed -> CampaignGuiStyle.CANCEL_DARK_COLOR
-                    isGreen -> CampaignGuiStyle.CONFIRM_DARK_COLOR
-                    isActive -> CampaignGuiStyle.ACTIVE_GREEN_DARK_COLOR
-                    action.style == SuggestedActionStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_DARK_COLOR
-                    action.style == SuggestedActionStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_DARK_COLOR
-                    else -> CampaignGuiStyle.NEUTRAL_BUTTON_HOVER_COLOR
-                }
-                val brightColor = when {
-                    isRed -> CampaignGuiStyle.CANCEL_BRIGHT_COLOR
-                    isGreen -> CampaignGuiStyle.CONFIRM_BRIGHT_COLOR
-                    isActive -> CampaignGuiStyle.ACTIVE_GREEN_BRIGHT_COLOR
-                    action.style == SuggestedActionStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BRIGHT_COLOR
-                    action.style == SuggestedActionStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BRIGHT_COLOR
-                    else -> CampaignGuiStyle.NEUTRAL_BUTTON_HOVER_COLOR
-                }
+                val checkboxColors = CampaignGuiStyle.checkboxColorsForButton(buttonColors)
                 val button = inner.addAreaCheckbox(
                     "",
                     action,
-                    baseColor,
-                    darkColor,
-                    brightColor,
+                    checkboxColors.base,
+                    checkboxColors.bg,
+                    checkboxColors.bright,
                     width,
                     rowHeight,
                     0f
@@ -271,7 +252,7 @@ class SuggestedTagGui : InteractionDialogPlugin {
                 )
                 val labelText = label
                 if (isRed || isGreen) {
-                    addActionLabel(textPanel, labelText, CampaignGuiStyle.UNAVAILABLE_TAG_TEXT_COLOR)
+                    addActionLabel(textPanel, labelText, CampaignGuiStyle.DEFAULT_TEXT_COLOUR)
                 } else {
                     addActionLabel(textPanel, labelText)
                 }
@@ -283,7 +264,7 @@ class SuggestedTagGui : InteractionDialogPlugin {
             val infoPanel = panel.createUIElement(width, max(40f, panel.position.height - currentTop - CampaignGuiStyle.PANEL_PADDING), false)
             infoPanel.addAgcText(weaponListView.pageString, 4f)
             if (isFilterView) {
-                infoPanel.addAgcText("Filter mode", 4f, Misc.getHighlightColor())
+                infoPanel.addAgcText("Filter mode", 4f, CampaignGuiStyle.MODIFIER_TEXT_COLOUR)
             }
             panel.addUIElement(infoPanel).inTL(CampaignGuiStyle.PANEL_PADDING, currentTop)
         }
@@ -309,14 +290,14 @@ class SuggestedTagGui : InteractionDialogPlugin {
             baseColor: java.awt.Color? = null,
         ) {
             val label = if (baseColor == null) {
-                panel.addAgcText(labelText, 0f)
+                panel.addAgcText(labelText, 0f, CampaignGuiStyle.DEFAULT_TEXT_COLOUR)
             } else {
                 panel.addAgcText(labelText, 0f, baseColor)
             }
             val highlights = ACTION_SHORTCUT_HIGHLIGHTS.filter { labelText.contains(it) }
             if (highlights.isNotEmpty()) {
                 label.setHighlight(*highlights.toTypedArray())
-                label.setHighlightColors(*Array(highlights.size) { Misc.getHighlightColor() })
+                label.setHighlightColors(*Array(highlights.size) { CampaignGuiStyle.MODIFIER_TEXT_COLOUR })
             }
         }
 
