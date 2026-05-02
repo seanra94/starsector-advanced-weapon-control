@@ -113,11 +113,11 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
                         ship,
                         mode,
                         inner.addAreaCheckbox(
-                            label,
+                            "",
                             mode,
-                            CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR,
-                            CampaignGuiStyle.ACTIVE_GREEN_DARK_COLOR,
-                            CampaignGuiStyle.ACTIVE_GREEN_BRIGHT_COLOR,
+                            CampaignGuiStyle.SELECTED_STATE_BACKGROUND_COLOR,
+                            CampaignGuiStyle.SELECTED_STATE_DARK_COLOR,
+                            CampaignGuiStyle.SELECTED_STATE_BRIGHT_COLOR,
                             itemWidth,
                             itemHeight,
                             0f
@@ -129,6 +129,12 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
                     TooltipMakerAPI.TooltipLocation.BELOW
                 )
                 itemPanel.addUIElement(inner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
+                renderCenteredTagLabel(
+                    panel = itemPanel,
+                    text = label,
+                    width = itemWidth,
+                    height = itemHeight - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+                )
             }
 
             toReturn.forEach {

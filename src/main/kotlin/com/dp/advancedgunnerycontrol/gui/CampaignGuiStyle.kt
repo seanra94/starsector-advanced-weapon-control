@@ -53,7 +53,16 @@ object CampaignGuiStyle {
     val ACTIVE_GREEN_BACKGROUND_COLOR: Color = Color(86, 145, 92)
     val ACTIVE_GREEN_DARK_COLOR: Color = Color(48, 92, 54)
     val ACTIVE_GREEN_BRIGHT_COLOR: Color = Color(140, 205, 145)
-    val DEFAULT_HEADING_BACKGROUND_COLOR: Color = Color(20, 20, 20, 225)
+    val DEFAULT_HEADING_BACKGROUND_COLOR: Color = Color(40, 40, 40, 225)
+    val ACTION_SAVE_BACKGROUND_COLOR: Color = Color(0, 0, 60, 225)
+    val ACTION_SAVE_DARK_COLOR: Color = Color(0, 0, 36, 225)
+    val ACTION_SAVE_BRIGHT_COLOR: Color = Color(45, 45, 110, 225)
+    val ACTION_LOAD_BACKGROUND_COLOR: Color = Color(60, 60, 0, 225)
+    val ACTION_LOAD_DARK_COLOR: Color = Color(40, 40, 0, 225)
+    val ACTION_LOAD_BRIGHT_COLOR: Color = Color(100, 100, 25, 225)
+    val SELECTED_STATE_BACKGROUND_COLOR: Color = Color(0, 60, 60, 225)
+    val SELECTED_STATE_DARK_COLOR: Color = Color(0, 38, 38, 225)
+    val SELECTED_STATE_BRIGHT_COLOR: Color = Color(30, 95, 95, 225)
 
     const val MAIN_PADDING = 0f
     const val PANEL_PADDING = 4f
@@ -258,6 +267,28 @@ fun renderTagLabel(
     val element = panel.createUIElement(width, height, false)
     element.addAgcText(text, 0f, textColor)
     panel.addUIElement(element).inTL(x, y)
+}
+
+fun renderCenteredTagLabel(
+    panel: CustomPanelAPI,
+    text: String,
+    width: Float,
+    height: Float,
+    top: Float = CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+    textColor: Color? = null,
+) {
+    val estimatedLabelWidth = text.length * 6.8f
+    val left = ((width - estimatedLabelWidth) / 2f).coerceAtLeast(CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING)
+    val renderWidth = (width - left - CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING).coerceAtLeast(16f)
+    renderTagLabel(
+        panel = panel,
+        text = text,
+        width = renderWidth,
+        height = height,
+        x = left,
+        y = top,
+        textColor = textColor
+    )
 }
 
 fun addCustomContainerHeading(

@@ -53,6 +53,19 @@ class AGCGUI : InteractionDialogPlugin {
             addAction(ExitAction(attributes))
             return
         }
+        val pendingShipId = GUIShower.pendingCampaignShipEditorShipId
+        GUIShower.pendingCampaignShipEditorShipId = null
+        if (pendingShipId != null) {
+            val ship = Global.getSector().playerFleet.membersWithFightersCopy
+                .firstOrNull { !it.isFighterWing && it.id == pendingShipId }
+            if (ship != null) {
+                attributes.ship = ship
+                attributes.level = Level.SHIP
+                pendingShipEditorOpen = true
+                pendingShipEditorDelay = 0.05f
+                return
+            }
+        }
         displayOptions()
     }
 

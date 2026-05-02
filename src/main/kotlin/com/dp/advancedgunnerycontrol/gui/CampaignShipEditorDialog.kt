@@ -1,6 +1,5 @@
 package com.dp.advancedgunnerycontrol.gui
 
-import com.dp.advancedgunnerycontrol.gui.actions.BackAction
 import com.dp.advancedgunnerycontrol.gui.actions.ApplySuggestedModeAction
 import com.dp.advancedgunnerycontrol.gui.actions.CopyLoadoutAction
 import com.dp.advancedgunnerycontrol.gui.actions.CopyToSameVariantAction
@@ -49,6 +48,8 @@ class CampaignShipEditorPanelPlugin(
         DEFAULT,
         GREEN,
         RED,
+        SAVE,
+        LOAD,
     }
 
     private data class CampaignOptionRow(
@@ -291,6 +292,8 @@ class CampaignShipEditorPanelPlugin(
         val rowFillColor = when {
             isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
             isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
+            action.style == CampaignOptionRowStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BACKGROUND_COLOR
+            action.style == CampaignOptionRowStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BACKGROUND_COLOR
             else -> null
         }
         val itemPanel = panel.createCustomPanel(
@@ -311,16 +314,22 @@ class CampaignShipEditorPanelPlugin(
             when {
                 isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
                 isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
+                action.style == CampaignOptionRowStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BACKGROUND_COLOR
+                action.style == CampaignOptionRowStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BACKGROUND_COLOR
                 else -> Misc.getBasePlayerColor()
             },
             when {
                 isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_DARK_COLOR
                 isGreen -> CampaignGuiStyle.ACTIVE_GREEN_DARK_COLOR
+                action.style == CampaignOptionRowStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_DARK_COLOR
+                action.style == CampaignOptionRowStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_DARK_COLOR
                 else -> Misc.getDarkPlayerColor()
             },
             when {
                 isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BRIGHT_COLOR
                 isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BRIGHT_COLOR
+                action.style == CampaignOptionRowStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BRIGHT_COLOR
+                action.style == CampaignOptionRowStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BRIGHT_COLOR
                 else -> Misc.getBrightPlayerColor()
             },
             width,
@@ -428,11 +437,9 @@ class CampaignShipEditorPanelPlugin(
 
     private fun buildOptionRows(): List<CampaignOptionRow> {
         val rows = mutableListOf<CampaignOptionRow>()
-        val backAction = currentActions.firstOrNull { it is BackAction }
-        val normalActions = currentActions.filterNot { it is BackAction }
         val currentModifiers = GUIAction.modifierKeys()
         val pending = pendingOptionConfirmation
-        normalActions.forEach { action ->
+        currentActions.forEach { action ->
             if (requiresConfirmation(action)) {
                 val currentActionVariant = actionVariant(action, currentModifiers)
                 if (pending != null && pending == currentActionVariant) {
@@ -463,6 +470,7 @@ class CampaignShipEditorPanelPlugin(
                             label = action.getName(),
                             tooltip = action.getTooltip(),
                             shortcut = action.getShortcut(),
+                            style = actionFamilyStyle(action),
                             callback = {
                                 pendingOptionConfirmation = actionVariant(action, GUIAction.modifierKeys())
                             }
@@ -475,24 +483,25 @@ class CampaignShipEditorPanelPlugin(
                         label = action.getName(),
                         tooltip = action.getTooltip(),
                         shortcut = action.getShortcut(),
+                        style = actionFamilyStyle(action),
                         rebuildAfter = false,
                         callback = { executeAction(action) }
                     )
                 )
             }
         }
-        if (backAction != null) {
-            rows.add(
-                CampaignOptionRow(
-                    label = backAction.getName(),
-                    tooltip = backAction.getTooltip(),
-                    shortcut = backAction.getShortcut(),
-                    rebuildAfter = false,
-                    callback = { executeAction(backAction) }
-                )
-            )
-        }
         return rows
+    }
+
+    private fun actionFamilyStyle(action: GUIAction): CampaignOptionRowStyle {
+        return when (action) {
+            is CopyToSameVariantAction -> CampaignOptionRowStyle.SAVE
+            is CopyLoadoutAction,
+            is ApplySuggestedModeAction,
+            is ResetAction,
+            is ReloadSettingsAction -> CampaignOptionRowStyle.LOAD
+            else -> CampaignOptionRowStyle.DEFAULT
+        }
     }
 
     private fun requiresConfirmation(action: GUIAction): Boolean {
@@ -564,12 +573,6 @@ class CampaignShipEditorPanelPlugin(
             action is GoToSuggestedTagsAction -> {
                 callbacks?.dismissDialog()
             }
-
-            attributes.level == Level.TOP || action is BackAction -> {
-                callbacks?.dismissDialog()
-                onBackToPicker()
-            }
-
             else -> {
                 rebuild()
             }

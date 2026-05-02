@@ -19,7 +19,6 @@ import com.fs.starfarer.api.loading.WeaponGroupSpec
 import com.fs.starfarer.api.loading.WeaponSpecAPI
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
-import com.fs.starfarer.api.util.Misc
 import kotlin.math.floor
 import kotlin.math.max
 import kotlin.math.min
@@ -660,9 +659,9 @@ class ShipView(
         val saveButton = saveInner.addAreaCheckbox(
             "Save",
             "save_preset_$groupIndex",
-            Misc.getBasePlayerColor(),
-            Misc.getDarkPlayerColor(),
-            Misc.getBrightPlayerColor(),
+            CampaignGuiStyle.ACTION_SAVE_BACKGROUND_COLOR,
+            CampaignGuiStyle.ACTION_SAVE_DARK_COLOR,
+            CampaignGuiStyle.ACTION_SAVE_BRIGHT_COLOR,
             buttonWidth,
             PRESET_BUTTON_HEIGHT,
             0f
@@ -691,9 +690,9 @@ class ShipView(
         val loadButton = loadInner.addAreaCheckbox(
             "Load",
             "load_preset_$groupIndex",
-            Misc.getBasePlayerColor(),
-            Misc.getDarkPlayerColor(),
-            Misc.getBrightPlayerColor(),
+            CampaignGuiStyle.ACTION_LOAD_BACKGROUND_COLOR,
+            CampaignGuiStyle.ACTION_LOAD_DARK_COLOR,
+            CampaignGuiStyle.ACTION_LOAD_BRIGHT_COLOR,
             buttonWidth,
             PRESET_BUTTON_HEIGHT,
             0f

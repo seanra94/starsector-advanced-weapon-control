@@ -37,6 +37,8 @@ class SuggestedTagGui : InteractionDialogPlugin {
         DEFAULT,
         GREEN,
         RED,
+        SAVE,
+        LOAD,
     }
 
     private enum class PendingDangerousSuggestedAction {
@@ -118,11 +120,10 @@ class SuggestedTagGui : InteractionDialogPlugin {
                 if (event.isConsumed || !event.isKeyDownEvent) return@firstNotNullOfOrNull null
                 if (event.eventValue == Keyboard.KEY_ESCAPE) {
                     event.consume()
-                    if (isFilterView) {
-                        isFilterView = false
-                        return@firstNotNullOfOrNull SuggestedGuiAction("Back") {}
-                    }
-                    return@firstNotNullOfOrNull SuggestedGuiAction("Back", rebuildAfter = false) { backToAgc(callbacks) }
+                    return@firstNotNullOfOrNull SuggestedGuiAction(
+                        "Return to ship select",
+                        rebuildAfter = false
+                    ) { returnToShipSelect(callbacks) }
                 }
                 currentActions.firstOrNull { event.eventValue in it.shortcuts }?.also { event.consume() }
             }
@@ -203,6 +204,8 @@ class SuggestedTagGui : InteractionDialogPlugin {
                 val rowFillColor = when {
                     isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
                     isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
+                    action.style == SuggestedActionStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BACKGROUND_COLOR
+                    action.style == SuggestedActionStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BACKGROUND_COLOR
                     else -> null
                 }
                 val itemPanel = panel.createCustomPanel(
@@ -217,16 +220,22 @@ class SuggestedTagGui : InteractionDialogPlugin {
                 val baseColor = when {
                     isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR
                     isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
+                    action.style == SuggestedActionStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BACKGROUND_COLOR
+                    action.style == SuggestedActionStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BACKGROUND_COLOR
                     else -> Misc.getBasePlayerColor()
                 }
                 val darkColor = when {
                     isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_DARK_COLOR
                     isGreen -> CampaignGuiStyle.ACTIVE_GREEN_DARK_COLOR
+                    action.style == SuggestedActionStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_DARK_COLOR
+                    action.style == SuggestedActionStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_DARK_COLOR
                     else -> Misc.getDarkPlayerColor()
                 }
                 val brightColor = when {
                     isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BRIGHT_COLOR
                     isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BRIGHT_COLOR
+                    action.style == SuggestedActionStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BRIGHT_COLOR
+                    action.style == SuggestedActionStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BRIGHT_COLOR
                     else -> Misc.getBrightPlayerColor()
                 }
                 val button = inner.addAreaCheckbox(
@@ -240,10 +249,12 @@ class SuggestedTagGui : InteractionDialogPlugin {
                     0f
                 )
                 button.isChecked = action.active
-                inner.addTooltipToPrevious(
-                    AGCGUI.makeTooltip(action.tooltip),
-                    TooltipMakerAPI.TooltipLocation.BELOW
-                )
+                if (action.tooltip.isNotBlank()) {
+                    inner.addTooltipToPrevious(
+                        AGCGUI.makeTooltip(action.tooltip),
+                        TooltipMakerAPI.TooltipLocation.BELOW
+                    )
+                }
                 bindButton(button)
                 itemPanel.addUIElement(inner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
 
@@ -356,7 +367,7 @@ class SuggestedTagGui : InteractionDialogPlugin {
                 )
             }
             actions.add(SuggestedGuiAction("Reset Filters", tooltip = "Clear all active weapon filters.") { weaponListView.clearFilters() })
-            actions.add(SuggestedGuiAction("Back", listOf(Keyboard.KEY_ESCAPE), "Return to suggested-tags options.") { isFilterView = false })
+            actions.add(SuggestedGuiAction("Back", tooltip = "Return to suggested-tags options.") { isFilterView = false })
             return actions
         }
 
@@ -426,7 +437,8 @@ class SuggestedTagGui : InteractionDialogPlugin {
                 actions.add(
                     SuggestedGuiAction(
                         "Restore",
-                        tooltip = "Load tags previously saved via Backup."
+                        tooltip = "Load tags previously saved via Backup.",
+                        style = SuggestedActionStyle.LOAD
                     ) {
                         pendingDangerousAction = PendingDangerousSuggestedAction.RESTORE
                     }
@@ -437,7 +449,8 @@ class SuggestedTagGui : InteractionDialogPlugin {
                 actions.add(
                     SuggestedGuiAction(
                         "Backup",
-                        tooltip = "Save currently configured suggested tags to saves/common/${Values.CUSTOM_SUGGESTED_TAG_JSON_FILE_NAME}."
+                        tooltip = "Save currently configured suggested tags to saves/common/${Values.CUSTOM_SUGGESTED_TAG_JSON_FILE_NAME}.",
+                        style = SuggestedActionStyle.SAVE
                     ) {
                         pendingDangerousAction = PendingDangerousSuggestedAction.BACKUP
                     }
@@ -465,7 +478,8 @@ class SuggestedTagGui : InteractionDialogPlugin {
                 actions.add(
                     SuggestedGuiAction(
                         "Backup",
-                        tooltip = "Save currently configured suggested tags to saves/common/${Values.CUSTOM_SUGGESTED_TAG_JSON_FILE_NAME}."
+                        tooltip = "Save currently configured suggested tags to saves/common/${Values.CUSTOM_SUGGESTED_TAG_JSON_FILE_NAME}.",
+                        style = SuggestedActionStyle.SAVE
                     ) {
                         pendingDangerousAction = PendingDangerousSuggestedAction.BACKUP
                     }
@@ -473,21 +487,28 @@ class SuggestedTagGui : InteractionDialogPlugin {
                 actions.add(
                     SuggestedGuiAction(
                         "Restore",
-                        tooltip = "Load tags previously saved via Backup."
+                        tooltip = "Load tags previously saved via Backup.",
+                        style = SuggestedActionStyle.LOAD
                     ) {
                         pendingDangerousAction = PendingDangerousSuggestedAction.RESTORE
                     }
                 )
             }
         }
-        actions.add(SuggestedGuiAction("Back", listOf(Keyboard.KEY_ESCAPE), "Return to the AGC ship editor.", rebuildAfter = false) { backToAgc(callbacks) })
-        actions.add(SuggestedGuiAction("Exit", tooltip = "Close AGC.", rebuildAfter = false) { callbacks?.dismissDialog(); dialog?.dismiss() })
+        actions.add(SuggestedGuiAction("Back [ESCAPE]", tooltip = "Return to the AGC weapon-group editor.", rebuildAfter = false) { backToWeaponGroups(callbacks) })
         return actions
     }
 
-    private fun backToAgc(callbacks: CustomVisualDialogDelegate.DialogCallbacks?) {
+    private fun backToWeaponGroups(callbacks: CustomVisualDialogDelegate.DialogCallbacks?) {
         callbacks?.dismissDialog()
         dialog?.dismiss()
+        GUIShower.shouldOpenAgcGui = true
+    }
+
+    private fun returnToShipSelect(callbacks: CustomVisualDialogDelegate.DialogCallbacks?) {
+        callbacks?.dismissDialog()
+        dialog?.dismiss()
+        GUIShower.pendingCampaignShipEditorShipId = null
         GUIShower.shouldOpenAgcGui = true
     }
 

@@ -7,6 +7,7 @@ import com.fs.starfarer.api.Global
 
 class GoToSuggestedTagsAction(attributes: GUIAttributes) : GUIAction(attributes) {
     override fun execute() {
+        GUIShower.pendingCampaignShipEditorShipId = attributes.ship?.id
         attributes.dialog?.dismiss()
         GUIShower.shouldOpenSuggestedTagGui = true
     }

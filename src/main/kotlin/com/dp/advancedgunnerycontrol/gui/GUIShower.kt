@@ -20,6 +20,7 @@ class GUIShower : EveryFrameScript {
     companion object{
         var shouldOpenSuggestedTagGui = false
         var shouldOpenAgcGui = false
+        var pendingCampaignShipEditorShipId: String? = null
     }
 
     override fun advance(amount: Float) {
