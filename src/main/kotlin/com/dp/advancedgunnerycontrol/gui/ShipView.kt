@@ -235,6 +235,18 @@ class ShipView(
         return wrapped.joinToString("\n")
     }
 
+    private fun truncateLabelWordAware(text: String, maxVisibleChars: Int): String {
+        if (maxVisibleChars <= 3 || text.length <= maxVisibleChars) return text
+        val hardLimit = (maxVisibleChars - 3).coerceAtLeast(1)
+        val candidate = text.take(hardLimit).trimEnd()
+        val lastSpace = candidate.lastIndexOf(' ')
+        if (lastSpace >= (hardLimit / 2)) {
+            val wholeWord = candidate.substring(0, lastSpace).trimEnd()
+            if (wholeWord.isNotBlank()) return "$wholeWord ..."
+        }
+        return "$candidate..."
+    }
+
     private fun wrapTextCapped(text: String, maxCharsPerLine: Int, maxLines: Int): String {
         val wrapped = wrapText(text, maxCharsPerLine).split("\n")
         if (wrapped.size <= maxLines) return wrapped.joinToString("\n")
@@ -384,6 +396,7 @@ class ShipView(
         entry: WeaponEntry?,
         top: Float,
         imageText: String? = null,
+        forceSingleLine: Boolean = false,
     ) {
         val entryPanel = panel.createCustomPanel(
             panel.position.width,
@@ -425,11 +438,13 @@ class ShipView(
             WEAPON_ENTRY_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING - WEAPON_TEXT_VERTICAL_INSET,
             false
         )
-        val displayLabel = truncateLabelByLength(entry.label, WEAPON_TEXT_MAX_VISIBLE_CHARS)
-        textPanel.addAgcText(
-            wrapTextCapped(displayLabel, WEAPON_TEXT_CHARS_PER_LINE, 2),
-            0f
-        )
+        val displayLabel = truncateLabelWordAware(entry.label, WEAPON_TEXT_MAX_VISIBLE_CHARS)
+        val renderedText = if (forceSingleLine) {
+            truncateLabelWordAware(displayLabel, WEAPON_TEXT_MAX_VISIBLE_CHARS)
+        } else {
+            wrapTextCapped(displayLabel, WEAPON_TEXT_CHARS_PER_LINE, 2)
+        }
+        textPanel.addAgcText(renderedText, 0f)
         entryPanel.addUIElement(textPanel).inTL(textLeft, CampaignGuiStyle.ITEM_TEXT_TOP_PADDING + WEAPON_TEXT_VERTICAL_INSET)
     }
 
@@ -454,9 +469,9 @@ class ShipView(
         } else if (entries.size > WEAPON_ROWS_VISIBLE + 1) {
             buildWeaponEntryContainer(
                 panel,
-                WeaponEntry("Hover for full weapon list", ""),
+                WeaponEntry("Hover for full weapon list ...", ""),
                 WEAPON_ROWS_VISIBLE * WEAPON_ENTRY_HEIGHT,
-                imageText = " ..."
+                forceSingleLine = true
             )
         } else {
             buildWeaponEntryContainer(
@@ -651,7 +666,7 @@ class ShipView(
         val savePanel = panel.createCustomPanel(
             buttonWidth,
             PRESET_BUTTON_HEIGHT,
-            CampaignPanelPlugin(CampaignContainerType.ITEM)
+            CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = CampaignGuiStyle.ACTION_SAVE_BACKGROUND_COLOR)
         )
         panel.addComponent(savePanel)
         savePanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, top)
@@ -675,7 +690,9 @@ class ShipView(
             panel = savePanel,
             text = "Save",
             width = buttonWidth,
-            height = PRESET_BUTTON_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING
+            height = PRESET_BUTTON_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+            centerRegionOffsetX = CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET,
+            centerRegionWidth = buttonWidth
         )
         buttons.add(
             CampaignMomentaryButton(saveButton) {
@@ -688,7 +705,7 @@ class ShipView(
         val loadPanel = panel.createCustomPanel(
             buttonWidth,
             PRESET_BUTTON_HEIGHT,
-            CampaignPanelPlugin(CampaignContainerType.ITEM)
+            CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = CampaignGuiStyle.ACTION_LOAD_BACKGROUND_COLOR)
         )
         panel.addComponent(loadPanel)
         loadPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING + buttonWidth + PRESET_BUTTON_HGAP, top)
@@ -712,7 +729,9 @@ class ShipView(
             panel = loadPanel,
             text = "Load",
             width = buttonWidth,
-            height = PRESET_BUTTON_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING
+            height = PRESET_BUTTON_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+            centerRegionOffsetX = CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET,
+            centerRegionWidth = buttonWidth
         )
         buttons.add(
             CampaignMomentaryButton(loadButton) {

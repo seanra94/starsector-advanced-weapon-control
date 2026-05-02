@@ -134,6 +134,8 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
                     text = label,
                     width = itemWidth,
                     height = itemHeight - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+                    centerRegionOffsetX = CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET,
+                    centerRegionWidth = itemWidth
                 )
             }
 

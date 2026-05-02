@@ -60,9 +60,12 @@ object CampaignGuiStyle {
     val ACTION_LOAD_BACKGROUND_COLOR: Color = Color(145, 125, 25, 225)
     val ACTION_LOAD_DARK_COLOR: Color = Color(95, 80, 14, 225)
     val ACTION_LOAD_BRIGHT_COLOR: Color = Color(205, 180, 70, 225)
-    val SELECTED_STATE_BACKGROUND_COLOR: Color = Color(35, 130, 130, 225)
-    val SELECTED_STATE_DARK_COLOR: Color = Color(20, 90, 90, 225)
-    val SELECTED_STATE_BRIGHT_COLOR: Color = Color(95, 200, 200, 225)
+    val SELECTED_STATE_BACKGROUND_COLOR: Color = Color(0, 191, 255, 225) // #00BFFF
+    val SELECTED_STATE_DARK_COLOR: Color = Color(0, 140, 200, 225)
+    val SELECTED_STATE_BRIGHT_COLOR: Color = Color(90, 215, 255, 225)
+    val NEUTRAL_TAG_BACKGROUND_COLOR: Color = Color(95, 95, 95, 225)
+    val NEUTRAL_TAG_DARK_COLOR: Color = Color(62, 62, 62, 225)
+    val NEUTRAL_TAG_BRIGHT_COLOR: Color = Color(148, 148, 148, 225)
 
     const val MAIN_PADDING = 0f
     const val PANEL_PADDING = 4f
@@ -275,10 +278,14 @@ fun renderCenteredTagLabel(
     width: Float,
     height: Float,
     top: Float = CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+    centerRegionOffsetX: Float = 0f,
+    centerRegionWidth: Float = width,
     textColor: Color? = null,
 ) {
     val estimatedLabelWidth = text.length * 6.8f
-    val left = ((width - estimatedLabelWidth) / 2f).coerceAtLeast(CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING)
+    val centerX = centerRegionOffsetX + centerRegionWidth / 2f
+    val minLeft = min(0f, centerRegionOffsetX) + CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING
+    val left = max(minLeft, centerX - estimatedLabelWidth / 2f)
     val renderWidth = (width - left - CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING).coerceAtLeast(16f)
     renderTagLabel(
         panel = panel,
