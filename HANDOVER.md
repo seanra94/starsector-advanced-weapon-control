@@ -158,3 +158,46 @@ C:\Games\Starsector\starsector-core\starsector.log
 - In the options container, broad-copy or destructive actions should not execute on a stray click. Add confirm/cancel protection for Copy to other ships of same variant, Copy to other ships of same variant (same hull type), Copy previous loadout, Copy to other ships of same variant for all loadouts, Copy to other ships of same variant for all loadouts (same hull type), Copy previous loadout for entire fleet, and Reload settings.
 - Test whether weapon-group heading section bars such as `Group 1` can be recolored orange without affecting unrelated section headings.
 - Original-upstream default restoration remains a lowest-priority backlog task. When that task is reached, restore Luna and Settings defaults to original upstream defaults, but if original upstream LunaSettings and original upstream Settings/runtime defaults differ, prefer original upstream LunaSettings. Do not use that future task to restore upstream tag-list contents, old tag names, fork metadata, generated version metadata, or other non-default surfaces unless explicitly requested.
+
+## Current GUI heading and colored-control policy
+
+This section supersedes older stale GUI notes about pale-yellow selected tags and built-in Starsector section headings.
+
+- Current heading policy for the touched campaign/suggested-tags surfaces is to use the custom container-heading path rather than Starsector `addSectionHeading(...)` for normal container headings.
+- Default custom heading background is `Color(40, 40, 40, 225)`.
+- Stale weapon-group heading background is `Color(80, 80, 80, 225)`.
+
+### Colored-button semantics
+
+When working on colored buttons or tags in this GUI family, use these two patterns unless a specific surface has an explicitly accepted exception.
+
+#### Approach A: toggleable buttons
+- Untoggled idle fill: `Color(0, 0, 0, 225)`
+- Untoggled hover fill: `Color(0, 69, 92, 225)`
+- Toggled idle fill: `Color(0, 69, 92, 225)`
+- Toggled hover fill: `Color(0, 109, 145, 225)`
+
+#### Approach B: untoggleable buttons
+- Untoggled idle fill: `Color(0, 69, 92, 225)`
+- Untoggled hover fill: `Color(0, 109, 145, 225)`
+
+### Brightness language
+
+Interpret brightness requests consistently:
+- "dark" means roughly the brightness of `Color(0, 69, 92, 225)`, `Color(95, 80, 14, 225)`, or `Color(62, 34, 82, 225)`
+- "moderately bright" means roughly the brightness of `Color(0, 109, 145, 225)`, `Color(145, 125, 25, 225)`, or `Color(95, 55, 125, 225)`
+- "bright" means roughly the brightness of `Color(205, 180, 70, 225)` or `Color(150, 105, 190, 225)`
+
+### Current accepted GUI color-family semantics
+
+- Save-family untoggleable buttons use a purple family.
+- Load-family untoggleable buttons use a yellow family.
+- Confirm/Cancel remain green/red.
+- Save/Load visible text should stay neutral rather than inheriting the family color.
+- Neutral uncolored buttons such as navigation/back/reset-style buttons should use a gray hover family rather than pale blue.
+
+### Weapon tags and ship modes
+
+- Active weapon tags and ship modes are toggleable controls and should follow Approach A exactly.
+- Weapon tags and ship modes should match in background fill, hover/highlight behavior, and overall selected-state treatment unless a future task intentionally changes both together.
+- Weapon tags are not required to match ship modes in text centering/layout, but their color/state semantics should match.
