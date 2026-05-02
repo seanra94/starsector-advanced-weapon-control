@@ -439,6 +439,55 @@ fun addStyledCampaignButtonShell(
     return StyledCampaignButtonShell(itemPanel, button)
 }
 
+fun addCampaignTagModeToggleShell(
+    parent: CustomPanelAPI,
+    data: Any,
+    x: Float,
+    y: Float,
+    width: Float,
+    height: Float,
+    tooltip: String,
+    unavailable: Boolean = false,
+): StyledCampaignButtonShell {
+    val itemPanel = parent.createCustomPanel(
+        width,
+        height,
+        CampaignPanelPlugin(
+            CampaignContainerType.ITEM,
+            fillColor = null,
+            borderColor = if (unavailable) CampaignGuiStyle.DISABLED_TAG_BORDER_COLOR else null
+        )
+    )
+    parent.addComponent(itemPanel)
+    itemPanel.position.inTL(x, y)
+
+    val inner = itemPanel.createUIElement(width, height, false)
+    val toggleColors = CampaignGuiStyle.toggleableCheckboxColors()
+    val button = inner.addAreaCheckbox(
+        "",
+        data,
+        if (unavailable) CampaignGuiStyle.DISABLED_TAG_BACKGROUND_COLOR else toggleColors.base,
+        if (unavailable) CampaignGuiStyle.DISABLED_TAG_DARK_COLOR else toggleColors.bg,
+        if (unavailable) CampaignGuiStyle.DISABLED_TAG_BRIGHT_COLOR else toggleColors.bright,
+        width,
+        height,
+        0f
+    )
+    if (unavailable) {
+        CampaignGuiStyle.applyUnavailableCheckboxVisualState(button)
+    } else {
+        CampaignGuiStyle.applyToggleableCheckboxVisualState(button)
+    }
+    if (tooltip.isNotBlank()) {
+        inner.addTooltipToPrevious(
+            AGCGUI.makeTooltip(tooltip),
+            TooltipLocation.BELOW
+        )
+    }
+    itemPanel.addUIElement(inner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
+    return StyledCampaignButtonShell(itemPanel, button)
+}
+
 fun renderTagLabel(
     panel: com.fs.starfarer.api.ui.CustomPanelAPI,
     text: String,

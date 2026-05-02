@@ -8,7 +8,6 @@ import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.ui.UIComponentAPI
 import com.fs.starfarer.api.util.Misc
-import java.awt.Color
 import kotlin.math.ceil
 import kotlin.math.max
 
@@ -98,49 +97,25 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
 
             modes.forEachIndexed { index, mode ->
                 val label = truncateLabel(shipModeToString[mode] ?: defaultShipMode, itemWidth, 24f)
-                val toggleColors = CampaignGuiStyle.toggleableCheckboxColors()
-                val itemPanel = panel.createCustomPanel(
-                    itemWidth,
-                    itemHeight,
-                    CampaignPanelPlugin(
-                        CampaignContainerType.ITEM,
-                        fillColor = null
-                    )
-                )
-                panel.addComponent(itemPanel)
-                itemPanel.position.inTL(
-                    (index % columns) * (itemWidth + CampaignGuiStyle.SHIP_MODE_ITEM_HGAP),
-                    (index / columns) * (itemHeight + CampaignGuiStyle.SHIP_MODE_ITEM_VGAP)
-                )
-                val inner = itemPanel.createUIElement(
-                    itemWidth,
-                    itemHeight,
-                    false
+                val shell = addCampaignTagModeToggleShell(
+                    parent = panel,
+                    data = mode,
+                    x = (index % columns) * (itemWidth + CampaignGuiStyle.SHIP_MODE_ITEM_HGAP),
+                    y = (index / columns) * (itemHeight + CampaignGuiStyle.SHIP_MODE_ITEM_VGAP),
+                    width = itemWidth,
+                    height = itemHeight,
+                    tooltip = detailedShipModeDescriptions[mode] ?: ""
                 )
                 toReturn.add(
                     ShipModeButton(
                         ship,
                         mode,
-                        inner.addAreaCheckbox(
-                            "",
-                            mode,
-                            toggleColors.base,
-                            toggleColors.bg,
-                            toggleColors.bright,
-                            itemWidth,
-                            itemHeight,
-                            0f
-                        )
+                        shell.button
                     )
                 )
                 toReturn.last().applyToggleableVisualState(force = true)
-                inner.addTooltipToPrevious(
-                    AGCGUI.makeTooltip(detailedShipModeDescriptions[mode] ?: ""),
-                    TooltipMakerAPI.TooltipLocation.BELOW
-                )
-                itemPanel.addUIElement(inner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
                 renderCenteredTagLabel(
-                    panel = itemPanel,
+                    panel = shell.panel,
                     text = label,
                     width = itemWidth,
                     height = itemHeight - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,

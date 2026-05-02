@@ -121,65 +121,26 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
                     isIncompatibleWithExistingTags(tag, otherSelectedTags) ||
                         shouldTagBeDisabled(group, ship, tag)
                     )
-                val itemPanel = panel.createCustomPanel(
-                    metrics.itemWidth,
-                    metrics.itemHeight,
-                    CampaignPanelPlugin(
-                        CampaignContainerType.ITEM,
-                        fillColor = null,
-                        borderColor = if (unavailable) CampaignGuiStyle.DISABLED_TAG_BORDER_COLOR else null
-                    )
-                )
-                panel.addComponent(itemPanel)
-                itemPanel.position.inTL(metrics.xFor(index), metrics.yFor(index))
-                val inner = itemPanel.createUIElement(
-                    metrics.itemWidth,
-                    metrics.itemHeight,
-                    false
-                )
-                val toggleColors = CampaignGuiStyle.toggleableCheckboxColors()
-                val baseColor = when {
-                    unavailable -> CampaignGuiStyle.DISABLED_TAG_BACKGROUND_COLOR
-                    else -> toggleColors.base
-                }
-                val darkColor = when {
-                    unavailable -> CampaignGuiStyle.DISABLED_TAG_DARK_COLOR
-                    else -> toggleColors.bg
-                }
-                val brightColor = when {
-                    unavailable -> CampaignGuiStyle.DISABLED_TAG_BRIGHT_COLOR
-                    else -> toggleColors.bright
-                }
-                val createdButton = inner.addAreaCheckbox(
-                    "",
-                    tag,
-                    baseColor,
-                    darkColor,
-                    brightColor,
-                    metrics.itemWidth,
-                    metrics.itemHeight,
-                    0f
+                val shell = addCampaignTagModeToggleShell(
+                    parent = panel,
+                    data = tag,
+                    x = metrics.xFor(index),
+                    y = metrics.yFor(index),
+                    width = metrics.itemWidth,
+                    height = metrics.itemHeight,
+                    tooltip = getTagTooltip(tag),
+                    unavailable = unavailable
                 )
                 toReturn.add(
                     TagButton(
                         ship,
                         group,
                         tag,
-                        createdButton
+                        shell.button
                     )
                 )
-                if (unavailable) {
-                    CampaignGuiStyle.applyUnavailableCheckboxVisualState(createdButton)
-                } else {
-                    CampaignGuiStyle.applyToggleableCheckboxVisualState(createdButton)
-                }
-                inner.addTooltipToPrevious(
-                    AGCGUI.makeTooltip(getTagTooltip(tag)),
-                    TooltipMakerAPI.TooltipLocation.BELOW
-                )
-                itemPanel.addUIElement(inner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
                 renderTagLabel(
-                    itemPanel,
+                    shell.panel,
                     tag,
                     metrics.itemWidth - 2f * CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
                     metrics.itemHeight - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
