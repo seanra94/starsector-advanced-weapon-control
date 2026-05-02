@@ -263,6 +263,47 @@ class ShipView(
         return visible.joinToString("\n")
     }
 
+    private fun wrapWeaponLabel(text: String, allowFullTwoLine: Boolean = false): String {
+        val words = text.trim().split(Regex("\\s+")).filter { it.isNotBlank() }
+        if (words.isEmpty()) return text
+
+        val lines = mutableListOf<String>()
+        var current = ""
+        var index = 0
+        while (index < words.size) {
+            val word = words[index]
+            val candidate = if (current.isBlank()) word else "$current $word"
+            if (candidate.length <= WEAPON_TEXT_CHARS_PER_LINE) {
+                current = candidate
+                index++
+                continue
+            }
+
+            if (current.isBlank()) {
+                current = word
+                index++
+            }
+
+            if (lines.size < 1) {
+                lines.add(current)
+                current = ""
+            } else {
+                val remaining = (listOf(current) + words.drop(index)).filter { it.isNotBlank() }.joinToString(" ")
+                lines.add(truncateLabelWordAware(remaining, WEAPON_TEXT_CHARS_PER_LINE))
+                return lines.joinToString("\n")
+            }
+        }
+
+        if (current.isNotBlank()) lines.add(current)
+        val visible = lines.take(2).toMutableList()
+        if (lines.size > 2) {
+            visible[1] = truncateLabelWordAware(lines.drop(1).joinToString(" "), WEAPON_TEXT_CHARS_PER_LINE)
+        } else if (!allowFullTwoLine && text.length > WEAPON_TEXT_MAX_VISIBLE_CHARS && visible.isNotEmpty()) {
+            visible[visible.lastIndex] = truncateLabelWordAware(visible.last(), WEAPON_TEXT_CHARS_PER_LINE)
+        }
+        return visible.joinToString("\n")
+    }
+
     private fun buildPictureInfoRow(
         panel: CustomPanelAPI,
         label: String,
@@ -440,11 +481,10 @@ class ShipView(
             WEAPON_ENTRY_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING - WEAPON_TEXT_VERTICAL_INSET,
             false
         )
-        val displayLabel = truncateLabelWordAware(entry.label, WEAPON_TEXT_MAX_VISIBLE_CHARS)
         val renderedText = if (forceSingleLine) {
-            truncateLabelWordAware(displayLabel, WEAPON_TEXT_MAX_VISIBLE_CHARS)
+            truncateLabelWordAware(entry.label, WEAPON_TEXT_MAX_VISIBLE_CHARS)
         } else {
-            wrapTextCapped(displayLabel, WEAPON_TEXT_CHARS_PER_LINE, 2)
+            wrapWeaponLabel(entry.label, allowFullTwoLine = imageText != null)
         }
         textPanel.addAgcText(renderedText, 0f)
         entryPanel.addUIElement(textPanel).inTL(textLeft, CampaignGuiStyle.ITEM_TEXT_TOP_PADDING + WEAPON_TEXT_VERTICAL_INSET)
@@ -471,9 +511,9 @@ class ShipView(
         } else if (entries.size > WEAPON_ROWS_VISIBLE + 1) {
             buildWeaponEntryContainer(
                 panel,
-                WeaponEntry("Hover for full weapon list ...", ""),
+                WeaponEntry("Hover for full weapon list", ""),
                 WEAPON_ROWS_VISIBLE * WEAPON_ENTRY_HEIGHT,
-                forceSingleLine = true
+                imageText = "...",
             )
         } else {
             buildWeaponEntryContainer(
