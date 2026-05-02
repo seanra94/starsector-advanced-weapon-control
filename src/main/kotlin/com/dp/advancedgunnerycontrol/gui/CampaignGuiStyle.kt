@@ -73,9 +73,9 @@ object CampaignGuiStyle {
     val NEUTRAL_BUTTON_IDLE_COLOR: Color = Color(70, 70, 70, 225)
     val NEUTRAL_BUTTON_HOVER_COLOR: Color = Color(255, 255, 255, 225)
     val SHARED_TAG_MODE_UNSELECTED_IDLE_COLOR: Color = Color(0, 0, 0, 225)
-    val SHARED_TAG_MODE_UNSELECTED_HOVER_COLOR: Color = Color(174, 153, 60, 225)
-    val SHARED_TAG_MODE_SELECTED_IDLE_COLOR: Color = Color(123, 106, 21, 225)
-    val SHARED_TAG_MODE_SELECTED_HOVER_COLOR: Color = Color(174, 153, 60, 225)
+    val SHARED_TAG_MODE_UNSELECTED_HOVER_COLOR: Color = Color(184, 90, 0, 225)
+    val SHARED_TAG_MODE_SELECTED_IDLE_COLOR: Color = Color(184, 90, 0, 225)
+    val SHARED_TAG_MODE_SELECTED_HOVER_COLOR: Color = Color(184, 90, 0, 225)
     val TOGGLE_UNSELECTED_IDLE_COLOR: Color = SHARED_TAG_MODE_UNSELECTED_IDLE_COLOR
     val TOGGLE_UNSELECTED_HOVER_COLOR: Color = SHARED_TAG_MODE_UNSELECTED_HOVER_COLOR
     val TOGGLE_SELECTED_IDLE_COLOR: Color = SHARED_TAG_MODE_SELECTED_IDLE_COLOR
@@ -98,12 +98,18 @@ object CampaignGuiStyle {
     const val ITEM_TEXT_TOP_PADDING = 2f
     const val ITEM_HIGHLIGHT_X_OFFSET = -3f
     const val HEADING_CHAR_WIDTH_ESTIMATE = 7.2f
+    private const val TAG_MODE_BORDER_THICKNESS = -1f
 
     /**
      * Decompiled addAreaCheckbox(base, bg, bright) behavior:
      * - base controls the hover/glow color.
      * - bg controls checked fill and border.
      * - bright controls the built-in label text color, which AGC leaves blank here.
+     *
+     * The Starsector area-checkbox renderer draws a black base, checked fill, border,
+     * and then an inset glow while hovered. Negative border thickness is intentional
+     * here: it expands the black/glow rectangles to reduce the bright-ring/black-center
+     * appearance that otherwise shows on blank-label tag and ship-mode buttons.
      */
     fun toggleableCheckboxColors(): CheckboxColors {
         return CheckboxColors(
@@ -166,7 +172,7 @@ object CampaignGuiStyle {
         }
         invokeColorOverride(button, methods.setGlowOverride, glowColor)
         invokeColorOverride(button, methods.setBorderOverride, borderColor)
-        invokeFloatOverride(button, methods.setBorderThickness, 0f)
+        invokeFloatOverride(button, methods.setBorderThickness, TAG_MODE_BORDER_THICKNESS)
     }
 
     fun applyUnavailableCheckboxVisualState(button: ButtonAPI) {

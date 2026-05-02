@@ -117,7 +117,7 @@ C:\Games\Starsector\starsector-core\starsector.log
 - Suggested-tags GUI mirrors campaign tag behavior: forwarded wheel scrolling, pinned selected tags, selected tags removed from normal rows, and colored tag-label segments.
 
 - Colored-button/tag semantics should follow two patterns unless a specific surface has an explicitly accepted exception.
-  - Toggleable weapon tags and ship modes share one `CampaignGuiStyle` color family. Current raw values are: untoggled idle fill `Color(0, 0, 0, 225)`; untoggled hover/glow `Color(174, 153, 60, 225)`; toggled idle fill/border `Color(123, 106, 21, 225)`; toggled hover/glow `Color(174, 153, 60, 225)`. These raw values are the old load-family base/highlight anchors reduced by about 15%.
+  - Toggleable weapon tags and ship modes share one `CampaignGuiStyle` color family. Current raw values are: untoggled idle fill `Color(0, 0, 0, 225)`; untoggled hover/glow `Color(184, 90, 0, 225)`; toggled idle fill/border `Color(184, 90, 0, 225)`; toggled hover/glow `Color(184, 90, 0, 225)`. This is an orange hue tuned to roughly the same perceived brightness as the previously acceptable `Color(123, 106, 21, 225)` value.
   - Untoggleable buttons use their explicit family colors. Neutral uncolored buttons keep a gray idle fill and use raw white hover/glow because Starsector dims that toward a dark gray in practice.
 - Brightness language for future UI work should be interpreted consistently:
   - "dark" means roughly the brightness of `Color(0, 69, 92, 225)`, `Color(95, 80, 14, 225)`, or `Color(62, 34, 82, 225)`
@@ -149,7 +149,7 @@ C:\Games\Starsector\starsector-core\starsector.log
 - There is no constructor color slot for "unchecked hover" versus "checked hover". The current working campaign tag/mode path gets distinct state behavior by applying cached `setGlowOverride(...)` and `setBorderOverride(...)` after checkbox creation, choosing the override from `button.isChecked`.
 - Do not reintroduce per-frame generic reflection for button color overrides. A previous version invoked methods by name repeatedly and caused large click/UI delays even on unrelated buttons. Cache the reflected `Method` objects by runtime button class and only reapply the toggle override when the checked state changes.
 - Do not call `setBgOverride(...)` for campaign weapon tags or ship modes unless a focused test proves it is needed. The constructor `bg` slot already controls checked fill/border; adding a background override was redundant in the working path and increased risk of stale or expensive rendering.
-- The area-checkbox render path first draws a black base, draws checked fill only when checked, draws the border, then draws glow while `glowAmount > 0`. A bright hover/glow can look like a bright border around an otherwise black unchecked tag. The current tag/mode path sets `setBorderThickness(0f)` to suppress that visible border on normal toggleable tags and modes; unavailable tags restore `1f` so disabled borders remain visible.
+- The area-checkbox render path first draws a black base, draws checked fill only when checked, draws the border, then draws glow while `glowAmount > 0`. A bright hover/glow can look like a bright border around an otherwise black unchecked tag. Setting `setBorderThickness(0f)` did not remove the colored-border appearance in-game, which supports the theory that the visible ring is the glow region rather than the nominal border. The current tag/mode path experiments with `setBorderThickness(-1f)` to expand the black/glow rectangles and reduce the ring/black-center effect; unavailable tags restore `1f` so disabled borders remain visible.
 - Keep `fillColor = null` on campaign weapon-tag and ship-mode item panels unless intentionally testing a new layout. Extra row/container fill can mask hover, double-brighten selected state, or make weapon tags and ship modes drift even when they share the same checkbox colors.
 - Raw Starsector UI colors can appear much darker in game than their RGB values suggest, especially checkbox glow/hover colors. Current visual evidence suggests roughly 75% effective dimming on these controls, so using raw white for neutral hover can be the correct way to get a readable dark-gray in-game result.
 - For normal action buttons, remember that `base` is the hover/glow slot. Passing a neutral hover color as `bg`/`bright` will not affect normal unchecked hover; this caused `Switch to simple mode`-style neutral buttons to ignore the intended white hover.
@@ -182,9 +182,9 @@ When working on colored buttons or tags in this GUI family, use these two patter
 
 #### Approach A: toggleable buttons
 - Untoggled idle fill: `Color(0, 0, 0, 225)`
-- Untoggled hover/glow: `Color(174, 153, 60, 225)`
-- Toggled idle fill/border: `Color(123, 106, 21, 225)`
-- Toggled hover/glow: `Color(174, 153, 60, 225)`
+- Untoggled hover/glow: `Color(184, 90, 0, 225)`
+- Toggled idle fill/border: `Color(184, 90, 0, 225)`
+- Toggled hover/glow: `Color(184, 90, 0, 225)`
 
 #### Approach B: untoggleable buttons
 - Untoggled idle fill: use the button family's accepted idle color.
@@ -226,14 +226,13 @@ When working on colored buttons or tags in this GUI family, use these two patter
 
 #### Approach A: toggleable buttons
 - Untoggled idle fill: `Color(0, 0, 0, 225)`
-- Untoggled hover/glow: `Color(174, 153, 60, 225)`
-- Toggled idle fill/border: `Color(123, 106, 21, 225)`
-- Toggled hover/glow: `Color(174, 153, 60, 225)`
+- Untoggled hover/glow: `Color(184, 90, 0, 225)`
+- Toggled idle fill/border: `Color(184, 90, 0, 225)`
+- Toggled hover/glow: `Color(184, 90, 0, 225)`
 
 Reference brightness anchors for this family:
-- selected/base anchor: `Color(123, 106, 21, 225)`
-- hover/glow anchor: `Color(174, 153, 60, 225)`
-- note: these are the earlier `Color(145, 125, 25, 225)` base and `Color(205, 180, 70, 225)` highlight anchors reduced by about 15%.
+- current orange anchor: `Color(184, 90, 0, 225)`
+- note: `Color(123, 106, 21, 225)` had acceptable apparent brightness but read as yellow, so the active family was shifted to a more orange hue with similar perceived brightness. Selected hover intentionally matches selected idle for now because the brighter highlight read too bright in-game.
 
 #### Approach B: untoggleable buttons
 - Untoggled idle fill: `Color(145, 125, 25, 225)`
