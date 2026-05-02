@@ -117,14 +117,14 @@ C:\Games\Starsector\starsector-core\starsector.log
 - Suggested-tags GUI mirrors campaign tag behavior: forwarded wheel scrolling, pinned selected tags, selected tags removed from normal rows, and colored tag-label segments.
 
 - Colored-button/tag semantics should follow two patterns unless a specific surface has an explicitly accepted exception.
-  - Toggleable buttons/tags: untoggled idle fill `Color(0, 0, 0, 225)`; untoggled hover fill `Color(0, 69, 92, 225)`; toggled idle fill `Color(0, 69, 92, 225)`; toggled hover fill `Color(0, 109, 145, 225)`.
-  - Untoggleable buttons: idle fill `Color(0, 69, 92, 225)`; hover fill `Color(0, 109, 145, 225)`.
+  - Toggleable weapon tags and ship modes share one `CampaignGuiStyle` color family. Current raw values are: untoggled idle fill `Color(0, 0, 0, 225)`; untoggled hover/glow `Color(255, 165, 0, 225)`; toggled idle fill/border `Color(170, 90, 0, 225)`; toggled hover/glow `Color(255, 165, 0, 225)`. These values look darker in game than the raw RGB suggests because Starsector dims/tints area-checkbox glow.
+  - Untoggleable buttons use their explicit family colors. Neutral uncolored buttons keep a gray idle fill and use raw white hover/glow because Starsector dims that toward a dark gray in practice.
 - Brightness language for future UI work should be interpreted consistently:
   - "dark" means roughly the brightness of `Color(0, 69, 92, 225)`, `Color(95, 80, 14, 225)`, or `Color(62, 34, 82, 225)`
   - "moderately bright" means roughly the brightness of `Color(0, 109, 145, 225)`, `Color(145, 125, 25, 225)`, or `Color(95, 55, 125, 225)`
   - "bright" means roughly the brightness of `Color(205, 180, 70, 225)` or `Color(150, 105, 190, 225)`
 - Current accepted action-family color semantics: save-family buttons use dark-purple fills, load-family buttons use dark-yellow fills, and confirm/cancel remain green/red. Save/Load visible text should stay neutral rather than inheriting the family color.
-- Active weapon tags and ship modes are toggleable controls and should follow the shared toggleable-button blue-state rules above. Ship modes should match weapon tags in background fill, hover/highlight behavior, and overall selected-state treatment unless a specific future task intentionally changes both together.
+- Active weapon tags and ship modes are toggleable controls and must use the same shared `SHARED_TAG_MODE_*` constants and `applyToggleableCheckboxVisualState(...)` path. Ship modes should match weapon tags in background fill, hover/highlight behavior, and overall selected-state treatment unless a specific future task intentionally changes both together.
 ## Sensitive areas
 
 - `assignShipModes()` and `shouldNotOverrideShipAI()` in `ShipModes.kt`.
@@ -145,6 +145,13 @@ C:\Games\Starsector\starsector-core\starsector.log
 - MagicLib combat/refit buttons are narrow and do not clip long text. Widening combat/refit tag buttons reduces visible tag capacity on 1080p and is a poor default tradeoff.
 - Temporary complete-list scroll-test tags were removed from `Settings.getCurrentWeaponTagList()` after GUI scroll validation.
 - `SynchronizedFireTag.kt` has `DEBUG_SYNC = false` by default. Turn it on only for focused runtime sync diagnostics.
+- Starsector `TooltipMakerAPI.addAreaCheckbox(text, data, base, bg, bright, ...)` color slots are not a four-state toggle API. The decompiled runtime behavior observed for the campaign item controls is: `base` drives hover/glow, `bg` drives checked fill/border, and `bright` drives the built-in label text color. AGC passes blank built-in labels and renders its own text, so `bright` mostly matters as a fallback, not as the visible tag/mode label color.
+- There is no constructor color slot for "unchecked hover" versus "checked hover". The current working campaign tag/mode path gets distinct state behavior by applying cached `setGlowOverride(...)` and `setBorderOverride(...)` after checkbox creation, choosing the override from `button.isChecked`.
+- Do not reintroduce per-frame generic reflection for button color overrides. A previous version invoked methods by name repeatedly and caused large click/UI delays even on unrelated buttons. Cache the reflected `Method` objects by runtime button class and only reapply the toggle override when the checked state changes.
+- Do not call `setBgOverride(...)` for campaign weapon tags or ship modes unless a focused test proves it is needed. The constructor `bg` slot already controls checked fill/border; adding a background override was redundant in the working path and increased risk of stale or expensive rendering.
+- Keep `fillColor = null` on campaign weapon-tag and ship-mode item panels unless intentionally testing a new layout. Extra row/container fill can mask hover, double-brighten selected state, or make weapon tags and ship modes drift even when they share the same checkbox colors.
+- Raw Starsector UI colors can appear much darker in game than their RGB values suggest, especially checkbox glow/hover colors. For hover/glow, using very bright raw colors, even white for neutral hover, can be the correct way to get a readable dark in-game result.
+- Weapon tags and ship modes should be treated as the same toggleable control family. Change `CampaignGuiStyle.SHARED_TAG_MODE_*` values rather than editing one container path; otherwise the two surfaces will drift again.
 
 ## Open questions
 
@@ -173,13 +180,13 @@ When working on colored buttons or tags in this GUI family, use these two patter
 
 #### Approach A: toggleable buttons
 - Untoggled idle fill: `Color(0, 0, 0, 225)`
-- Untoggled hover fill: `Color(0, 69, 92, 225)`
-- Toggled idle fill: `Color(0, 69, 92, 225)`
-- Toggled hover fill: `Color(0, 109, 145, 225)`
+- Untoggled hover/glow: `Color(255, 165, 0, 225)`
+- Toggled idle fill/border: `Color(170, 90, 0, 225)`
+- Toggled hover/glow: `Color(255, 165, 0, 225)`
 
 #### Approach B: untoggleable buttons
-- Untoggled idle fill: `Color(0, 69, 92, 225)`
-- Untoggled hover fill: `Color(0, 109, 145, 225)`
+- Untoggled idle fill: use the button family's accepted idle color.
+- Untoggled hover/glow: use the button family's accepted hover color. For neutral buttons, AGC currently uses raw white hover because Starsector dims it toward gray.
 
 ### Brightness language
 
@@ -198,7 +205,7 @@ Interpret brightness requests consistently:
 
 ### Weapon tags and ship modes
 
-- Active weapon tags and ship modes are toggleable controls and should follow Approach A exactly.
+- Active weapon tags and ship modes are toggleable controls and should follow Approach A exactly through the shared `CampaignGuiStyle.SHARED_TAG_MODE_*` constants.
 - Weapon tags and ship modes should match in background fill, hover/highlight behavior, and overall selected-state treatment unless a future task intentionally changes both together.
 - Weapon tags are not required to match ship modes in text centering/layout, but their color/state semantics should match.
 
@@ -217,14 +224,14 @@ When working on colored buttons or tags in this GUI family, use these two patter
 
 #### Approach A: toggleable buttons
 - Untoggled idle fill: `Color(0, 0, 0, 225)`
-- Untoggled hover fill: `Color(145, 125, 25, 225)`
-- Toggled idle fill: `Color(145, 125, 25, 225)`
-- Toggled hover fill: `Color(205, 180, 70, 225)`
+- Untoggled hover/glow: `Color(255, 165, 0, 225)`
+- Toggled idle fill/border: `Color(170, 90, 0, 225)`
+- Toggled hover/glow: `Color(255, 165, 0, 225)`
 
 Reference brightness anchors for this family:
-- dark anchor: `Color(73, 63, 13, 225)`
-- base anchor: `Color(145, 125, 25, 225)`
-- highlight anchor: `Color(205, 180, 70, 225)`
+- selected/base anchor: `Color(170, 90, 0, 225)`
+- hover/glow anchor: `Color(255, 165, 0, 225)`
+- note: these raw values are intentionally brighter than the desired apparent result because Starsector dims checkbox glow/hover colors.
 
 #### Approach B: untoggleable buttons
 - Untoggled idle fill: `Color(145, 125, 25, 225)`
@@ -243,7 +250,7 @@ When the user asks for different colors in future GUI work, extrapolate brightne
 
 ### Current accepted semantics for weapon tags and ship modes
 - Active weapon tags and ship modes are toggleable controls and should follow Approach A.
-- Weapon tags and ship modes should match in background fill, hover/highlight behavior, and overall selected-state treatment unless a future task intentionally changes both together.
+- Weapon tags and ship modes should match in background fill, hover/highlight behavior, and overall selected-state treatment unless a future task intentionally changes both together. Use the shared `CampaignGuiStyle.SHARED_TAG_MODE_*` constants for both.
 - Weapon tags are not required to match ship modes in text centering/layout, but their state-color semantics should match.
 
 ### Current accepted semantics for other button families

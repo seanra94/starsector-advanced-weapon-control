@@ -71,11 +71,15 @@ object CampaignGuiStyle {
     val ACTION_LOAD_DARK_COLOR: Color = Color(95, 80, 14, 225)
     val ACTION_LOAD_BRIGHT_COLOR: Color = Color(205, 180, 70, 225)
     val NEUTRAL_BUTTON_IDLE_COLOR: Color = Color(70, 70, 70, 225)
-    val NEUTRAL_BUTTON_HOVER_COLOR: Color = Color(122, 122, 122, 225)
-    val TOGGLE_UNSELECTED_IDLE_COLOR: Color = Color(0, 0, 0, 225)
-    val TOGGLE_UNSELECTED_HOVER_COLOR: Color = Color(0, 109, 145, 225)
-    val TOGGLE_SELECTED_IDLE_COLOR: Color = Color(0, 69, 92, 225)
-    val TOGGLE_SELECTED_HOVER_COLOR: Color = Color(0, 109, 145, 225)
+    val NEUTRAL_BUTTON_HOVER_COLOR: Color = Color(255, 255, 255, 225)
+    val SHARED_TAG_MODE_UNSELECTED_IDLE_COLOR: Color = Color(0, 0, 0, 225)
+    val SHARED_TAG_MODE_UNSELECTED_HOVER_COLOR: Color = Color(255, 165, 0, 225)
+    val SHARED_TAG_MODE_SELECTED_IDLE_COLOR: Color = Color(170, 90, 0, 225)
+    val SHARED_TAG_MODE_SELECTED_HOVER_COLOR: Color = Color(255, 165, 0, 225)
+    val TOGGLE_UNSELECTED_IDLE_COLOR: Color = SHARED_TAG_MODE_UNSELECTED_IDLE_COLOR
+    val TOGGLE_UNSELECTED_HOVER_COLOR: Color = SHARED_TAG_MODE_UNSELECTED_HOVER_COLOR
+    val TOGGLE_SELECTED_IDLE_COLOR: Color = SHARED_TAG_MODE_SELECTED_IDLE_COLOR
+    val TOGGLE_SELECTED_HOVER_COLOR: Color = SHARED_TAG_MODE_SELECTED_HOVER_COLOR
 
     const val MAIN_PADDING = 0f
     const val PANEL_PADDING = 4f
@@ -103,9 +107,9 @@ object CampaignGuiStyle {
      */
     fun toggleableCheckboxColors(): CheckboxColors {
         return CheckboxColors(
-            base = TOGGLE_UNSELECTED_HOVER_COLOR,
-            bg = TOGGLE_SELECTED_IDLE_COLOR,
-            bright = TOGGLE_SELECTED_HOVER_COLOR
+            base = SHARED_TAG_MODE_UNSELECTED_HOVER_COLOR,
+            bg = SHARED_TAG_MODE_SELECTED_IDLE_COLOR,
+            bright = SHARED_TAG_MODE_SELECTED_HOVER_COLOR
         )
     }
 
@@ -140,8 +144,16 @@ object CampaignGuiStyle {
 
     fun applyToggleableCheckboxVisualState(button: ButtonAPI) {
         val methods = buttonOverrideMethods(button) ?: return
-        val glowColor = if (button.isChecked) TOGGLE_SELECTED_HOVER_COLOR else TOGGLE_UNSELECTED_HOVER_COLOR
-        val borderColor = if (button.isChecked) TOGGLE_SELECTED_IDLE_COLOR else TOGGLE_UNSELECTED_IDLE_COLOR
+        val glowColor = if (button.isChecked) {
+            SHARED_TAG_MODE_SELECTED_HOVER_COLOR
+        } else {
+            SHARED_TAG_MODE_UNSELECTED_HOVER_COLOR
+        }
+        val borderColor = if (button.isChecked) {
+            SHARED_TAG_MODE_SELECTED_IDLE_COLOR
+        } else {
+            SHARED_TAG_MODE_UNSELECTED_IDLE_COLOR
+        }
         invokeColorOverride(button, methods.setGlowOverride, glowColor)
         invokeColorOverride(button, methods.setBorderOverride, borderColor)
     }
