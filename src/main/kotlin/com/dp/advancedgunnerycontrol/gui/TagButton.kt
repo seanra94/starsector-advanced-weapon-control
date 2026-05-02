@@ -115,21 +115,17 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
             val toReturn = mutableListOf<TagButton>()
             tags.forEachIndexed { index, tag ->
                 val otherSelectedTags = sanitizedTags.toMutableList().apply { remove(tag) }
+                val isActiveTag = sanitizedTags.contains(tag)
                 val unavailable = !pinned && (
                     isIncompatibleWithExistingTags(tag, otherSelectedTags) ||
                         shouldTagBeDisabled(group, ship, tag)
                     )
-                val rowFillColor = when {
-                    pinned -> CampaignGuiStyle.TOGGLE_SELECTED_IDLE_COLOR
-                    unavailable -> null
-                    else -> null
-                }
                 val itemPanel = panel.createCustomPanel(
                     metrics.itemWidth,
                     metrics.itemHeight,
                     CampaignPanelPlugin(
                         CampaignContainerType.ITEM,
-                        fillColor = rowFillColor,
+                        fillColor = null,
                         borderColor = if (unavailable) CampaignGuiStyle.DISABLED_TAG_BORDER_COLOR else null
                     )
                 )
@@ -143,16 +139,19 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
                 val baseColor = when {
                     pinned -> CampaignGuiStyle.TOGGLE_SELECTED_IDLE_COLOR
                     unavailable -> CampaignGuiStyle.DISABLED_TAG_BACKGROUND_COLOR
+                    isActiveTag -> CampaignGuiStyle.TOGGLE_SELECTED_IDLE_COLOR
                     else -> CampaignGuiStyle.TOGGLE_UNSELECTED_IDLE_COLOR
                 }
                 val darkColor = when {
                     pinned -> CampaignGuiStyle.TOGGLE_SELECTED_HOVER_COLOR
                     unavailable -> CampaignGuiStyle.DISABLED_TAG_DARK_COLOR
+                    isActiveTag -> CampaignGuiStyle.TOGGLE_SELECTED_HOVER_COLOR
                     else -> CampaignGuiStyle.TOGGLE_UNSELECTED_HOVER_COLOR
                 }
                 val brightColor = when {
                     pinned -> CampaignGuiStyle.TOGGLE_SELECTED_HOVER_COLOR
                     unavailable -> CampaignGuiStyle.DISABLED_TAG_BRIGHT_COLOR
+                    isActiveTag -> CampaignGuiStyle.TOGGLE_SELECTED_HOVER_COLOR
                     else -> CampaignGuiStyle.TOGGLE_UNSELECTED_HOVER_COLOR
                 }
                 toReturn.add(

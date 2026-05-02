@@ -87,6 +87,7 @@ class CampaignShipEditorPanelPlugin(
         private val ACTION_SHORTCUT_HIGHLIGHTS = listOf(
             "[TAB]",
             "[DELETE]",
+            "[DEL]",
             "[ESCAPE]",
             "[LEFT]",
             "[LEFT ARROW]",
@@ -316,21 +317,21 @@ class CampaignShipEditorPanelPlugin(
                 isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
                 action.style == CampaignOptionRowStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BACKGROUND_COLOR
                 action.style == CampaignOptionRowStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BACKGROUND_COLOR
-                else -> Misc.getBasePlayerColor()
+                else -> CampaignGuiStyle.NEUTRAL_BUTTON_IDLE_COLOR
             },
             when {
                 isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_DARK_COLOR
                 isGreen -> CampaignGuiStyle.ACTIVE_GREEN_DARK_COLOR
                 action.style == CampaignOptionRowStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_DARK_COLOR
                 action.style == CampaignOptionRowStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_DARK_COLOR
-                else -> Misc.getDarkPlayerColor()
+                else -> CampaignGuiStyle.NEUTRAL_BUTTON_HOVER_COLOR
             },
             when {
                 isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BRIGHT_COLOR
                 isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BRIGHT_COLOR
                 action.style == CampaignOptionRowStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BRIGHT_COLOR
                 action.style == CampaignOptionRowStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BRIGHT_COLOR
-                else -> Misc.getBrightPlayerColor()
+                else -> CampaignGuiStyle.NEUTRAL_BUTTON_HOVER_COLOR
             },
             width,
             rowHeight,
@@ -360,7 +361,7 @@ class CampaignShipEditorPanelPlugin(
     }
 
     private fun actionLabelLayout(action: CampaignOptionRow, width: Float): WrappedLabelLayout {
-        val shortcut = action.shortcut?.let { " [${Keyboard.getKeyName(it)}]" } ?: ""
+        val shortcut = action.shortcut?.let { " [${formatShortcutName(it)}]" } ?: ""
         return computeWrappedLabelLayout(
             text = action.label + shortcut,
             rowWidth = width - 2f * ACTION_ROW_PADDING,
@@ -491,6 +492,11 @@ class CampaignShipEditorPanelPlugin(
             }
         }
         return rows
+    }
+
+    private fun formatShortcutName(keyCode: Int): String {
+        val name = Keyboard.getKeyName(keyCode)
+        return if (name.equals("DELETE", ignoreCase = true)) "DEL" else name.uppercase()
     }
 
     private fun actionFamilyStyle(action: GUIAction): CampaignOptionRowStyle {

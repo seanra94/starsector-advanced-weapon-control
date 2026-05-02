@@ -60,6 +60,8 @@ object CampaignGuiStyle {
     val ACTION_LOAD_BACKGROUND_COLOR: Color = Color(145, 125, 25, 225)
     val ACTION_LOAD_DARK_COLOR: Color = Color(95, 80, 14, 225)
     val ACTION_LOAD_BRIGHT_COLOR: Color = Color(205, 180, 70, 225)
+    val NEUTRAL_BUTTON_IDLE_COLOR: Color = Color(72, 72, 72, 225)
+    val NEUTRAL_BUTTON_HOVER_COLOR: Color = Color(132, 132, 132, 225)
     val TOGGLE_UNSELECTED_IDLE_COLOR: Color = Color(0, 0, 0, 225)
     val TOGGLE_UNSELECTED_HOVER_COLOR: Color = Color(0, 69, 92, 225)
     val TOGGLE_SELECTED_IDLE_COLOR: Color = Color(0, 69, 92, 225)

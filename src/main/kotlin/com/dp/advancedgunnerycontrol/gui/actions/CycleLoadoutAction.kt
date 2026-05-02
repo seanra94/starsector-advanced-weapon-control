@@ -17,8 +17,8 @@ class CycleLoadoutAction(attributes: GUIAttributes) : GUIAction(attributes) {
                 "\nNote: Loadouts are cycled fleet-wide, not per ship."
     }
 
-    override fun getName(): String = "Cycle loadout [Current" +
-            " ${storageIndex + 1} / ${Settings.maxLoadouts()}] <${
+    override fun getName(): String = "Cycle loadout [" +
+            "${storageIndex + 1} / ${Settings.maxLoadouts()}] <${
                 Settings.loadoutNames().getOrNull(storageIndex) ?: "NoName"
             }>"
 }

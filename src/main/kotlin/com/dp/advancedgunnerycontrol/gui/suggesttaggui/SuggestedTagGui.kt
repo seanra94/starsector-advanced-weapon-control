@@ -56,6 +56,7 @@ class SuggestedTagGui : InteractionDialogPlugin {
         private val ACTION_SHORTCUT_HIGHLIGHTS = listOf(
             "[TAB]",
             "[DELETE]",
+            "[DEL]",
             "[ESCAPE]",
             "[LEFT]",
             "[LEFT ARROW]",
@@ -222,21 +223,21 @@ class SuggestedTagGui : InteractionDialogPlugin {
                     isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR
                     action.style == SuggestedActionStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BACKGROUND_COLOR
                     action.style == SuggestedActionStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BACKGROUND_COLOR
-                    else -> Misc.getBasePlayerColor()
+                    else -> CampaignGuiStyle.NEUTRAL_BUTTON_IDLE_COLOR
                 }
                 val darkColor = when {
                     isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_DARK_COLOR
                     isGreen -> CampaignGuiStyle.ACTIVE_GREEN_DARK_COLOR
                     action.style == SuggestedActionStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_DARK_COLOR
                     action.style == SuggestedActionStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_DARK_COLOR
-                    else -> Misc.getDarkPlayerColor()
+                    else -> CampaignGuiStyle.NEUTRAL_BUTTON_HOVER_COLOR
                 }
                 val brightColor = when {
                     isRed -> CampaignGuiStyle.UNAVAILABLE_TAG_BRIGHT_COLOR
                     isGreen -> CampaignGuiStyle.ACTIVE_GREEN_BRIGHT_COLOR
                     action.style == SuggestedActionStyle.SAVE -> CampaignGuiStyle.ACTION_SAVE_BRIGHT_COLOR
                     action.style == SuggestedActionStyle.LOAD -> CampaignGuiStyle.ACTION_LOAD_BRIGHT_COLOR
-                    else -> Misc.getBrightPlayerColor()
+                    else -> CampaignGuiStyle.NEUTRAL_BUTTON_HOVER_COLOR
                 }
                 val button = inner.addAreaCheckbox(
                     "",
@@ -283,7 +284,7 @@ class SuggestedTagGui : InteractionDialogPlugin {
         }
 
         private fun actionLabelLayout(action: SuggestedGuiAction, width: Float): WrappedLabelLayout {
-            val shortcutText = action.shortcuts.joinToString("") { "[${Keyboard.getKeyName(it)}]" }
+            val shortcutText = action.shortcuts.joinToString("") { "[${formatShortcutName(it)}]" }
             val suffix = if (shortcutText.isBlank()) "" else " $shortcutText"
             return computeWrappedLabelLayout(
                 text = action.name + suffix,
@@ -311,6 +312,17 @@ class SuggestedTagGui : InteractionDialogPlugin {
             if (highlights.isNotEmpty()) {
                 label.setHighlight(*highlights.toTypedArray())
                 label.setHighlightColors(*Array(highlights.size) { Misc.getHighlightColor() })
+            }
+        }
+
+        private fun formatShortcutName(keyCode: Int): String {
+            val rawName = Keyboard.getKeyName(keyCode)
+            val uppercase = rawName.uppercase()
+            return when {
+                uppercase == "DELETE" -> "DEL"
+                uppercase.contains("RIGHT") -> "RIGHT"
+                uppercase.contains("LEFT") -> "LEFT"
+                else -> uppercase
             }
         }
 

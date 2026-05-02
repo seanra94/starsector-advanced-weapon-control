@@ -47,5 +47,5 @@ class CopyLoadoutAction(attributes: GUIAttributes) : GUIAction(attributes) {
                 "\n$fleetBoilerplateText"
     }
 
-    override fun getName(): String = "Copy previous loadout" + nameSuffix(allLoadouts = false)
+    override fun getName(): String = "Copy prior loadout [${lastIndex() + 1} / ${Settings.maxLoadouts()}]" + nameSuffix(allLoadouts = false)
 }

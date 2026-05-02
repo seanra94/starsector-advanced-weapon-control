@@ -5,8 +5,8 @@ import com.dp.advancedgunnerycontrol.settings.Settings
 
 fun generateShipActions(attributes: GUIAttributes): List<GUIAction> {
     if(Settings.isAdvancedMode) return listOf(
-        CycleLoadoutAction(attributes),
         NextShipAction(attributes),
+        CycleLoadoutAction(attributes),
         CopyLoadoutAction(attributes),
         ApplySuggestedModeAction(attributes),
         ResetAction(attributes),

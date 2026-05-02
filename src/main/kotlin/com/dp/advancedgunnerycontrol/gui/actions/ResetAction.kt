@@ -44,7 +44,7 @@ class ResetAction(attributes: GUIAttributes) : GUIAction(attributes) {
                 "\nIf storage mode is WeaponCompositionGlobal, this action might affect other ships, too!"
     }
 
-    override fun getName(): String = "Reset" + nameSuffix()
+    override fun getName(): String = "Reset modes and tags" + nameSuffix()
 
     override fun getShortcut(): Int = Keyboard.KEY_DELETE
 }

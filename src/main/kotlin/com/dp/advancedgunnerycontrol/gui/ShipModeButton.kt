@@ -96,10 +96,16 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
             val activeModes = loadPersistedShipModes(ship.id, AGCGUI.storageIndex).toSet()
 
             modes.forEachIndexed { index, mode ->
+                val label = truncateLabel(shipModeToString[mode] ?: defaultShipMode, itemWidth, 24f)
+                val modeName = shipModeToString[mode] ?: defaultShipMode
+                val isActiveMode = activeModes.contains(modeName)
                 val itemPanel = panel.createCustomPanel(
                     itemWidth,
                     itemHeight,
-                    CampaignPanelPlugin(CampaignContainerType.ITEM)
+                    CampaignPanelPlugin(
+                        CampaignContainerType.ITEM,
+                        fillColor = null
+                    )
                 )
                 panel.addComponent(itemPanel)
                 itemPanel.position.inTL(
@@ -111,9 +117,6 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
                     itemHeight,
                     false
                 )
-                val label = truncateLabel(shipModeToString[mode] ?: defaultShipMode, itemWidth, 24f)
-                val modeName = shipModeToString[mode] ?: defaultShipMode
-                val isActiveMode = activeModes.contains(modeName)
                 toReturn.add(
                     ShipModeButton(
                         ship,
@@ -122,7 +125,7 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
                             "",
                             mode,
                             if (isActiveMode) CampaignGuiStyle.TOGGLE_SELECTED_IDLE_COLOR else CampaignGuiStyle.TOGGLE_UNSELECTED_IDLE_COLOR,
-                            if (isActiveMode) CampaignGuiStyle.TOGGLE_SELECTED_IDLE_COLOR else CampaignGuiStyle.TOGGLE_UNSELECTED_IDLE_COLOR,
+                            if (isActiveMode) CampaignGuiStyle.TOGGLE_SELECTED_HOVER_COLOR else CampaignGuiStyle.TOGGLE_UNSELECTED_HOVER_COLOR,
                             if (isActiveMode) CampaignGuiStyle.TOGGLE_SELECTED_HOVER_COLOR else CampaignGuiStyle.TOGGLE_UNSELECTED_HOVER_COLOR,
                             itemWidth,
                             itemHeight,
