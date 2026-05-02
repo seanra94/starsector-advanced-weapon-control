@@ -1,101 +1,144 @@
-Active task
-Campaign GUI follow-up for external weapon-composition presets and option-action safety.
+# Active task
 
-Current status
-The external weapon-composition preset data layer is already implemented.
-Presets are stored externally and intended to work across saves and profiles.
-Preset matching is based on normalized unique weapon IDs and is count-insensitive by design.
-Campaign Save Preset and Load Preset buttons are already implemented and function in the campaign ship editor.
-The active implementation work is now GUI follow-up and action-safety polish, not core preset data-layer design.
-The previous tag-canonicalization, README tag-table synchronization, Luna-default alignment, ship-mode storage fix, and related cleanup passes are complete enough to treat them as finished groundwork rather than the current workstream.
+Campaign GUI consistency, visual semantics, and navigation follow-up after the preset-controls and dangerous-action confirmation passes.
 
-Goal
-Keep the campaign preset workflow convenient, explicit, and compatibility-safe.
-Polish the campaign GUI so the preset controls read as a natural part of each weapon-group container.
-Require explicit confirm/cancel steps before broad-copy or destructive option actions execute.
+# Current status
 
-Current understanding
-Manual external presets are meant to complement normal tag storage modes, not replace them with another hidden mode.
-Users should be able to stay in Index mode while manually saving and loading reusable presets for repeated weapon combinations.
-Matching is by weapon-type set, not by exact count. A group with 2x PD Laser + 2x Tactical Laser should match a group with 3x PD Laser + 1x Tactical Laser, but not a group that lacks Tactical Laser entirely.
-Save updates the shared external preset for the current normalized weapon-type key and active loadout slot.
-Other matching groups do not change until the user explicitly clicks Load for that group.
-The current persistence and canonicalization flow should continue to reuse the normal campaign tag sanitization and compatibility logic where practical.
-Current fork data/config/LunaSettings.csv defaults remain authoritative for Luna-exposed settings.
+The external weapon-composition preset flow is implemented and functioning.
+Campaign `Save` / `Load` preset controls now sit at the top of each non-empty weapon-group container and use explicit confirm/cancel.
+Inline save/load status text is removed.
+Dangerous campaign options actions now use confirm/cancel protection, including copy-previous-loadout variants, reload settings, reset, and load suggested modes.
+Suggested-tags customization `Backup` and `Restore` now use confirm/cancel protection.
+Weapon-group headings now use the custom heading path instead of Starsector built-in section headings, and the stale marker behavior is accepted:
+- dirty group => `Group N (*)`
+- clean group => `Group N`
+- no preset + empty current tags => clean
+- no preset + non-empty current tags => dirty
 
-Near-term queue
-Campaign weapon-group GUI polish:
-- move Save Preset and Load Preset to the top of each weapon-group container directly beneath the Group N heading
-- remove or reduce the tiny horizontal gap between the two preset buttons
-- investigate and remove the stray extra white text shown under the yellow save/load status text
-- avoid leaving extra status-text spacing between the preset controls and the tag list if possible
+The current implementation direction is now:
+- custom container headings rather than built-in section headings
+- compact centered top-row controls
+- explicit confirm/cancel for impactful actions
+- dirty-state weapon-group headings as the visual signal for divergence from saved preset state
 
-Campaign options-container safety:
-- add confirm/cancel protection for Copy to other ships of same variant
-- add confirm/cancel protection for Copy to other ships of same variant (same hull type)
-- add confirm/cancel protection for Copy previous loadout
-- add confirm/cancel protection for Copy to other ships of same variant for all loadouts
-- add confirm/cancel protection for Copy to other ships of same variant for all loadouts (same hull type)
-- add confirm/cancel protection for Copy previous loadout for entire fleet
-- add confirm/cancel protection for Reload settings
+# Goal
 
-Scoped experiment:
-- test whether weapon-group heading section bars such as Group 1 can be recolored orange without affecting unrelated section headings
+Make the campaign ship editor and suggested-tags customization UI visually consistent, easier to read, and safer against misclicks while preserving the accepted preset semantics and current confirmation model.
 
-Deferred backlog, not active implementation:
-- phase-tag behavior review
-- original-upstream default restoration
-- broader LunaLib/settings migration strategy
-- rotate-toward-closest-valid-target behavior as ship mode rather than global aiming behavior
+# Current understanding
 
-Acceptance criteria
-Preset buttons remain available once per non-empty weapon group in the campaign ship editor.
-Preset buttons are positioned directly beneath the Group N heading.
-The horizontal gap between Save Preset and Load Preset is removed or reduced to the intended compact spacing.
-Clicking Save or Load does not leave unwanted extra white text or awkward blank spacing above the tag list.
-Save and Load continue to operate on the existing external preset store and current normalized count-insensitive matching semantics.
-The feature continues to work while normal tag storage mode remains Index.
-Other matching groups remain unchanged until the user explicitly presses Load on them.
-The listed broad-copy and Reload settings actions all require explicit confirm/cancel before execution.
-The orange heading-bar test determines whether the weapon-group section bars can be recolored without collateral styling changes.
-Normal tag persistence remains backward-compatible.
-compileKotlin passes before push.
-If campaign GUI code changes, in-game validation confirms the campaign ship editor still opens, tag scrolling still works, and the added controls fit the 1080p layout acceptably.
+All current container headings on the touched campaign/suggested-tags surfaces should use the custom heading system going forward.
+Default heading background should be darker than the current implementation, while stale weapon-group headings should remain visibly distinct from clean groups.
+`Save`, `Load`, and ship-mode labels should remain properly centered.
+Ship-mode text color should match the normal tag-label text color rather than using a separate green tint.
+Save-related actions and load-related actions should have distinct dark color semantics so the action family is visually obvious.
+Active weapon tags and active ship modes should share a dark teal selected-state treatment.
+The weapon-group page no longer needs a `Back` button.
+On the suggested-tags customization page, `Back` should return to the weapon-group page rather than the ship-select page.
+Pressing `Escape` on either the weapon-group page or the suggested-tags customization page should return to the ship-select page.
 
-Constraints
+# Near-term queue
+
+## Heading system and heading colors
+- Use the custom heading system for all current container headings on the touched campaign and suggested-tags surfaces, and treat that as the default approach for future container headings in this UI family.
+- Change default custom heading background to `Color(40, 40, 40, 225)`.
+- Keep stale weapon-group headings visually lighter at `Color(60, 60, 60, 225)`.
+- Preserve accepted stale-marker semantics exactly.
+- Keep heading text readable and centered.
+
+## Label colors and action-family colors
+- Change ship-mode label text to the same color used for normal tag text.
+- Make save-related buttons use a dark blue background/highlight family around `Color(0, 0, 60, 225)`.
+- Make load-related buttons use a dark yellow background/highlight family around `Color(60, 60, 0, 225)`.
+- Save-related buttons include:
+  - `Save`
+  - `Copy to other ships of same variant`
+  - all variants of `Copy to other ships of same variant`
+  - `Backup`
+- Load-related buttons include:
+  - `Copy previous loadout`
+  - all variants of `Copy previous loadout`
+  - `Load suggested modes`
+  - all variants of `Load suggested modes`
+  - `Reset [DELETE]`
+  - all variants of reset
+  - `Reload Settings`
+  - all variants of reload settings
+  - `Restore`
+
+## Selected-state colors
+- Change the background and hover background of active weapon tags and active ship modes to a dark teal selected-state treatment around `Color(0, 60, 60, 225)`.
+- Apply the same selected-state treatment consistently where the same active-state semantics are used on the touched campaign/suggested-tags surfaces.
+
+## Options-panel ordering and navigation
+Set the campaign options panel order to:
+
+1. `Cycle loadout [Current 1 / 3] <Normal>`
+2. `Next Ship [TAB]`
+3. `Copy previous loadout`
+4. `Load suggested modes`
+5. `Reset [DELETE]`
+6. `Reload Settings`
+7. `Copy to other ships of same variant`
+8. `Customize suggested tags`
+9. `Switch to simple mode`
+
+## Suggested-tags customization ordering and navigation
+Set the suggested-tags customization page order to:
+
+1. `Next Page [RIGHT][D]`
+2. `Prev Page [LEFT][A]`
+3. `Filter... [F]`
+4. `Reset`
+5. `Backup`
+6. `Restore`
+7. `Back [ESCAPE]`
+
+Navigation behavior:
+- remove `Back` from the weapon-group page
+- on the suggested-tags customization page, `Back` returns to the weapon-group page
+- pressing `Escape` on either page returns to the ship-select page
+
+# Acceptance criteria
+
+- Current touched container headings use the custom heading path rather than Starsector built-in section headings.
+- Default heading background is `Color(40, 40, 40, 225)`.
+- Stale weapon-group heading background is `Color(60, 60, 60, 225)`.
+- Clean weapon-group headings use the default heading background.
+- Stale-marker semantics remain:
+  - dirty weapon group => `Group N (*)`
+  - clean weapon group => `Group N`
+  - no preset + empty current tags => clean
+  - no preset + non-empty current tags => dirty
+- `Save`, `Load`, and ship-mode labels remain visually centered.
+- Ship-mode text color matches ordinary tag text color.
+- Save-related buttons use the dark blue family.
+- Load-related buttons use the dark yellow family.
+- Active weapon tags and active ship modes use the dark teal selected-state treatment.
+- Campaign options panel order matches the requested order.
+- Suggested-tags customization page order matches the requested order.
+- `Back` is removed from the weapon-group page.
+- `Back` on suggested-tags customization returns to the weapon-group page.
+- `Escape` on either page returns to the ship-select page.
+- Existing accepted confirm/cancel protections continue to work and do not regress.
+- compileKotlin passes before push.
+
+# Constraints
+
 Minimize unrelated changes.
-Preserve current preset data semantics unless a concrete bug requires change.
-Do not silently mutate other groups when saving a preset.
+Preserve current preset storage and matching semantics.
+Preserve accepted stale-marker semantics.
+Do not silently mutate other groups when saving presets.
 Do not re-open phase-tag behavior from static reasoning alone.
 Do not overwrite the original AGC mod folder.
-Treat build.gradle.kts as the source of truth for generated mod_info.json, version files, and Settings.editme.
-For Luna-exposed settings, treat data/config/LunaSettings.csv defaults as the source of truth.
+Treat `build.gradle.kts` as the source of truth for generated `mod_info.json`, version files, and `Settings.editme`.
+For Luna-exposed settings, treat `data/config/LunaSettings.csv` defaults as the source of truth.
 Preserve persisted tag, loadout, and legacy-alias compatibility when changing surrounding code or user-facing text.
 
-Verification needed
+# Verification needed
+
 Minimum code check:
 
+```powershell
 $env:STARSECTOR_DIRECTORY='C:\Games\Starsector'
 .\gradlew.bat compileKotlin
-
-For deploy and runtime checks, package with:
-
-$env:STARSECTOR_DIRECTORY='C:\Games\Starsector'
-.\gradlew.bat jar create-metadata-files write-settings-file
-
-Then deploy or copy to C:\Games\Starsector\mods\Advanced-Gunnery-Control-Fork using the established exclusions and check the campaign ship editor for:
-- preset button placement
-- preset button spacing
-- save/load status-text behavior
-- confirm/cancel behavior for the listed option actions
-- whether the orange heading-bar test is viable
-- whether tag scrolling and layout remain usable at 1080p
-
-Risks and open questions
-The source of the stray extra white text beneath the yellow preset status line is still unknown.
-If the inline preset status text is removed or minimized, the replacement feedback pattern still needs to be chosen deliberately.
-Adding more UI affordances in the campaign editor reduces available vertical space for tag scrolling and tag lists.
-Weapon-group section-heading recoloring may be limited by how Starsector addSectionHeading(...) bars are rendered.
-The exact future behavior for clearing or deleting an external preset remains undecided and is not part of the current task.
-Original-upstream default restoration remains bottom backlog work; if it is ever revisited, compare original upstream LunaSettings and original upstream Settings/runtime defaults and prefer original upstream LunaSettings when they differ.
-Phase-tag review remains bottom backlog work and should only be revisited with runtime evidence, not static suspicion alone.
