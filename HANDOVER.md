@@ -201,3 +201,54 @@ Interpret brightness requests consistently:
 - Active weapon tags and ship modes are toggleable controls and should follow Approach A exactly.
 - Weapon tags and ship modes should match in background fill, hover/highlight behavior, and overall selected-state treatment unless a future task intentionally changes both together.
 - Weapon tags are not required to match ship modes in text centering/layout, but their color/state semantics should match.
+
+## Current GUI button-state policy
+
+This section supersedes older stale GUI notes about pale-yellow selected tags and built-in heading styling when working on the current campaign and suggested-tags GUI surfaces.
+
+### Current heading policy
+- Use the custom container-heading path for current and future campaign/suggested-tags container headings instead of Starsector `addSectionHeading(...)` for normal container headings.
+- Default custom heading background is `Color(40, 40, 40, 225)`.
+- Stale weapon-group heading background is `Color(80, 80, 80, 225)`.
+
+### Button behavior models
+
+When working on colored buttons or tags in this GUI family, use these two patterns unless a specific surface has an explicitly accepted exception.
+
+#### Approach A: toggleable buttons
+- Untoggled idle fill: `Color(0, 0, 0, 225)`
+- Untoggled hover fill: `Color(145, 125, 25, 225)`
+- Toggled idle fill: `Color(145, 125, 25, 225)`
+- Toggled hover fill: `Color(205, 180, 70, 225)`
+
+Reference brightness anchors for this family:
+- dark anchor: `Color(73, 63, 13, 225)`
+- base anchor: `Color(145, 125, 25, 225)`
+- highlight anchor: `Color(205, 180, 70, 225)`
+
+#### Approach B: untoggleable buttons
+- Untoggled idle fill: `Color(145, 125, 25, 225)`
+- Untoggled hover fill: `Color(205, 180, 70, 225)`
+
+Reference brightness anchors for this family:
+- dark anchor: `Color(73, 63, 13, 225)`
+- base anchor: `Color(145, 125, 25, 225)`
+- highlight anchor: `Color(205, 180, 70, 225)`
+
+### Brightness language
+When the user asks for different colors in future GUI work, extrapolate brightness from these baseline values rather than treating color names alone as sufficient.
+- "dark" means approximately the brightness of `Color(73, 63, 13, 225)`, `Color(95, 80, 14, 225)`, or `Color(62, 34, 82, 225)`.
+- "base" or "moderately bright" means approximately the brightness of `Color(145, 125, 25, 225)`, `Color(95, 55, 125, 225)`, or `Color(0, 109, 145, 225)`.
+- "bright" or "highlight" means approximately the brightness of `Color(205, 180, 70, 225)` or `Color(150, 105, 190, 225)`.
+
+### Current accepted semantics for weapon tags and ship modes
+- Active weapon tags and ship modes are toggleable controls and should follow Approach A.
+- Weapon tags and ship modes should match in background fill, hover/highlight behavior, and overall selected-state treatment unless a future task intentionally changes both together.
+- Weapon tags are not required to match ship modes in text centering/layout, but their state-color semantics should match.
+
+### Current accepted semantics for other button families
+- Save-family untoggleable buttons use the accepted save-family hue with brightness interpreted from the baseline rules above.
+- Load-family untoggleable buttons use the accepted load-family hue with brightness interpreted from the baseline rules above.
+- Confirm/Cancel remain green/red.
+- Save/Load visible text should stay neutral rather than inheriting the family color.
+- Neutral uncolored buttons such as navigation/back/reset-style buttons should use a neutral gray hover family rather than pale blue.
