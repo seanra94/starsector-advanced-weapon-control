@@ -1,8 +1,11 @@
 package com.dp.advancedgunnerycontrol.gui
 
 import com.dp.advancedgunnerycontrol.gui.actions.BackAction
+import com.dp.advancedgunnerycontrol.gui.actions.CopyLoadoutAction
+import com.dp.advancedgunnerycontrol.gui.actions.CopyToSameVariantAction
 import com.dp.advancedgunnerycontrol.gui.actions.GUIAction
 import com.dp.advancedgunnerycontrol.gui.actions.GoToSuggestedTagsAction
+import com.dp.advancedgunnerycontrol.gui.actions.ReloadSettingsAction
 import com.dp.advancedgunnerycontrol.gui.actions.ResetAction
 import com.dp.advancedgunnerycontrol.gui.actions.generateShipActions
 import com.dp.advancedgunnerycontrol.settings.Settings
@@ -101,7 +104,7 @@ class CampaignShipEditorPanelPlugin(
     private var currentOptionRows: List<CampaignOptionRow> = emptyList()
     private val actionButtons = linkedMapOf<ButtonAPI, CampaignOptionRow>()
     private var lastModifierKeys = GUIAction.modifierKeys()
-    private var resetConfirmationPending = false
+    private var pendingConfirmationActionClass: Class<out GUIAction>? = null
     private var resetConfirmationModifiers: Pair<Boolean, Boolean>? = null
 
     fun init(panel: CustomPanelAPI, callbacks: CustomVisualDialogDelegate.DialogCallbacks) {
@@ -159,8 +162,10 @@ class CampaignShipEditorPanelPlugin(
             shipView = null
             actionButtons.clear()
             currentActions = generateShipActions(attributes)
-            if (currentActions.none { it is ResetAction }) {
-                resetConfirmationPending = false
+            if (pendingConfirmationActionClass != null &&
+                currentActions.none { it::class.java == pendingConfirmationActionClass }
+            ) {
+                pendingConfirmationActionClass = null
                 resetConfirmationModifiers = null
             }
             currentOptionRows = buildOptionRows()
@@ -325,10 +330,12 @@ class CampaignShipEditorPanelPlugin(
             rowHeight,
             0f
         )
-        inner.addTooltipToPrevious(
-            AGCGUI.makeTooltip(action.tooltip),
-            TooltipMakerAPI.TooltipLocation.BELOW
-        )
+        if (action.tooltip.isNotBlank()) {
+            inner.addTooltipToPrevious(
+                AGCGUI.makeTooltip(action.tooltip),
+                TooltipMakerAPI.TooltipLocation.BELOW
+            )
+        }
         bindButton(button)
         itemPanel.addUIElement(inner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
 
@@ -427,49 +434,48 @@ class CampaignShipEditorPanelPlugin(
         val backAction = currentActions.firstOrNull { it is BackAction }
         val normalActions = currentActions.filterNot { it is BackAction }
         normalActions.forEach { action ->
-            when (action) {
-                is ResetAction -> {
-                    if (resetConfirmationPending) {
-                        rows.add(
-                            CampaignOptionRow(
-                                label = "Confirm Reset",
-                                tooltip = action.getTooltip(),
-                                style = CampaignOptionRowStyle.GREEN,
-                                callback = {
-                                    val (allLoadouts, wholeFleet) = resetConfirmationModifiers ?: GUIAction.modifierKeys()
-                                    action.executeWithModifiers(allLoadouts, wholeFleet)
-                                    resetConfirmationPending = false
-                                    resetConfirmationModifiers = null
-                                }
-                            )
+            if (requiresConfirmation(action)) {
+                if (pendingConfirmationActionClass == action::class.java) {
+                    rows.add(
+                        CampaignOptionRow(
+                            label = "Confirm ${action.getName()}",
+                            tooltip = "",
+                            style = CampaignOptionRowStyle.GREEN,
+                            callback = {
+                                executeConfirmedAction(action)
+                                pendingConfirmationActionClass = null
+                                resetConfirmationModifiers = null
+                            }
                         )
-                        rows.add(
-                            CampaignOptionRow(
-                                label = "Cancel Reset",
-                                tooltip = "Do not reset current settings.",
-                                style = CampaignOptionRowStyle.RED,
-                                callback = {
-                                    resetConfirmationPending = false
-                                    resetConfirmationModifiers = null
-                                }
-                            )
+                    )
+                    rows.add(
+                        CampaignOptionRow(
+                            label = "Cancel ${action.getName()}",
+                            tooltip = "",
+                            style = CampaignOptionRowStyle.RED,
+                            callback = {
+                                pendingConfirmationActionClass = null
+                                resetConfirmationModifiers = null
+                            }
                         )
-                    } else {
-                        rows.add(
-                            CampaignOptionRow(
-                                label = action.getName(),
-                                tooltip = action.getTooltip(),
-                                shortcut = action.getShortcut(),
-                                callback = {
-                                    resetConfirmationPending = true
+                    )
+                } else {
+                    rows.add(
+                        CampaignOptionRow(
+                            label = action.getName(),
+                            tooltip = action.getTooltip(),
+                            shortcut = action.getShortcut(),
+                            callback = {
+                                pendingConfirmationActionClass = action::class.java
+                                if (action is ResetAction) {
                                     resetConfirmationModifiers = GUIAction.modifierKeys()
                                 }
-                            )
+                            }
                         )
-                    }
+                    )
                 }
-
-                else -> rows.add(
+            } else {
+                rows.add(
                     CampaignOptionRow(
                         label = action.getName(),
                         tooltip = action.getTooltip(),
@@ -492,6 +498,22 @@ class CampaignShipEditorPanelPlugin(
             )
         }
         return rows
+    }
+
+    private fun requiresConfirmation(action: GUIAction): Boolean {
+        return action is ResetAction ||
+            action is CopyToSameVariantAction ||
+            action is CopyLoadoutAction ||
+            action is ReloadSettingsAction
+    }
+
+    private fun executeConfirmedAction(action: GUIAction) {
+        if (action is ResetAction) {
+            val (allLoadouts, wholeFleet) = resetConfirmationModifiers ?: GUIAction.modifierKeys()
+            action.executeWithModifiers(allLoadouts, wholeFleet)
+            return
+        }
+        executeAction(action)
     }
 
     private fun executeOptionRow(action: CampaignOptionRow) {

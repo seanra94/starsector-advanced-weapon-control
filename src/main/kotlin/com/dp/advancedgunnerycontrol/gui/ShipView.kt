@@ -63,7 +63,7 @@ class ShipView(
         private const val PRESET_CONFIRM_HEIGHT = 18f
         private const val PRESET_BUTTON_GAP = 1f
         private const val PRESET_BUTTON_HGAP = 1f
-        private val WEAPON_GROUP_HEADER_COLOR = java.awt.Color(10, 10, 10, 230)
+        private val WEAPON_GROUP_HEADER_COLOR = java.awt.Color(190, 190, 190, 225)
         private const val PRESET_LABEL_CHAR_WIDTH_ESTIMATE = 6.6f
         private const val TAG_ELLIPSIS_HEIGHT = CampaignGuiStyle.TAG_ITEM_HEIGHT
         private const val TAG_SCROLL_STEP = 1
@@ -857,7 +857,7 @@ class ShipView(
         return when (presetResult.status) {
             WeaponCompositionPresetPeekStatus.FOUND -> currentSanitized != presetResult.tags.toSet()
             WeaponCompositionPresetPeekStatus.NO_PRESET_FOUND,
-            WeaponCompositionPresetPeekStatus.NO_WEAPON_GROUP_KEY,
+            WeaponCompositionPresetPeekStatus.NO_WEAPON_GROUP_KEY -> currentSanitized.isNotEmpty()
             WeaponCompositionPresetPeekStatus.FAILED -> true
         }
     }
