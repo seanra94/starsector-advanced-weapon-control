@@ -2,6 +2,7 @@ package com.dp.advancedgunnerycontrol.gui
 
 import java.awt.Color
 import com.fs.starfarer.api.ui.LabelAPI
+import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -52,6 +53,7 @@ object CampaignGuiStyle {
     val ACTIVE_GREEN_BACKGROUND_COLOR: Color = Color(86, 145, 92)
     val ACTIVE_GREEN_DARK_COLOR: Color = Color(48, 92, 54)
     val ACTIVE_GREEN_BRIGHT_COLOR: Color = Color(140, 205, 145)
+    val DEFAULT_HEADING_BACKGROUND_COLOR: Color = Color(20, 20, 20, 225)
 
     const val MAIN_PADDING = 0f
     const val PANEL_PADDING = 4f
@@ -69,6 +71,7 @@ object CampaignGuiStyle {
     const val ITEM_TEXT_HORIZONTAL_PADDING = 4f
     const val ITEM_TEXT_TOP_PADDING = 2f
     const val ITEM_HIGHLIGHT_X_OFFSET = -3f
+    const val HEADING_CHAR_WIDTH_ESTIMATE = 7.2f
 }
 
 fun TooltipMakerAPI.applyAgcDefaultTextStyle() {
@@ -255,4 +258,34 @@ fun renderTagLabel(
     val element = panel.createUIElement(width, height, false)
     element.addAgcText(text, 0f, textColor)
     panel.addUIElement(element).inTL(x, y)
+}
+
+fun addCustomContainerHeading(
+    panel: CustomPanelAPI,
+    title: String,
+    top: Float = CampaignGuiStyle.PANEL_PADDING,
+    fillColor: Color = CampaignGuiStyle.DEFAULT_HEADING_BACKGROUND_COLOR,
+    textColor: Color? = null,
+    headingHeight: Float = 20f,
+) {
+    val headerPanel = panel.createCustomPanel(
+        panel.position.width - 2f * CampaignGuiStyle.PANEL_PADDING,
+        headingHeight,
+        CampaignPanelPlugin(CampaignContainerType.HEADER, fillColor = fillColor)
+    )
+    panel.addComponent(headerPanel)
+    headerPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, top)
+
+    val estimatedLabelWidth = title.length * CampaignGuiStyle.HEADING_CHAR_WIDTH_ESTIMATE
+    val left = ((headerPanel.position.width - estimatedLabelWidth) / 2f).coerceAtLeast(CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING)
+    val width = (headerPanel.position.width - left - CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING).coerceAtLeast(16f)
+    renderTagLabel(
+        headerPanel,
+        title,
+        width,
+        headingHeight - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+        left,
+        CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+        textColor = textColor
+    )
 }

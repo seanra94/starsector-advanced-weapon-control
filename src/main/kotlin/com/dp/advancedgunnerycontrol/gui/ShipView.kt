@@ -17,7 +17,6 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI
 import com.fs.starfarer.api.input.InputEventAPI
 import com.fs.starfarer.api.loading.WeaponGroupSpec
 import com.fs.starfarer.api.loading.WeaponSpecAPI
-import com.fs.starfarer.api.ui.Alignment
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
 import com.fs.starfarer.api.util.Misc
@@ -51,11 +50,12 @@ class ShipView(
         private const val SHIP_MODE_SPARE_ROWS = 1
         private const val SECTION_HEADER_HEIGHT = 20f
         private const val WEAPON_ENTRY_HEIGHT = 40f
-        private const val WEAPON_IMAGE_WIDTH = 30f
+        private const val WEAPON_IMAGE_WIDTH = 27f
         private const val WEAPON_ENTRY_CONTENT_LEFT_OFFSET = -4f
         private const val WEAPON_ENTRY_TEXT_GAP = 1f
-        private const val WEAPON_TEXT_MAX_VISIBLE_CHARS = 31
-        private const val WEAPON_TEXT_CHARS_PER_LINE = 18
+        private const val WEAPON_TEXT_MAX_VISIBLE_CHARS = 29
+        private const val WEAPON_TEXT_CHARS_PER_LINE = 17
+        private const val WEAPON_TEXT_VERTICAL_INSET = 1f
         private const val WEAPON_ROWS_VISIBLE = 4
         private const val WEAPON_OVERFLOW_ROW_HEIGHT = WEAPON_ENTRY_HEIGHT
         private const val WEAPON_TO_TAG_GAP = 2f
@@ -64,8 +64,6 @@ class ShipView(
         private const val PRESET_BUTTON_GAP = 1f
         private const val PRESET_BUTTON_HGAP = 1f
         private val WEAPON_GROUP_STALE_HEADER_COLOR = java.awt.Color(60, 60, 60, 225)
-        private const val GROUP_HEADING_CHAR_WIDTH_ESTIMATE = 7.2f
-        private const val PRESET_LABEL_CHAR_WIDTH_ESTIMATE = 6.6f
         private const val TAG_ELLIPSIS_HEIGHT = CampaignGuiStyle.TAG_ITEM_HEIGHT
         private const val TAG_SCROLL_STEP = 1
         private const val PICTURE_INFO_ROW_HEIGHT = 32f
@@ -174,58 +172,18 @@ class ShipView(
 
     override fun buttonPressed(buttonId: Any?) {}
 
-    private fun addSectionHeading(
-        panel: CustomPanelAPI,
-        title: String,
-        yOffset: Float = CampaignGuiStyle.PANEL_PADDING,
-        fillColor: java.awt.Color? = null,
-    ) {
-        val headerPanel = panel.createCustomPanel(
-            panel.position.width - 2f * CampaignGuiStyle.PANEL_PADDING,
-            SECTION_HEADER_HEIGHT,
-            CampaignPanelPlugin(CampaignContainerType.HEADER, fillColor = fillColor)
-        )
-        panel.addComponent(headerPanel)
-        headerPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, yOffset)
-        val header = headerPanel.createUIElement(
-            headerPanel.position.width,
-            SECTION_HEADER_HEIGHT,
-            false
-        )
-        header.addSectionHeading(title, Alignment.MID, 0f)
-        headerPanel.addUIElement(header).inTL(0f, 0f)
-    }
-
     private fun addWeaponGroupHeading(
         panel: CustomPanelAPI,
         title: String,
         isDirty: Boolean,
         yOffset: Float = CampaignGuiStyle.PANEL_PADDING,
     ) {
-        val headerPanel = panel.createCustomPanel(
-            panel.position.width - 2f * CampaignGuiStyle.PANEL_PADDING,
-            SECTION_HEADER_HEIGHT,
-            CampaignPanelPlugin(
-                CampaignContainerType.HEADER,
-                fillColor = if (isDirty) WEAPON_GROUP_STALE_HEADER_COLOR else null,
-            )
-        )
-        panel.addComponent(headerPanel)
-        headerPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, yOffset)
-
-        val estimatedLabelWidth = title.length * GROUP_HEADING_CHAR_WIDTH_ESTIMATE
-        val textLeft = ((headerPanel.position.width - estimatedLabelWidth) / 2f)
-            .coerceAtLeast(CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING)
-        val centeredTextWidth =
-            (headerPanel.position.width - textLeft - CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING).coerceAtLeast(16f)
-
-        renderTagLabel(
-            headerPanel,
-            title,
-            centeredTextWidth,
-            SECTION_HEADER_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
-            textLeft,
-            CampaignGuiStyle.ITEM_TEXT_TOP_PADDING
+        addCustomContainerHeading(
+            panel = panel,
+            title = title,
+            top = yOffset,
+            fillColor = if (isDirty) WEAPON_GROUP_STALE_HEADER_COLOR else CampaignGuiStyle.DEFAULT_HEADING_BACKGROUND_COLOR,
+            headingHeight = SECTION_HEADER_HEIGHT
         )
     }
 
@@ -316,7 +274,7 @@ class ShipView(
     }
 
     private fun buildPictureContainer(panel: CustomPanelAPI, ship: FleetMemberAPI) {
-        addSectionHeading(panel, "Ship")
+        addCustomContainerHeading(panel, "Ship", headingHeight = SECTION_HEADER_HEIGHT)
 
         val bodyTop = CampaignGuiStyle.PANEL_PADDING + SECTION_HEADER_HEIGHT + PICTURE_IMAGE_TOP_GAP
         val innerWidth = panel.position.width - 2f * CampaignGuiStyle.PANEL_PADDING
@@ -364,7 +322,7 @@ class ShipView(
     }
 
     private fun buildShipModeContainer(panel: CustomPanelAPI, ship: FleetMemberAPI) {
-        addSectionHeading(panel, "Ship Modes")
+        addCustomContainerHeading(panel, "Ship Modes", headingHeight = SECTION_HEADER_HEIGHT)
         val bodyTop = CampaignGuiStyle.PANEL_PADDING + SECTION_HEADER_HEIGHT
         val innerWidth = panel.position.width - 2f * CampaignGuiStyle.PANEL_PADDING
         val bodyHeight = panel.position.height - bodyTop - CampaignGuiStyle.PANEL_PADDING
@@ -447,7 +405,7 @@ class ShipView(
             imageTextPanel.addAgcText(imageText, 0f)
             entryPanel.addUIElement(imageTextPanel).inTL(0f, CampaignGuiStyle.ITEM_TEXT_TOP_PADDING)
         } else if (entry?.sprite?.isNotBlank() == true) {
-            val imageMaxHeight = WEAPON_ENTRY_HEIGHT - 4f
+            val imageMaxHeight = WEAPON_ENTRY_HEIGHT - 6f
             val (imageWidth, imageHeight) = fitSprite(entry.sprite, WEAPON_IMAGE_WIDTH, imageMaxHeight)
             if (imageWidth > 0f && imageHeight > 0f) {
                 val imagePanel = entryPanel.createUIElement(WEAPON_IMAGE_WIDTH, WEAPON_ENTRY_HEIGHT, false)
@@ -465,7 +423,7 @@ class ShipView(
         val textWidth = entryPanel.position.width - textLeft - WEAPON_ENTRY_TEXT_GAP
         val textPanel = entryPanel.createUIElement(
             textWidth,
-            WEAPON_ENTRY_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+            WEAPON_ENTRY_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING - WEAPON_TEXT_VERTICAL_INSET,
             false
         )
         val displayLabel = truncateLabelByLength(entry.label, WEAPON_TEXT_MAX_VISIBLE_CHARS)
@@ -473,7 +431,7 @@ class ShipView(
             wrapTextCapped(displayLabel, WEAPON_TEXT_CHARS_PER_LINE, 2),
             0f
         )
-        entryPanel.addUIElement(textPanel).inTL(textLeft, CampaignGuiStyle.ITEM_TEXT_TOP_PADDING)
+        entryPanel.addUIElement(textPanel).inTL(textLeft, CampaignGuiStyle.ITEM_TEXT_TOP_PADDING + WEAPON_TEXT_VERTICAL_INSET)
     }
 
     private fun buildWeaponContainer(
@@ -700,7 +658,7 @@ class ShipView(
         savePanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, top)
         val saveInner = savePanel.createUIElement(buttonWidth, PRESET_BUTTON_HEIGHT, false)
         val saveButton = saveInner.addAreaCheckbox(
-            "",
+            "Save",
             "save_preset_$groupIndex",
             Misc.getBasePlayerColor(),
             Misc.getDarkPlayerColor(),
@@ -714,7 +672,6 @@ class ShipView(
             TooltipMakerAPI.TooltipLocation.BELOW
         )
         savePanel.addUIElement(saveInner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
-        renderCenteredPresetLabel(savePanel, "Save", buttonWidth, PRESET_BUTTON_HEIGHT)
         buttons.add(
             CampaignMomentaryButton(saveButton) {
                 pendingPresetActionByGroup[groupIndex] = PendingPresetAction.SAVE
@@ -732,7 +689,7 @@ class ShipView(
         loadPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING + buttonWidth + PRESET_BUTTON_HGAP, top)
         val loadInner = loadPanel.createUIElement(buttonWidth, PRESET_BUTTON_HEIGHT, false)
         val loadButton = loadInner.addAreaCheckbox(
-            "",
+            "Load",
             "load_preset_$groupIndex",
             Misc.getBasePlayerColor(),
             Misc.getDarkPlayerColor(),
@@ -746,7 +703,6 @@ class ShipView(
             TooltipMakerAPI.TooltipLocation.BELOW
         )
         loadPanel.addUIElement(loadInner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
-        renderCenteredPresetLabel(loadPanel, "Load", buttonWidth, PRESET_BUTTON_HEIGHT)
         buttons.add(
             CampaignMomentaryButton(loadButton) {
                 pendingPresetActionByGroup[groupIndex] = PendingPresetAction.LOAD
@@ -861,25 +817,6 @@ class ShipView(
                 onPendingPresetActionUpdate?.invoke(groupIndex, null)
                 campaignScrollDirty = true
             }
-        )
-    }
-
-    private fun renderCenteredPresetLabel(
-        panel: CustomPanelAPI,
-        text: String,
-        width: Float,
-        height: Float,
-    ) {
-        val estimatedLabelWidth = text.length * PRESET_LABEL_CHAR_WIDTH_ESTIMATE
-        val left = ((width - estimatedLabelWidth) / 2f).coerceAtLeast(CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING)
-        val availableWidth = (width - left - CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING).coerceAtLeast(16f)
-        renderTagLabel(
-            panel,
-            text,
-            availableWidth,
-            height - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
-            left,
-            CampaignGuiStyle.ITEM_TEXT_TOP_PADDING
         )
     }
 

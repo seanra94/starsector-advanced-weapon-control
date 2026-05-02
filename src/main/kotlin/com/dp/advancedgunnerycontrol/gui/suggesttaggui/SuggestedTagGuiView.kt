@@ -5,12 +5,12 @@ import com.dp.advancedgunnerycontrol.gui.CampaignContainerType
 import com.dp.advancedgunnerycontrol.gui.CampaignGuiStyle
 import com.dp.advancedgunnerycontrol.gui.CustomView
 import com.dp.advancedgunnerycontrol.gui.CampaignPanelPlugin
+import com.dp.advancedgunnerycontrol.gui.addCustomContainerHeading
 import com.dp.advancedgunnerycontrol.settings.Settings
 import com.dp.advancedgunnerycontrol.typesandvalues.getSuggestedModesForWeaponId
 import com.fs.starfarer.api.Global
 import com.fs.starfarer.api.input.InputEventAPI
 import com.fs.starfarer.api.loading.WeaponSpecAPI
-import com.fs.starfarer.api.ui.Alignment
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import kotlin.math.floor
 import kotlin.math.max
@@ -92,19 +92,6 @@ class SuggestedTagGuiView(
     fun shouldRegenerate(): Boolean =
         scrollDirty || observedTagSelectionVersion != SuggestedTagButton.suggestedTagSelectionVersion
 
-    private fun addSectionHeading(panel: CustomPanelAPI, title: String, top: Float = CampaignGuiStyle.PANEL_PADDING) {
-        val headerPanel = panel.createCustomPanel(
-            panel.position.width - 2f * CampaignGuiStyle.PANEL_PADDING,
-            SECTION_HEADER_HEIGHT,
-            CampaignPanelPlugin(CampaignContainerType.HEADER)
-        )
-        panel.addComponent(headerPanel)
-        headerPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, top)
-        val header = headerPanel.createUIElement(headerPanel.position.width, SECTION_HEADER_HEIGHT, false)
-        header.addSectionHeading(title, Alignment.MID, 0f)
-        headerPanel.addUIElement(header).inTL(0f, 0f)
-    }
-
     private fun fitSprite(spriteName: String, maxWidth: Float, maxHeight: Float): Pair<Float, Float> {
         if (spriteName.isBlank()) return 0f to 0f
         return try {
@@ -130,7 +117,7 @@ class SuggestedTagGuiView(
     }
 
     private fun buildWeaponInfo(panel: CustomPanelAPI, weaponId: String?) {
-        addSectionHeading(panel, if (weaponId == null) "Weapon" else "Weapon")
+        addCustomContainerHeading(panel, "Weapon", headingHeight = SECTION_HEADER_HEIGHT)
         if (weaponId == null) return
 
         val spec = Global.getSettings().getWeaponSpec(weaponId)

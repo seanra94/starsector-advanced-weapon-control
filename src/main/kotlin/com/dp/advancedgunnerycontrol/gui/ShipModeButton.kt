@@ -16,8 +16,6 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
     ButtonBase<ShipModes>(mode, button, false) {
 
     companion object {
-        private const val SHIP_MODE_LABEL_CHAR_WIDTH_ESTIMATE = 6.6f
-
         fun createModeButtonGroup(
             ship: FleetMemberAPI,
             panel: CustomPanelAPI,
@@ -115,7 +113,7 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
                         ship,
                         mode,
                         inner.addAreaCheckbox(
-                            "",
+                            label,
                             mode,
                             CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR,
                             CampaignGuiStyle.ACTIVE_GREEN_DARK_COLOR,
@@ -131,18 +129,6 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
                     TooltipMakerAPI.TooltipLocation.BELOW
                 )
                 itemPanel.addUIElement(inner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
-                val textPanel = itemPanel.createUIElement(
-                    itemWidth,
-                    itemHeight - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
-                    false
-                )
-                textPanel.addAgcText(label, 0f)
-                val estimatedLabelWidth = label.length * SHIP_MODE_LABEL_CHAR_WIDTH_ESTIMATE
-                val centeredLeft = ((itemWidth - estimatedLabelWidth) / 2f).coerceAtLeast(CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING)
-                itemPanel.addUIElement(textPanel).inTL(
-                    centeredLeft,
-                    CampaignGuiStyle.ITEM_TEXT_TOP_PADDING
-                )
             }
 
             toReturn.forEach {

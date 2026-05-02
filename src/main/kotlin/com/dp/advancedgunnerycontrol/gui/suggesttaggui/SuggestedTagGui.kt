@@ -7,6 +7,7 @@ import com.dp.advancedgunnerycontrol.gui.CampaignPanelPlugin
 import com.dp.advancedgunnerycontrol.gui.GUIShower
 import com.dp.advancedgunnerycontrol.gui.WrappedLabelLayout
 import com.dp.advancedgunnerycontrol.gui.addAgcText
+import com.dp.advancedgunnerycontrol.gui.addCustomContainerHeading
 import com.dp.advancedgunnerycontrol.gui.applyAgcDefaultTextStyle
 import com.dp.advancedgunnerycontrol.gui.computeWrappedLabelLayout
 import com.dp.advancedgunnerycontrol.settings.LunaSettingHandler
@@ -190,12 +191,7 @@ class SuggestedTagGui : InteractionDialogPlugin {
 
         private fun buildOptionsPanel(panel: CustomPanelAPI) {
             val width = panel.position.width - 2f * CampaignGuiStyle.PANEL_PADDING
-            val headerPanel = panel.createCustomPanel(width, SECTION_HEADER_HEIGHT, CampaignPanelPlugin(CampaignContainerType.HEADER))
-            panel.addComponent(headerPanel)
-            headerPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, CampaignGuiStyle.PANEL_PADDING)
-            val header = headerPanel.createUIElement(width, SECTION_HEADER_HEIGHT, false)
-            header.addSectionHeading("Options", Alignment.MID, 0f)
-            headerPanel.addUIElement(header).inTL(0f, 0f)
+            addCustomContainerHeading(panel, "Options", headingHeight = SECTION_HEADER_HEIGHT)
 
             var currentTop = CampaignGuiStyle.PANEL_PADDING + SECTION_HEADER_HEIGHT
             currentActions.forEach { action ->
