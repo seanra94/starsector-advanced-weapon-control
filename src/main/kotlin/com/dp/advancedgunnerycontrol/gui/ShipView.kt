@@ -59,7 +59,8 @@ class ShipView(
         private const val PRESET_CONFIRM_HEIGHT = 18f
         private const val PRESET_BUTTON_GAP = 1f
         private const val PRESET_BUTTON_HGAP = 1f
-        private val WEAPON_GROUP_HEADER_COLOR = java.awt.Color(235, 150, 65, 225)
+        private val WEAPON_GROUP_HEADER_COLOR = java.awt.Color(10, 10, 10, 230)
+        private const val PRESET_LABEL_CHAR_WIDTH_ESTIMATE = 6.6f
         private const val TAG_ELLIPSIS_HEIGHT = CampaignGuiStyle.TAG_ITEM_HEIGHT
         private const val TAG_SCROLL_STEP = 1
         private const val PICTURE_INFO_ROW_HEIGHT = 32f
@@ -590,7 +591,7 @@ class ShipView(
         val innerWidth = panel.position.width - 2f * CampaignGuiStyle.PANEL_PADDING
         val presetPendingAction = pendingPresetActionByGroup[groupIndex]
         val presetAreaTop = topContent
-        val presetAreaHeight = PRESET_BUTTON_HEIGHT + if (presetPendingAction != null) PRESET_BUTTON_GAP + PRESET_CONFIRM_HEIGHT else 0f
+        val presetAreaHeight = PRESET_BUTTON_HEIGHT + PRESET_BUTTON_GAP + PRESET_CONFIRM_HEIGHT
         val weaponContainerTop = presetAreaTop + presetAreaHeight + WEAPON_TO_TAG_GAP
         val weaponContainerHeight =
             WEAPON_ROWS_VISIBLE * WEAPON_ENTRY_HEIGHT +
@@ -669,14 +670,7 @@ class ShipView(
             0f
         )
         savePanel.addUIElement(saveInner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
-        renderTagLabel(
-            savePanel,
-            "Save Preset",
-            buttonWidth - 2f * CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
-            PRESET_BUTTON_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
-            CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
-            CampaignGuiStyle.ITEM_TEXT_TOP_PADDING
-        )
+        renderCenteredPresetLabel(savePanel, "Save", buttonWidth, PRESET_BUTTON_HEIGHT)
         buttons.add(
             CampaignMomentaryButton(saveButton) {
                 pendingPresetActionByGroup[groupIndex] = PendingPresetAction.SAVE
@@ -704,14 +698,7 @@ class ShipView(
             0f
         )
         loadPanel.addUIElement(loadInner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
-        renderTagLabel(
-            loadPanel,
-            "Load Preset",
-            buttonWidth - 2f * CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
-            PRESET_BUTTON_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
-            CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
-            CampaignGuiStyle.ITEM_TEXT_TOP_PADDING
-        )
+        renderCenteredPresetLabel(loadPanel, "Load", buttonWidth, PRESET_BUTTON_HEIGHT)
         buttons.add(
             CampaignMomentaryButton(loadButton) {
                 pendingPresetActionByGroup[groupIndex] = PendingPresetAction.LOAD
@@ -720,7 +707,10 @@ class ShipView(
             }
         )
 
-        if (pendingAction == null) return
+        if (pendingAction == null) {
+            // Keep fixed vertical space reserved for confirm/cancel so the rest of the group layout never shifts.
+            return
+        }
 
         val confirmPanel = panel.createCustomPanel(
             buttonWidth,
@@ -739,6 +729,14 @@ class ShipView(
             buttonWidth,
             PRESET_CONFIRM_HEIGHT,
             0f
+        )
+        val confirmTooltip = when (pendingAction) {
+            PendingPresetAction.SAVE -> "Save the current tags from this weapon group as the external preset for this weapon combination and active loadout. Other matching groups do not change until you explicitly load the preset there."
+            PendingPresetAction.LOAD -> "Load the external preset for this weapon combination and active loadout into this weapon group. This only changes this group."
+        }
+        confirmInner.addTooltipToPrevious(
+            AGCGUI.makeTooltip(confirmTooltip),
+            TooltipMakerAPI.TooltipLocation.BELOW
         )
         confirmPanel.addUIElement(confirmInner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
         renderTagLabel(
@@ -807,6 +805,14 @@ class ShipView(
             PRESET_CONFIRM_HEIGHT,
             0f
         )
+        val cancelTooltip = when (pendingAction) {
+            PendingPresetAction.SAVE -> "Cancel saving this preset. No changes will be made."
+            PendingPresetAction.LOAD -> "Cancel loading this preset. No changes will be made."
+        }
+        cancelInner.addTooltipToPrevious(
+            AGCGUI.makeTooltip(cancelTooltip),
+            TooltipMakerAPI.TooltipLocation.BELOW
+        )
         cancelPanel.addUIElement(cancelInner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
         renderTagLabel(
             cancelPanel,
@@ -823,6 +829,25 @@ class ShipView(
                 onPendingPresetActionUpdate?.invoke(groupIndex, null)
                 campaignScrollDirty = true
             }
+        )
+    }
+
+    private fun renderCenteredPresetLabel(
+        panel: CustomPanelAPI,
+        text: String,
+        width: Float,
+        height: Float,
+    ) {
+        val estimatedLabelWidth = text.length * PRESET_LABEL_CHAR_WIDTH_ESTIMATE
+        val left = ((width - estimatedLabelWidth) / 2f).coerceAtLeast(CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING)
+        val availableWidth = (width - left - CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING).coerceAtLeast(16f)
+        renderTagLabel(
+            panel,
+            text,
+            availableWidth,
+            height - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+            left,
+            CampaignGuiStyle.ITEM_TEXT_TOP_PADDING
         )
     }
 
