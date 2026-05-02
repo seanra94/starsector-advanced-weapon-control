@@ -6,6 +6,7 @@ import com.fs.starfarer.api.ui.ButtonAPI
 import com.fs.starfarer.api.ui.LabelAPI
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.TooltipMakerAPI
+import com.fs.starfarer.api.ui.TooltipMakerAPI.TooltipLocation
 import com.fs.starfarer.api.util.Misc
 import java.lang.reflect.Method
 import kotlin.math.ceil
@@ -252,6 +253,11 @@ data class WrappedLabelLayout(
     val rowHeight: Float,
 )
 
+data class StyledCampaignButtonShell(
+    val panel: CustomPanelAPI,
+    val button: ButtonAPI,
+)
+
 fun computeWrapGridMetrics(
     itemCount: Int,
     availableWidth: Float,
@@ -387,6 +393,50 @@ fun computeWrappedLabelLayout(
 
 fun TooltipMakerAPI.addTagLabelPara(text: String, pad: Float = 0f) {
     addAgcText(text, pad)
+}
+
+fun addStyledCampaignButtonShell(
+    parent: CustomPanelAPI,
+    data: Any,
+    x: Float,
+    y: Float,
+    width: Float,
+    height: Float,
+    colors: CampaignGuiStyle.ButtonStateColors,
+    tooltip: String? = null,
+    fillIdle: Boolean = true,
+): StyledCampaignButtonShell {
+    val itemPanel = parent.createCustomPanel(
+        width,
+        height,
+        CampaignPanelPlugin(
+            CampaignContainerType.ITEM,
+            fillColor = if (fillIdle) colors.idle else null
+        )
+    )
+    parent.addComponent(itemPanel)
+    itemPanel.position.inTL(x, y)
+
+    val inner = itemPanel.createUIElement(width, height, false)
+    val checkboxColors = CampaignGuiStyle.checkboxColorsForButton(colors)
+    val button = inner.addAreaCheckbox(
+        "",
+        data,
+        checkboxColors.base,
+        checkboxColors.bg,
+        checkboxColors.bright,
+        width,
+        height,
+        0f
+    )
+    if (!tooltip.isNullOrBlank()) {
+        inner.addTooltipToPrevious(
+            AGCGUI.makeTooltip(tooltip),
+            TooltipLocation.BELOW
+        )
+    }
+    itemPanel.addUIElement(inner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
+    return StyledCampaignButtonShell(itemPanel, button)
 }
 
 fun renderTagLabel(

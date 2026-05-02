@@ -707,34 +707,20 @@ class ShipView(
         pendingAction: PendingPresetAction?,
     ) {
         val buttonWidth = (width - PRESET_BUTTON_HGAP) / 2f
-        val saveCheckboxColors = CampaignGuiStyle.checkboxColorsForButton(CampaignGuiStyle.SAVE_BUTTON_COLORS)
-        val loadCheckboxColors = CampaignGuiStyle.checkboxColorsForButton(CampaignGuiStyle.LOAD_BUTTON_COLORS)
 
-        val savePanel = panel.createCustomPanel(
-            buttonWidth,
-            PRESET_BUTTON_HEIGHT,
-            CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = CampaignGuiStyle.SAVE_BUTTON_IDLE_COLOR)
+        val saveShell = addStyledCampaignButtonShell(
+            parent = panel,
+            data = "save_preset_$groupIndex",
+            x = CampaignGuiStyle.PANEL_PADDING,
+            y = top,
+            width = buttonWidth,
+            height = PRESET_BUTTON_HEIGHT,
+            colors = CampaignGuiStyle.SAVE_BUTTON_COLORS,
+            tooltip = "Save the current tags from this weapon group as the external preset for this weapon combination and active loadout. Other matching groups do not change until you explicitly load the preset there.",
+            fillIdle = true
         )
-        panel.addComponent(savePanel)
-        savePanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, top)
-        val saveInner = savePanel.createUIElement(buttonWidth, PRESET_BUTTON_HEIGHT, false)
-        val saveButton = saveInner.addAreaCheckbox(
-            "",
-            "save_preset_$groupIndex",
-            saveCheckboxColors.base,
-            saveCheckboxColors.bg,
-            saveCheckboxColors.bright,
-            buttonWidth,
-            PRESET_BUTTON_HEIGHT,
-            0f
-        )
-        saveInner.addTooltipToPrevious(
-            AGCGUI.makeTooltip("Save the current tags from this weapon group as the external preset for this weapon combination and active loadout. Other matching groups do not change until you explicitly load the preset there."),
-            TooltipMakerAPI.TooltipLocation.BELOW
-        )
-        savePanel.addUIElement(saveInner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
         renderCenteredTagLabel(
-            panel = savePanel,
+            panel = saveShell.panel,
             text = "Save",
             width = buttonWidth,
             height = PRESET_BUTTON_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
@@ -742,38 +728,26 @@ class ShipView(
             centerRegionWidth = buttonWidth
         )
         buttons.add(
-            CampaignMomentaryButton(saveButton) {
+            CampaignMomentaryButton(saveShell.button) {
                 pendingPresetActionByGroup[groupIndex] = PendingPresetAction.SAVE
                 onPendingPresetActionUpdate?.invoke(groupIndex, PendingPresetAction.SAVE)
                 campaignScrollDirty = true
             }
         )
 
-        val loadPanel = panel.createCustomPanel(
-            buttonWidth,
-            PRESET_BUTTON_HEIGHT,
-            CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = CampaignGuiStyle.LOAD_BUTTON_IDLE_COLOR)
+        val loadShell = addStyledCampaignButtonShell(
+            parent = panel,
+            data = "load_preset_$groupIndex",
+            x = CampaignGuiStyle.PANEL_PADDING + buttonWidth + PRESET_BUTTON_HGAP,
+            y = top,
+            width = buttonWidth,
+            height = PRESET_BUTTON_HEIGHT,
+            colors = CampaignGuiStyle.LOAD_BUTTON_COLORS,
+            tooltip = "Load the external preset for this weapon combination and active loadout into this weapon group. This only changes this group.",
+            fillIdle = true
         )
-        panel.addComponent(loadPanel)
-        loadPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING + buttonWidth + PRESET_BUTTON_HGAP, top)
-        val loadInner = loadPanel.createUIElement(buttonWidth, PRESET_BUTTON_HEIGHT, false)
-        val loadButton = loadInner.addAreaCheckbox(
-            "",
-            "load_preset_$groupIndex",
-            loadCheckboxColors.base,
-            loadCheckboxColors.bg,
-            loadCheckboxColors.bright,
-            buttonWidth,
-            PRESET_BUTTON_HEIGHT,
-            0f
-        )
-        loadInner.addTooltipToPrevious(
-            AGCGUI.makeTooltip("Load the external preset for this weapon combination and active loadout into this weapon group. This only changes this group."),
-            TooltipMakerAPI.TooltipLocation.BELOW
-        )
-        loadPanel.addUIElement(loadInner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
         renderCenteredTagLabel(
-            panel = loadPanel,
+            panel = loadShell.panel,
             text = "Load",
             width = buttonWidth,
             height = PRESET_BUTTON_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
@@ -781,7 +755,7 @@ class ShipView(
             centerRegionWidth = buttonWidth
         )
         buttons.add(
-            CampaignMomentaryButton(loadButton) {
+            CampaignMomentaryButton(loadShell.button) {
                 pendingPresetActionByGroup[groupIndex] = PendingPresetAction.LOAD
                 onPendingPresetActionUpdate?.invoke(groupIndex, PendingPresetAction.LOAD)
                 campaignScrollDirty = true
@@ -793,28 +767,18 @@ class ShipView(
             return
         }
 
-        val confirmPanel = panel.createCustomPanel(
-            buttonWidth,
-            PRESET_CONFIRM_HEIGHT,
-            CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = CampaignGuiStyle.CONFIRM_BUTTON_IDLE_COLOR)
+        val confirmShell = addStyledCampaignButtonShell(
+            parent = panel,
+            data = "preset_confirm_$groupIndex",
+            x = CampaignGuiStyle.PANEL_PADDING,
+            y = top + PRESET_BUTTON_HEIGHT + PRESET_BUTTON_GAP,
+            width = buttonWidth,
+            height = PRESET_CONFIRM_HEIGHT,
+            colors = CampaignGuiStyle.CONFIRM_BUTTON_COLORS,
+            fillIdle = true
         )
-        panel.addComponent(confirmPanel)
-        confirmPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, top + PRESET_BUTTON_HEIGHT + PRESET_BUTTON_GAP)
-        val confirmInner = confirmPanel.createUIElement(buttonWidth, PRESET_CONFIRM_HEIGHT, false)
-        val confirmCheckboxColors = CampaignGuiStyle.checkboxColorsForButton(CampaignGuiStyle.CONFIRM_BUTTON_COLORS)
-        val confirmButton = confirmInner.addAreaCheckbox(
-            "",
-            "preset_confirm_$groupIndex",
-            confirmCheckboxColors.base,
-            confirmCheckboxColors.bg,
-            confirmCheckboxColors.bright,
-            buttonWidth,
-            PRESET_CONFIRM_HEIGHT,
-            0f
-        )
-        confirmPanel.addUIElement(confirmInner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
         renderTagLabel(
-            confirmPanel,
+            confirmShell.panel,
             "Confirm",
             buttonWidth - 2f * CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
             PRESET_CONFIRM_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
@@ -823,7 +787,7 @@ class ShipView(
             textColor = CampaignGuiStyle.DEFAULT_TEXT_COLOUR
         )
         buttons.add(
-            CampaignMomentaryButton(confirmButton) {
+            CampaignMomentaryButton(confirmShell.button) {
                 when (pendingAction) {
                     PendingPresetAction.SAVE -> {
                         when (saveExternalWeaponCompositionPreset(ship, groupIndex, AGCGUI.storageIndex).status) {
@@ -861,28 +825,18 @@ class ShipView(
             }
         )
 
-        val cancelPanel = panel.createCustomPanel(
-            buttonWidth,
-            PRESET_CONFIRM_HEIGHT,
-            CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = CampaignGuiStyle.CANCEL_BUTTON_IDLE_COLOR)
+        val cancelShell = addStyledCampaignButtonShell(
+            parent = panel,
+            data = "preset_cancel_$groupIndex",
+            x = CampaignGuiStyle.PANEL_PADDING + buttonWidth + PRESET_BUTTON_HGAP,
+            y = top + PRESET_BUTTON_HEIGHT + PRESET_BUTTON_GAP,
+            width = buttonWidth,
+            height = PRESET_CONFIRM_HEIGHT,
+            colors = CampaignGuiStyle.CANCEL_BUTTON_COLORS,
+            fillIdle = true
         )
-        panel.addComponent(cancelPanel)
-        cancelPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING + buttonWidth + PRESET_BUTTON_HGAP, top + PRESET_BUTTON_HEIGHT + PRESET_BUTTON_GAP)
-        val cancelInner = cancelPanel.createUIElement(buttonWidth, PRESET_CONFIRM_HEIGHT, false)
-        val cancelCheckboxColors = CampaignGuiStyle.checkboxColorsForButton(CampaignGuiStyle.CANCEL_BUTTON_COLORS)
-        val cancelButton = cancelInner.addAreaCheckbox(
-            "",
-            "preset_cancel_$groupIndex",
-            cancelCheckboxColors.base,
-            cancelCheckboxColors.bg,
-            cancelCheckboxColors.bright,
-            buttonWidth,
-            PRESET_CONFIRM_HEIGHT,
-            0f
-        )
-        cancelPanel.addUIElement(cancelInner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
         renderTagLabel(
-            cancelPanel,
+            cancelShell.panel,
             "Cancel",
             buttonWidth - 2f * CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
             PRESET_CONFIRM_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
@@ -891,7 +845,7 @@ class ShipView(
             textColor = CampaignGuiStyle.DEFAULT_TEXT_COLOUR
         )
         buttons.add(
-            CampaignMomentaryButton(cancelButton) {
+            CampaignMomentaryButton(cancelShell.button) {
                 pendingPresetActionByGroup.remove(groupIndex)
                 onPendingPresetActionUpdate?.invoke(groupIndex, null)
                 campaignScrollDirty = true

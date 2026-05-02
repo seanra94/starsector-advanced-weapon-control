@@ -8,6 +8,7 @@ import com.dp.advancedgunnerycontrol.gui.GUIShower
 import com.dp.advancedgunnerycontrol.gui.WrappedLabelLayout
 import com.dp.advancedgunnerycontrol.gui.addAgcText
 import com.dp.advancedgunnerycontrol.gui.addCustomContainerHeading
+import com.dp.advancedgunnerycontrol.gui.addStyledCampaignButtonShell
 import com.dp.advancedgunnerycontrol.gui.applyAgcDefaultTextStyle
 import com.dp.advancedgunnerycontrol.gui.computeWrappedLabelLayout
 import com.dp.advancedgunnerycontrol.settings.LunaSettingHandler
@@ -211,39 +212,22 @@ class SuggestedTagGui : InteractionDialogPlugin {
                     action.style == SuggestedActionStyle.LOAD -> CampaignGuiStyle.LOAD_BUTTON_COLORS
                     else -> CampaignGuiStyle.UNCOLOURED_BUTTON_COLORS
                 }
-                val rowFillColor = when {
-                    isRed || isGreen || isActive || action.style == SuggestedActionStyle.SAVE || action.style == SuggestedActionStyle.LOAD -> buttonColors.idle
-                    else -> null
-                }
-                val itemPanel = panel.createCustomPanel(
-                    width,
-                    rowHeight,
-                    CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = rowFillColor)
+                val fillIdle = isRed || isGreen || isActive || action.style == SuggestedActionStyle.SAVE || action.style == SuggestedActionStyle.LOAD
+                val buttonShell = addStyledCampaignButtonShell(
+                    parent = panel,
+                    data = action,
+                    x = CampaignGuiStyle.PANEL_PADDING,
+                    y = currentTop,
+                    width = width,
+                    height = rowHeight,
+                    colors = buttonColors,
+                    tooltip = action.tooltip,
+                    fillIdle = fillIdle
                 )
-                panel.addComponent(itemPanel)
-                itemPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, currentTop)
-
-                val inner = itemPanel.createUIElement(width, rowHeight, false)
-                val checkboxColors = CampaignGuiStyle.checkboxColorsForButton(buttonColors)
-                val button = inner.addAreaCheckbox(
-                    "",
-                    action,
-                    checkboxColors.base,
-                    checkboxColors.bg,
-                    checkboxColors.bright,
-                    width,
-                    rowHeight,
-                    0f
-                )
+                val itemPanel = buttonShell.panel
+                val button = buttonShell.button
                 button.isChecked = action.active
-                if (action.tooltip.isNotBlank()) {
-                    inner.addTooltipToPrevious(
-                        AGCGUI.makeTooltip(action.tooltip),
-                        TooltipMakerAPI.TooltipLocation.BELOW
-                    )
-                }
                 bindButton(button)
-                itemPanel.addUIElement(inner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
 
                 val textPanel = itemPanel.createUIElement(
                     width - 2f * ACTION_ROW_PADDING,

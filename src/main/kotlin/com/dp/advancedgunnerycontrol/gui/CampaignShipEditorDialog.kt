@@ -297,41 +297,21 @@ class CampaignShipEditorPanelPlugin(
             action.style == CampaignOptionRowStyle.LOAD -> CampaignGuiStyle.LOAD_BUTTON_COLORS
             else -> CampaignGuiStyle.UNCOLOURED_BUTTON_COLORS
         }
-        val rowFillColor = when {
-            isRed || isGreen || action.style == CampaignOptionRowStyle.SAVE || action.style == CampaignOptionRowStyle.LOAD -> buttonColors.idle
-            else -> null
-        }
-        val itemPanel = panel.createCustomPanel(
-            width,
-            rowHeight,
-            CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = rowFillColor)
+        val fillIdle = isRed || isGreen || action.style == CampaignOptionRowStyle.SAVE || action.style == CampaignOptionRowStyle.LOAD
+        val buttonShell = addStyledCampaignButtonShell(
+            parent = panel,
+            data = action,
+            x = CampaignGuiStyle.PANEL_PADDING,
+            y = top,
+            width = width,
+            height = rowHeight,
+            colors = buttonColors,
+            tooltip = action.tooltip,
+            fillIdle = fillIdle
         )
-        panel.addComponent(itemPanel)
-        itemPanel.position.inTL(
-            CampaignGuiStyle.PANEL_PADDING,
-            top
-        )
-
-        val inner = itemPanel.createUIElement(width, rowHeight, false)
-        val checkboxColors = CampaignGuiStyle.checkboxColorsForButton(buttonColors)
-        val button = inner.addAreaCheckbox(
-            "",
-            action,
-            checkboxColors.base,
-            checkboxColors.bg,
-            checkboxColors.bright,
-            width,
-            rowHeight,
-            0f
-        )
-        if (action.tooltip.isNotBlank()) {
-            inner.addTooltipToPrevious(
-                AGCGUI.makeTooltip(action.tooltip),
-                TooltipMakerAPI.TooltipLocation.BELOW
-            )
-        }
+        val itemPanel = buttonShell.panel
+        val button = buttonShell.button
         bindButton(button)
-        itemPanel.addUIElement(inner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
 
         val textPanel = itemPanel.createUIElement(
             width - 2f * ACTION_ROW_PADDING,
