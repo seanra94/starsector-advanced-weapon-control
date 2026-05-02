@@ -74,8 +74,8 @@ object CampaignGuiStyle {
     val NEUTRAL_BUTTON_HOVER_COLOR: Color = Color(180, 180, 180, 225)
     val SHARED_TAG_MODE_UNSELECTED_IDLE_COLOR: Color = Color(0, 0, 0, 225)
     val SHARED_TAG_MODE_UNSELECTED_HOVER_COLOR: Color = NEUTRAL_BUTTON_HOVER_COLOR
-    val SHARED_TAG_MODE_SELECTED_IDLE_COLOR: Color = Color(0, 127, 170, 225)
-    val SHARED_TAG_MODE_SELECTED_HOVER_COLOR: Color = Color(0, 127, 170, 225)
+    val SHARED_TAG_MODE_SELECTED_IDLE_COLOR: Color = Color(55, 115, 135, 225)
+    val SHARED_TAG_MODE_SELECTED_HOVER_COLOR: Color = Color(55, 115, 135, 225)
     val TOGGLE_UNSELECTED_IDLE_COLOR: Color = SHARED_TAG_MODE_UNSELECTED_IDLE_COLOR
     val TOGGLE_UNSELECTED_HOVER_COLOR: Color = SHARED_TAG_MODE_UNSELECTED_HOVER_COLOR
     val TOGGLE_SELECTED_IDLE_COLOR: Color = SHARED_TAG_MODE_SELECTED_IDLE_COLOR
@@ -110,6 +110,11 @@ object CampaignGuiStyle {
      * and then an inset glow while hovered. Negative border thickness is intentional
      * here: it expands the black/glow rectangles to reduce the bright-ring/black-center
      * appearance that otherwise shows on blank-label tag and ship-mode buttons.
+     *
+     * Weapon tags and ship modes are the same area-checkbox widget class in checked
+     * and unchecked states. Unchecked state is black plus neutral hover; checked state
+     * is the selected color. Keep that split inside applyToggleableCheckboxVisualState()
+     * so tags and modes stay visually identical.
      */
     fun toggleableCheckboxColors(): CheckboxColors {
         return CheckboxColors(
