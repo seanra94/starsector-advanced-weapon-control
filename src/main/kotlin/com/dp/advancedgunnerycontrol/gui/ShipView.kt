@@ -178,6 +178,7 @@ class ShipView(
         title: String,
         yOffset: Float = CampaignGuiStyle.PANEL_PADDING,
         fillColor: java.awt.Color? = null,
+        textColor: java.awt.Color? = null,
     ) {
         val headerPanel = panel.createCustomPanel(
             panel.position.width - 2f * CampaignGuiStyle.PANEL_PADDING,
@@ -191,7 +192,10 @@ class ShipView(
             SECTION_HEADER_HEIGHT,
             false
         )
-        header.addSectionHeading(title, Alignment.MID, 0f)
+        val sectionLabel = header.addSectionHeading(title, Alignment.MID, 0f)
+        if (textColor != null) {
+            sectionLabel.color = textColor
+        }
         headerPanel.addUIElement(header).inTL(0f, 0f)
     }
 
@@ -590,7 +594,12 @@ class ShipView(
         val entries = group?.let { aggregateWeapons(it, ship) }.orEmpty()
         val isDirty = entries.isNotEmpty() && isPresetDirtyForGroup(ship, groupIndex)
         val headerSuffix = if (isDirty) " (*)" else ""
-        addSectionHeading(panel, "Group ${groupIndex + 1}$headerSuffix", fillColor = WEAPON_GROUP_HEADER_COLOR)
+        addSectionHeading(
+            panel,
+            "Group ${groupIndex + 1}$headerSuffix",
+            fillColor = WEAPON_GROUP_HEADER_COLOR,
+            textColor = java.awt.Color.BLACK
+        )
         if (entries.isEmpty()) return
 
         val topContent = CampaignGuiStyle.PANEL_PADDING + SECTION_HEADER_HEIGHT

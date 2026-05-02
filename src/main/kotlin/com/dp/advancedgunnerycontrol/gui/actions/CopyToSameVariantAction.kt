@@ -1,6 +1,7 @@
 package com.dp.advancedgunnerycontrol.gui.actions
 
 import com.dp.advancedgunnerycontrol.gui.GUIAttributes
+import com.dp.advancedgunnerycontrol.gui.AGCGUI
 import com.dp.advancedgunnerycontrol.settings.Settings
 import com.dp.advancedgunnerycontrol.utils.ShipModeStorage
 import com.dp.advancedgunnerycontrol.utils.loadPersistentTags
@@ -11,9 +12,19 @@ import com.fs.starfarer.api.fleet.FleetMemberAPI
 
 class CopyToSameVariantAction(attributes: GUIAttributes) : GUIAction(attributes) {
     override fun execute() {
+        val (allLoadouts, sameHullType) = modifierKeys()
+        executeWithModifiers(allLoadouts = allLoadouts, sameHullType = sameHullType)
+    }
+
+    fun executeWithModifiers(allLoadouts: Boolean, sameHullType: Boolean) {
         attributes.ship?.let { ship ->
-            affectedLoadouts().forEach { index ->
-                applyModesToSameVariantShips(ship, index)
+            val loadouts = if (allLoadouts) {
+                (0 until Settings.maxLoadouts()).toList()
+            } else {
+                listOf(AGCGUI.storageIndex)
+            }
+            loadouts.forEach { index ->
+                applyModesToSameVariantShips(ship, index, sameHullType)
             }
         }
     }
@@ -29,12 +40,12 @@ class CopyToSameVariantAction(attributes: GUIAttributes) : GUIAction(attributes)
 
     override fun getName(): String = "Copy to other ships of same variant" + nameSuffix(wholeFleet = false) + if(isWholeFleetKeyHeld()) " (same hull type)" else ""
 
-    private fun applyModesToSameVariantShips(ship: FleetMemberAPI, storageIndex: Int) {
+    private fun applyModesToSameVariantShips(ship: FleetMemberAPI, storageIndex: Int, sameHullType: Boolean) {
         Global.getSector().playerFleet.membersWithFightersCopy.filter { !it.isFighterWing && it != ship }
             .filterNotNull().forEach {
                 val shouldCopy =
                     (it.variant.hullVariantId + it.variant.displayName == ship.variant.hullVariantId + ship.variant.displayName)
-                            || (isWholeFleetKeyHeld() && (it.hullId == ship.hullId))
+                            || (sameHullType && (it.hullId == ship.hullId))
                 if (shouldCopy) {
                     copyModesToShip(ship, it, storageIndex)
                 }

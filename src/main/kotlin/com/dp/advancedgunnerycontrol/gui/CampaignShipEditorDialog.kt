@@ -65,6 +65,13 @@ class CampaignShipEditorPanelPlugin(
         val requiredHeight: Float,
     )
 
+    private data class PendingOptionConfirmation(
+        val actionClass: Class<out GUIAction>,
+        val actionDisplayName: String,
+        val allLoadouts: Boolean,
+        val wholeFleet: Boolean,
+    )
+
     companion object {
         private const val SECTION_HEADER_HEIGHT = 20f
         private const val ACTION_ROW_GAP = 2f
@@ -104,8 +111,7 @@ class CampaignShipEditorPanelPlugin(
     private var currentOptionRows: List<CampaignOptionRow> = emptyList()
     private val actionButtons = linkedMapOf<ButtonAPI, CampaignOptionRow>()
     private var lastModifierKeys = GUIAction.modifierKeys()
-    private var pendingConfirmationActionClass: Class<out GUIAction>? = null
-    private var resetConfirmationModifiers: Pair<Boolean, Boolean>? = null
+    private var pendingOptionConfirmation: PendingOptionConfirmation? = null
 
     fun init(panel: CustomPanelAPI, callbacks: CustomVisualDialogDelegate.DialogCallbacks) {
         this.panel = panel
@@ -162,11 +168,10 @@ class CampaignShipEditorPanelPlugin(
             shipView = null
             actionButtons.clear()
             currentActions = generateShipActions(attributes)
-            if (pendingConfirmationActionClass != null &&
-                currentActions.none { it::class.java == pendingConfirmationActionClass }
-            ) {
-                pendingConfirmationActionClass = null
-                resetConfirmationModifiers = null
+            val currentModifiers = GUIAction.modifierKeys()
+            val pending = pendingOptionConfirmation
+            if (pending != null && !hasMatchingActionVariant(pending, currentModifiers)) {
+                pendingOptionConfirmation = null
             }
             currentOptionRows = buildOptionRows()
 
@@ -433,29 +438,30 @@ class CampaignShipEditorPanelPlugin(
         val rows = mutableListOf<CampaignOptionRow>()
         val backAction = currentActions.firstOrNull { it is BackAction }
         val normalActions = currentActions.filterNot { it is BackAction }
+        val currentModifiers = GUIAction.modifierKeys()
+        val pending = pendingOptionConfirmation
         normalActions.forEach { action ->
             if (requiresConfirmation(action)) {
-                if (pendingConfirmationActionClass == action::class.java) {
+                val currentActionVariant = actionVariant(action, currentModifiers)
+                if (pending != null && pending == currentActionVariant) {
                     rows.add(
                         CampaignOptionRow(
-                            label = "Confirm ${action.getName()}",
+                            label = "Confirm",
                             tooltip = "",
                             style = CampaignOptionRowStyle.GREEN,
                             callback = {
-                                executeConfirmedAction(action)
-                                pendingConfirmationActionClass = null
-                                resetConfirmationModifiers = null
+                                executeConfirmedAction(action, pending)
+                                pendingOptionConfirmation = null
                             }
                         )
                     )
                     rows.add(
                         CampaignOptionRow(
-                            label = "Cancel ${action.getName()}",
+                            label = "Cancel",
                             tooltip = "",
                             style = CampaignOptionRowStyle.RED,
                             callback = {
-                                pendingConfirmationActionClass = null
-                                resetConfirmationModifiers = null
+                                pendingOptionConfirmation = null
                             }
                         )
                     )
@@ -466,10 +472,7 @@ class CampaignShipEditorPanelPlugin(
                             tooltip = action.getTooltip(),
                             shortcut = action.getShortcut(),
                             callback = {
-                                pendingConfirmationActionClass = action::class.java
-                                if (action is ResetAction) {
-                                    resetConfirmationModifiers = GUIAction.modifierKeys()
-                                }
+                                pendingOptionConfirmation = actionVariant(action, GUIAction.modifierKeys())
                             }
                         )
                     )
@@ -507,10 +510,42 @@ class CampaignShipEditorPanelPlugin(
             action is ReloadSettingsAction
     }
 
-    private fun executeConfirmedAction(action: GUIAction) {
+    private fun actionVariant(
+        action: GUIAction,
+        modifiers: Pair<Boolean, Boolean>
+    ): PendingOptionConfirmation {
+        return PendingOptionConfirmation(
+            actionClass = action::class.java,
+            actionDisplayName = action.getName(),
+            allLoadouts = modifiers.first,
+            wholeFleet = modifiers.second,
+        )
+    }
+
+    private fun hasMatchingActionVariant(
+        pending: PendingOptionConfirmation,
+        modifiers: Pair<Boolean, Boolean>
+    ): Boolean {
+        return currentActions.any { action -> actionVariant(action, modifiers) == pending }
+    }
+
+    private fun executeConfirmedAction(action: GUIAction, pending: PendingOptionConfirmation) {
         if (action is ResetAction) {
-            val (allLoadouts, wholeFleet) = resetConfirmationModifiers ?: GUIAction.modifierKeys()
-            action.executeWithModifiers(allLoadouts, wholeFleet)
+            action.executeWithModifiers(pending.allLoadouts, pending.wholeFleet)
+            return
+        }
+        if (action is CopyToSameVariantAction) {
+            action.executeWithModifiers(
+                allLoadouts = pending.allLoadouts,
+                sameHullType = pending.wholeFleet
+            )
+            return
+        }
+        if (action is CopyLoadoutAction) {
+            action.executeWithModifiers(
+                allLoadouts = pending.allLoadouts,
+                wholeFleet = pending.wholeFleet
+            )
             return
         }
         executeAction(action)
