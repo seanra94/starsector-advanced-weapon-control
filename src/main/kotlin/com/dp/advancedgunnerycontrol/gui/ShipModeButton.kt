@@ -93,13 +93,10 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
                 )
             }
             val toReturn = mutableListOf<ShipModeButton>()
-            val activeModes = loadPersistedShipModes(ship.id, AGCGUI.storageIndex).toSet()
 
             modes.forEachIndexed { index, mode ->
                 val label = truncateLabel(shipModeToString[mode] ?: defaultShipMode, itemWidth, 24f)
-                val modeName = shipModeToString[mode] ?: defaultShipMode
-                val isActiveMode = activeModes.contains(modeName)
-                val toggleColors = CampaignGuiStyle.toggleableCheckboxColors(isActiveMode)
+                val toggleColors = CampaignGuiStyle.toggleableCheckboxColors()
                 val itemPanel = panel.createCustomPanel(
                     itemWidth,
                     itemHeight,
@@ -126,7 +123,7 @@ class ShipModeButton(var ship: FleetMemberAPI, mode: ShipModes, button: ButtonAP
                             "",
                             mode,
                             toggleColors.base,
-                            toggleColors.dark,
+                            toggleColors.bg,
                             toggleColors.bright,
                             itemWidth,
                             itemHeight,

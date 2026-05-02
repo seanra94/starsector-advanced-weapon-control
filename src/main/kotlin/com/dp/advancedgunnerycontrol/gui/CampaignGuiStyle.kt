@@ -41,8 +41,15 @@ val campaignBorderModeByType = mapOf(
 object CampaignGuiStyle {
     data class CheckboxColors(
         val base: Color,
-        val dark: Color,
+        val bg: Color,
         val bright: Color,
+    )
+
+    data class ToggleableStateColors(
+        val uncheckedIdle: Color,
+        val uncheckedHover: Color,
+        val checkedIdle: Color,
+        val checkedHover: Color,
     )
     val TOOLTIP_TEXT_COLOR: Color = Color(245, 230, 150)
     val INACTIVE_ROW_BACKGROUND_COLOR: Color = Color(115, 115, 115, 225)
@@ -68,9 +75,9 @@ object CampaignGuiStyle {
     val NEUTRAL_BUTTON_IDLE_COLOR: Color = Color(70, 70, 70, 225)
     val NEUTRAL_BUTTON_HOVER_COLOR: Color = Color(122, 122, 122, 225)
     val TOGGLE_UNSELECTED_IDLE_COLOR: Color = Color(0, 0, 0, 225)
-    val TOGGLE_UNSELECTED_HOVER_COLOR: Color = Color(0, 74, 98, 225)
-    val TOGGLE_SELECTED_IDLE_COLOR: Color = Color(0, 74, 98, 225)
-    val TOGGLE_SELECTED_HOVER_COLOR: Color = Color(0, 95, 125, 225)
+    val TOGGLE_UNSELECTED_HOVER_COLOR: Color = Color(0, 69, 92, 225)
+    val TOGGLE_SELECTED_IDLE_COLOR: Color = Color(0, 69, 92, 225)
+    val TOGGLE_SELECTED_HOVER_COLOR: Color = Color(0, 109, 145, 225)
 
     const val MAIN_PADDING = 0f
     const val PANEL_PADDING = 4f
@@ -89,13 +96,34 @@ object CampaignGuiStyle {
     const val ITEM_TEXT_TOP_PADDING = 2f
     const val ITEM_HIGHLIGHT_X_OFFSET = -3f
     const val HEADING_CHAR_WIDTH_ESTIMATE = 7.2f
+    private const val TOGGLE_COLOR_PROBE_ENABLED = false
 
-    fun toggleableCheckboxColors(isActive: Boolean): CheckboxColors {
-        val hover = if (isActive) TOGGLE_SELECTED_HOVER_COLOR else TOGGLE_UNSELECTED_HOVER_COLOR
+    private fun targetToggleableColors(): ToggleableStateColors = ToggleableStateColors(
+        uncheckedIdle = TOGGLE_UNSELECTED_IDLE_COLOR,
+        uncheckedHover = TOGGLE_UNSELECTED_HOVER_COLOR,
+        checkedIdle = TOGGLE_SELECTED_IDLE_COLOR,
+        checkedHover = TOGGLE_SELECTED_HOVER_COLOR
+    )
+
+    private fun probeToggleableColors(): ToggleableStateColors = ToggleableStateColors(
+        uncheckedIdle = Color(255, 0, 255, 225),
+        uncheckedHover = Color(255, 255, 0, 225),
+        checkedIdle = Color(255, 255, 0, 225),
+        checkedHover = Color(0, 255, 255, 225)
+    )
+
+    /**
+     * Runtime slot mapping determined for addAreaCheckbox(base, bg, bright):
+     * - base  -> unchecked idle
+     * - bg    -> unchecked hover + checked idle
+     * - bright-> checked hover
+     */
+    fun toggleableCheckboxColors(): CheckboxColors {
+        val state = if (TOGGLE_COLOR_PROBE_ENABLED) probeToggleableColors() else targetToggleableColors()
         return CheckboxColors(
-            base = if (isActive) TOGGLE_SELECTED_IDLE_COLOR else TOGGLE_UNSELECTED_IDLE_COLOR,
-            dark = hover,
-            bright = hover
+            base = state.uncheckedIdle,
+            bg = state.checkedIdle,
+            bright = state.checkedHover
         )
     }
 }

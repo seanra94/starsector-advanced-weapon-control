@@ -136,16 +136,19 @@ class TagButton(var ship: FleetMemberAPI, var group: Int, tag: String, button: B
                     metrics.itemHeight,
                     false
                 )
-                val toggleColors = CampaignGuiStyle.toggleableCheckboxColors(pinned || isActiveTag)
+                val toggleColors = CampaignGuiStyle.toggleableCheckboxColors()
                 val baseColor = when {
+                    pinned -> CampaignGuiStyle.TOGGLE_SELECTED_IDLE_COLOR
                     unavailable -> CampaignGuiStyle.DISABLED_TAG_BACKGROUND_COLOR
                     else -> toggleColors.base
                 }
                 val darkColor = when {
+                    pinned -> CampaignGuiStyle.TOGGLE_SELECTED_IDLE_COLOR
                     unavailable -> CampaignGuiStyle.DISABLED_TAG_DARK_COLOR
-                    else -> toggleColors.dark
+                    else -> toggleColors.bg
                 }
                 val brightColor = when {
+                    pinned -> CampaignGuiStyle.TOGGLE_SELECTED_HOVER_COLOR
                     unavailable -> CampaignGuiStyle.DISABLED_TAG_BRIGHT_COLOR
                     else -> toggleColors.bright
                 }
