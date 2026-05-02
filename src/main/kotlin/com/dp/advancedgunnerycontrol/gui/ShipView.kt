@@ -63,7 +63,7 @@ class ShipView(
         private const val PRESET_CONFIRM_HEIGHT = 18f
         private const val PRESET_BUTTON_GAP = 1f
         private const val PRESET_BUTTON_HGAP = 1f
-        private val WEAPON_GROUP_HEADER_COLOR = java.awt.Color(190, 190, 190, 225)
+        private val WEAPON_GROUP_HEADER_COLOR = java.awt.Color(125, 125, 125, 225)
         private const val PRESET_LABEL_CHAR_WIDTH_ESTIMATE = 6.6f
         private const val TAG_ELLIPSIS_HEIGHT = CampaignGuiStyle.TAG_ITEM_HEIGHT
         private const val TAG_SCROLL_STEP = 1
@@ -178,7 +178,6 @@ class ShipView(
         title: String,
         yOffset: Float = CampaignGuiStyle.PANEL_PADDING,
         fillColor: java.awt.Color? = null,
-        textColor: java.awt.Color? = null,
     ) {
         val headerPanel = panel.createCustomPanel(
             panel.position.width - 2f * CampaignGuiStyle.PANEL_PADDING,
@@ -192,10 +191,7 @@ class ShipView(
             SECTION_HEADER_HEIGHT,
             false
         )
-        val sectionLabel = header.addSectionHeading(title, Alignment.MID, 0f)
-        if (textColor != null) {
-            sectionLabel.color = textColor
-        }
+        header.addSectionHeading(title, Alignment.MID, 0f)
         headerPanel.addUIElement(header).inTL(0f, 0f)
     }
 
@@ -597,8 +593,7 @@ class ShipView(
         addSectionHeading(
             panel,
             "Group ${groupIndex + 1}$headerSuffix",
-            fillColor = WEAPON_GROUP_HEADER_COLOR,
-            textColor = java.awt.Color.BLACK
+            fillColor = WEAPON_GROUP_HEADER_COLOR
         )
         if (entries.isEmpty()) return
 

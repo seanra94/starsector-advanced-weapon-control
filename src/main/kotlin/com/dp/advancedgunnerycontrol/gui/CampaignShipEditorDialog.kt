@@ -1,6 +1,7 @@
 package com.dp.advancedgunnerycontrol.gui
 
 import com.dp.advancedgunnerycontrol.gui.actions.BackAction
+import com.dp.advancedgunnerycontrol.gui.actions.ApplySuggestedModeAction
 import com.dp.advancedgunnerycontrol.gui.actions.CopyLoadoutAction
 import com.dp.advancedgunnerycontrol.gui.actions.CopyToSameVariantAction
 import com.dp.advancedgunnerycontrol.gui.actions.GUIAction
@@ -505,6 +506,7 @@ class CampaignShipEditorPanelPlugin(
 
     private fun requiresConfirmation(action: GUIAction): Boolean {
         return action is ResetAction ||
+            action is ApplySuggestedModeAction ||
             action is CopyToSameVariantAction ||
             action is CopyLoadoutAction ||
             action is ReloadSettingsAction
@@ -542,6 +544,13 @@ class CampaignShipEditorPanelPlugin(
             return
         }
         if (action is CopyLoadoutAction) {
+            action.executeWithModifiers(
+                allLoadouts = pending.allLoadouts,
+                wholeFleet = pending.wholeFleet
+            )
+            return
+        }
+        if (action is ApplySuggestedModeAction) {
             action.executeWithModifiers(
                 allLoadouts = pending.allLoadouts,
                 wholeFleet = pending.wholeFleet

@@ -1,14 +1,31 @@
 package com.dp.advancedgunnerycontrol.gui.actions
 
+import com.dp.advancedgunnerycontrol.gui.AGCGUI
 import com.dp.advancedgunnerycontrol.gui.GUIAttributes
 import com.dp.advancedgunnerycontrol.settings.Settings
 import com.dp.advancedgunnerycontrol.typesandvalues.applySuggestedModes
-import com.fs.starfarer.api.fleet.FleetMemberAPI
+import com.fs.starfarer.api.Global
 
 class ApplySuggestedModeAction(attributes: GUIAttributes) : GUIAction(attributes) {
     override fun execute() {
-        affectedLoadouts().forEach { index ->
-            affectedShips().forEach { ship ->
+        val (allLoadouts, wholeFleet) = modifierKeys()
+        executeWithModifiers(allLoadouts = allLoadouts, wholeFleet = wholeFleet)
+    }
+
+    fun executeWithModifiers(allLoadouts: Boolean, wholeFleet: Boolean) {
+        val ships = if (wholeFleet) {
+            Global.getSector().playerFleet.membersWithFightersCopy.filterNot { m -> m.isFighterWing }.filterNotNull()
+        } else {
+            attributes.ship?.let { listOf(it) } ?: emptyList()
+        }
+        val loadouts = if (allLoadouts) {
+            (0 until Settings.maxLoadouts()).toList()
+        } else {
+            listOf(AGCGUI.storageIndex)
+        }
+
+        loadouts.forEach { index ->
+            ships.forEach { ship ->
                 applySuggestedModes(ship, index)
             }
         }
