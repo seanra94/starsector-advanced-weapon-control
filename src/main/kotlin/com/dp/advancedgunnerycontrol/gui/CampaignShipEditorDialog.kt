@@ -19,8 +19,6 @@ import com.fs.starfarer.api.ui.Alignment
 import com.fs.starfarer.api.ui.ButtonAPI
 import com.fs.starfarer.api.ui.CustomPanelAPI
 import com.fs.starfarer.api.ui.PositionAPI
-import com.fs.starfarer.api.ui.TooltipMakerAPI
-import com.fs.starfarer.api.util.Misc
 import org.lwjgl.input.Keyboard
 import kotlin.math.max
 
@@ -50,6 +48,16 @@ class CampaignShipEditorPanelPlugin(
         RED,
         SAVE,
         LOAD,
+    }
+
+    private fun CampaignOptionRowStyle.toButtonKind(): CampaignActionButtonKind {
+        return when (this) {
+            CampaignOptionRowStyle.DEFAULT -> CampaignActionButtonKind.UNCOLOURED
+            CampaignOptionRowStyle.GREEN -> CampaignActionButtonKind.CONFIRM
+            CampaignOptionRowStyle.RED -> CampaignActionButtonKind.CANCEL
+            CampaignOptionRowStyle.SAVE -> CampaignActionButtonKind.SAVE
+            CampaignOptionRowStyle.LOAD -> CampaignActionButtonKind.LOAD
+        }
     }
 
     private data class CampaignOptionRow(
@@ -288,42 +296,21 @@ class CampaignShipEditorPanelPlugin(
         top: Float,
         rowHeight: Float,
     ) {
-        val isGreen = action.style == CampaignOptionRowStyle.GREEN
-        val isRed = action.style == CampaignOptionRowStyle.RED
-        val buttonColors = when {
-            isRed -> CampaignGuiStyle.CANCEL_BUTTON_COLORS
-            isGreen -> CampaignGuiStyle.CONFIRM_BUTTON_COLORS
-            action.style == CampaignOptionRowStyle.SAVE -> CampaignGuiStyle.SAVE_BUTTON_COLORS
-            action.style == CampaignOptionRowStyle.LOAD -> CampaignGuiStyle.LOAD_BUTTON_COLORS
-            else -> CampaignGuiStyle.UNCOLOURED_BUTTON_COLORS
-        }
-        val fillIdle = isRed || isGreen || action.style == CampaignOptionRowStyle.SAVE || action.style == CampaignOptionRowStyle.LOAD
-        val buttonShell = addStyledCampaignButtonShell(
+        val buttonShell = addStyledCampaignActionRow(
             parent = panel,
             data = action,
             x = CampaignGuiStyle.PANEL_PADDING,
             y = top,
             width = width,
             height = rowHeight,
-            colors = buttonColors,
+            kind = action.style.toButtonKind(),
+            labelText = labelText,
+            highlightTokens = ACTION_SHORTCUT_HIGHLIGHTS,
             tooltip = action.tooltip,
-            fillIdle = fillIdle
+            textPadding = ACTION_ROW_PADDING,
         )
-        val itemPanel = buttonShell.panel
         val button = buttonShell.button
         bindButton(button)
-
-        val textPanel = itemPanel.createUIElement(
-            width - 2f * ACTION_ROW_PADDING,
-            rowHeight - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
-            false
-        )
-        if (isRed || isGreen) {
-            addActionLabel(textPanel, labelText, CampaignGuiStyle.DEFAULT_TEXT_COLOUR)
-        } else {
-            addActionLabel(textPanel, labelText)
-        }
-        itemPanel.addUIElement(textPanel).inTL(ACTION_ROW_PADDING, CampaignGuiStyle.ITEM_TEXT_TOP_PADDING)
         actionButtons[button] = action
     }
 
@@ -373,23 +360,6 @@ class CampaignShipEditorPanelPlugin(
             modifiersLayout = modifiersLayout,
             requiredHeight = requiredHeight
         )
-    }
-
-    private fun addActionLabel(
-        panel: TooltipMakerAPI,
-        labelText: String,
-        baseColor: java.awt.Color? = null,
-    ) {
-        val label = if (baseColor == null) {
-            panel.addAgcText(labelText, 0f, CampaignGuiStyle.DEFAULT_TEXT_COLOUR)
-        } else {
-            panel.addAgcText(labelText, 0f, baseColor)
-        }
-        val highlights = ACTION_SHORTCUT_HIGHLIGHTS.filter { labelText.contains(it) }
-        if (highlights.isNotEmpty()) {
-            label.setHighlight(*highlights.toTypedArray())
-            label.setHighlightColors(*Array(highlights.size) { CampaignGuiStyle.MODIFIER_TEXT_COLOUR })
-        }
     }
 
     private fun estimateOptionsPanelHeight(width: Float): Float {

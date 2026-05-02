@@ -1,6 +1,7 @@
 package com.dp.advancedgunnerycontrol.gui.suggesttaggui
 
 import com.dp.advancedgunnerycontrol.gui.AGCGUI
+import com.dp.advancedgunnerycontrol.gui.CampaignActionButtonKind
 import com.dp.advancedgunnerycontrol.gui.CampaignContainerType
 import com.dp.advancedgunnerycontrol.gui.CampaignGuiStyle
 import com.dp.advancedgunnerycontrol.gui.CampaignPanelPlugin
@@ -8,7 +9,7 @@ import com.dp.advancedgunnerycontrol.gui.GUIShower
 import com.dp.advancedgunnerycontrol.gui.WrappedLabelLayout
 import com.dp.advancedgunnerycontrol.gui.addAgcText
 import com.dp.advancedgunnerycontrol.gui.addCustomContainerHeading
-import com.dp.advancedgunnerycontrol.gui.addStyledCampaignButtonShell
+import com.dp.advancedgunnerycontrol.gui.addStyledCampaignActionRow
 import com.dp.advancedgunnerycontrol.gui.applyAgcDefaultTextStyle
 import com.dp.advancedgunnerycontrol.gui.computeWrappedLabelLayout
 import com.dp.advancedgunnerycontrol.settings.LunaSettingHandler
@@ -27,10 +28,7 @@ import com.fs.starfarer.api.input.InputEventAPI
 import com.fs.starfarer.api.ui.Alignment
 import com.fs.starfarer.api.ui.ButtonAPI
 import com.fs.starfarer.api.ui.CustomPanelAPI
-import com.fs.starfarer.api.ui.TooltipMakerAPI
-import com.fs.starfarer.api.util.Misc
 import org.lwjgl.input.Keyboard
-import java.awt.Color
 import kotlin.math.max
 
 class SuggestedTagGui : InteractionDialogPlugin {
@@ -40,6 +38,17 @@ class SuggestedTagGui : InteractionDialogPlugin {
         RED,
         SAVE,
         LOAD,
+    }
+
+    private fun SuggestedActionStyle.toButtonKind(active: Boolean): CampaignActionButtonKind {
+        return when {
+            active -> CampaignActionButtonKind.ACTIVE
+            this == SuggestedActionStyle.GREEN -> CampaignActionButtonKind.CONFIRM
+            this == SuggestedActionStyle.RED -> CampaignActionButtonKind.CANCEL
+            this == SuggestedActionStyle.SAVE -> CampaignActionButtonKind.SAVE
+            this == SuggestedActionStyle.LOAD -> CampaignActionButtonKind.LOAD
+            else -> CampaignActionButtonKind.UNCOLOURED
+        }
     }
 
     private enum class PendingDangerousSuggestedAction {
@@ -201,46 +210,22 @@ class SuggestedTagGui : InteractionDialogPlugin {
                 val labelLayout = actionLabelLayout(action, width)
                 val label = labelLayout.wrappedText
                 val rowHeight = labelLayout.rowHeight
-                val isActive = action.active
-                val isGreen = action.style == SuggestedActionStyle.GREEN
-                val isRed = action.style == SuggestedActionStyle.RED
-                val buttonColors = when {
-                    isRed -> CampaignGuiStyle.CANCEL_BUTTON_COLORS
-                    isGreen -> CampaignGuiStyle.CONFIRM_BUTTON_COLORS
-                    isActive -> CampaignGuiStyle.CONFIRM_BUTTON_COLORS
-                    action.style == SuggestedActionStyle.SAVE -> CampaignGuiStyle.SAVE_BUTTON_COLORS
-                    action.style == SuggestedActionStyle.LOAD -> CampaignGuiStyle.LOAD_BUTTON_COLORS
-                    else -> CampaignGuiStyle.UNCOLOURED_BUTTON_COLORS
-                }
-                val fillIdle = isRed || isGreen || isActive || action.style == SuggestedActionStyle.SAVE || action.style == SuggestedActionStyle.LOAD
-                val buttonShell = addStyledCampaignButtonShell(
+                val buttonShell = addStyledCampaignActionRow(
                     parent = panel,
                     data = action,
                     x = CampaignGuiStyle.PANEL_PADDING,
                     y = currentTop,
                     width = width,
                     height = rowHeight,
-                    colors = buttonColors,
+                    kind = action.style.toButtonKind(action.active),
+                    labelText = label,
+                    highlightTokens = ACTION_SHORTCUT_HIGHLIGHTS,
                     tooltip = action.tooltip,
-                    fillIdle = fillIdle
+                    textPadding = ACTION_ROW_PADDING,
                 )
-                val itemPanel = buttonShell.panel
                 val button = buttonShell.button
                 button.isChecked = action.active
                 bindButton(button)
-
-                val textPanel = itemPanel.createUIElement(
-                    width - 2f * ACTION_ROW_PADDING,
-                    rowHeight - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
-                    false
-                )
-                val labelText = label
-                if (isRed || isGreen) {
-                    addActionLabel(textPanel, labelText, CampaignGuiStyle.DEFAULT_TEXT_COLOUR)
-                } else {
-                    addActionLabel(textPanel, labelText)
-                }
-                itemPanel.addUIElement(textPanel).inTL(ACTION_ROW_PADDING, CampaignGuiStyle.ITEM_TEXT_TOP_PADDING)
                 actionButtons[button] = action
                 currentTop += rowHeight + ACTION_ROW_GAP
             }
@@ -266,23 +251,6 @@ class SuggestedTagGui : InteractionDialogPlugin {
                 lineHeightPx = ACTION_LABEL_LINE_HEIGHT,
                 maxLines = ACTION_LABEL_MAX_LINES
             )
-        }
-
-        private fun addActionLabel(
-            panel: TooltipMakerAPI,
-            labelText: String,
-            baseColor: java.awt.Color? = null,
-        ) {
-            val label = if (baseColor == null) {
-                panel.addAgcText(labelText, 0f, CampaignGuiStyle.DEFAULT_TEXT_COLOUR)
-            } else {
-                panel.addAgcText(labelText, 0f, baseColor)
-            }
-            val highlights = ACTION_SHORTCUT_HIGHLIGHTS.filter { labelText.contains(it) }
-            if (highlights.isNotEmpty()) {
-                label.setHighlight(*highlights.toTypedArray())
-                label.setHighlightColors(*Array(highlights.size) { CampaignGuiStyle.MODIFIER_TEXT_COLOUR })
-            }
         }
 
         private fun formatShortcutName(keyCode: Int): String {

@@ -36,6 +36,15 @@ enum class CampaignContainerType(val outlineColor: Color) {
     OPTIONS(Color(255, 110, 110)),
 }
 
+enum class CampaignActionButtonKind {
+    UNCOLOURED,
+    SAVE,
+    LOAD,
+    CONFIRM,
+    CANCEL,
+    ACTIVE,
+}
+
 val campaignBorderModeByType = mapOf(
     CampaignContainerType.ITEM to CampaignBorderMode.FULL,
     CampaignContainerType.HEADER to CampaignBorderMode.FULL,
@@ -128,6 +137,21 @@ object CampaignGuiStyle {
             bg = colors.idle,
             bright = colors.hover
         )
+    }
+
+    fun colorsForActionButton(kind: CampaignActionButtonKind): ButtonStateColors {
+        return when (kind) {
+            CampaignActionButtonKind.SAVE -> SAVE_BUTTON_COLORS
+            CampaignActionButtonKind.LOAD -> LOAD_BUTTON_COLORS
+            CampaignActionButtonKind.CONFIRM -> CONFIRM_BUTTON_COLORS
+            CampaignActionButtonKind.CANCEL -> CANCEL_BUTTON_COLORS
+            CampaignActionButtonKind.ACTIVE -> CONFIRM_BUTTON_COLORS
+            CampaignActionButtonKind.UNCOLOURED -> UNCOLOURED_BUTTON_COLORS
+        }
+    }
+
+    fun shouldFillActionButtonIdle(kind: CampaignActionButtonKind): Boolean {
+        return kind != CampaignActionButtonKind.UNCOLOURED
     }
 
     /**
@@ -437,6 +461,54 @@ fun addStyledCampaignButtonShell(
     }
     itemPanel.addUIElement(inner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
     return StyledCampaignButtonShell(itemPanel, button)
+}
+
+fun addCampaignActionLabel(
+    panel: TooltipMakerAPI,
+    labelText: String,
+    highlightTokens: List<String>,
+    textColor: Color = CampaignGuiStyle.DEFAULT_TEXT_COLOUR,
+) {
+    val label = panel.addAgcText(labelText, 0f, textColor)
+    val highlights = highlightTokens.filter { labelText.contains(it) }
+    if (highlights.isNotEmpty()) {
+        label.setHighlight(*highlights.toTypedArray())
+        label.setHighlightColors(*Array(highlights.size) { CampaignGuiStyle.MODIFIER_TEXT_COLOUR })
+    }
+}
+
+fun addStyledCampaignActionRow(
+    parent: CustomPanelAPI,
+    data: Any,
+    x: Float,
+    y: Float,
+    width: Float,
+    height: Float,
+    kind: CampaignActionButtonKind,
+    labelText: String,
+    highlightTokens: List<String>,
+    tooltip: String? = null,
+    textPadding: Float = 4f,
+): StyledCampaignButtonShell {
+    val shell = addStyledCampaignButtonShell(
+        parent = parent,
+        data = data,
+        x = x,
+        y = y,
+        width = width,
+        height = height,
+        colors = CampaignGuiStyle.colorsForActionButton(kind),
+        tooltip = tooltip,
+        fillIdle = CampaignGuiStyle.shouldFillActionButtonIdle(kind)
+    )
+    val textPanel = shell.panel.createUIElement(
+        width - 2f * textPadding,
+        height - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+        false
+    )
+    addCampaignActionLabel(textPanel, labelText, highlightTokens)
+    shell.panel.addUIElement(textPanel).inTL(textPadding, CampaignGuiStyle.ITEM_TEXT_TOP_PADDING)
+    return shell
 }
 
 fun addCampaignTagModeToggleShell(
