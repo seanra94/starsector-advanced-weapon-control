@@ -62,7 +62,7 @@ class ShipView(
         private const val PRESET_CONFIRM_HEIGHT = 18f
         private const val PRESET_BUTTON_GAP = 1f
         private const val PRESET_BUTTON_HGAP = 1f
-        private val WEAPON_GROUP_STALE_HEADER_COLOR = java.awt.Color(60, 60, 60, 225)
+        private val WEAPON_GROUP_STALE_HEADER_COLOR = java.awt.Color(80, 80, 80, 225)
         private const val TAG_ELLIPSIS_HEIGHT = CampaignGuiStyle.TAG_ITEM_HEIGHT
         private const val TAG_SCROLL_STEP = 1
         private const val PICTURE_INFO_ROW_HEIGHT = 32f
@@ -657,7 +657,7 @@ class ShipView(
         savePanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, top)
         val saveInner = savePanel.createUIElement(buttonWidth, PRESET_BUTTON_HEIGHT, false)
         val saveButton = saveInner.addAreaCheckbox(
-            "Save",
+            "",
             "save_preset_$groupIndex",
             CampaignGuiStyle.ACTION_SAVE_BACKGROUND_COLOR,
             CampaignGuiStyle.ACTION_SAVE_DARK_COLOR,
@@ -671,6 +671,12 @@ class ShipView(
             TooltipMakerAPI.TooltipLocation.BELOW
         )
         savePanel.addUIElement(saveInner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
+        renderCenteredTagLabel(
+            panel = savePanel,
+            text = "Save",
+            width = buttonWidth,
+            height = PRESET_BUTTON_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING
+        )
         buttons.add(
             CampaignMomentaryButton(saveButton) {
                 pendingPresetActionByGroup[groupIndex] = PendingPresetAction.SAVE
@@ -688,7 +694,7 @@ class ShipView(
         loadPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING + buttonWidth + PRESET_BUTTON_HGAP, top)
         val loadInner = loadPanel.createUIElement(buttonWidth, PRESET_BUTTON_HEIGHT, false)
         val loadButton = loadInner.addAreaCheckbox(
-            "Load",
+            "",
             "load_preset_$groupIndex",
             CampaignGuiStyle.ACTION_LOAD_BACKGROUND_COLOR,
             CampaignGuiStyle.ACTION_LOAD_DARK_COLOR,
@@ -702,6 +708,12 @@ class ShipView(
             TooltipMakerAPI.TooltipLocation.BELOW
         )
         loadPanel.addUIElement(loadInner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
+        renderCenteredTagLabel(
+            panel = loadPanel,
+            text = "Load",
+            width = buttonWidth,
+            height = PRESET_BUTTON_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING
+        )
         buttons.add(
             CampaignMomentaryButton(loadButton) {
                 pendingPresetActionByGroup[groupIndex] = PendingPresetAction.LOAD
