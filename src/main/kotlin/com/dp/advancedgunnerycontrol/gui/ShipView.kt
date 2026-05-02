@@ -26,9 +26,14 @@ class ShipView(
     private val enableTagScroll: Boolean = true,
     private val drawFrame: Boolean = true,
     initialTagScrollOffsets: Map<Int, Int> = emptyMap(),
-    initialPresetStatusMessages: Map<Int, String> = emptyMap(),
-    private val onPresetStatusUpdate: ((Int, String) -> Unit)? = null,
+    initialPendingPresetActions: Map<Int, PendingPresetAction> = emptyMap(),
+    private val onPendingPresetActionUpdate: ((Int, PendingPresetAction?) -> Unit)? = null,
 ) : CustomView() {
+    enum class PendingPresetAction {
+        SAVE,
+        LOAD,
+    }
+
     companion object {
         private const val TOTAL_WEAPON_GROUPS = 7
         private const val MISC_WIDTH_FRACTION = 0.1667f
@@ -51,10 +56,10 @@ class ShipView(
         private const val WEAPON_OVERFLOW_ROW_HEIGHT = WEAPON_ENTRY_HEIGHT
         private const val WEAPON_TO_TAG_GAP = 2f
         private const val PRESET_BUTTON_HEIGHT = 18f
-        private const val PRESET_BUTTON_GAP = 2f
-        private const val PRESET_BUTTON_HGAP = 4f
-        private const val PRESET_STATUS_HEIGHT = 16f
-        private const val PRESET_STATUS_GAP = 2f
+        private const val PRESET_CONFIRM_HEIGHT = 18f
+        private const val PRESET_BUTTON_GAP = 1f
+        private const val PRESET_BUTTON_HGAP = 1f
+        private val WEAPON_GROUP_HEADER_COLOR = java.awt.Color(235, 150, 65, 225)
         private const val TAG_ELLIPSIS_HEIGHT = CampaignGuiStyle.TAG_ITEM_HEIGHT
         private const val TAG_SCROLL_STEP = 1
         private const val PICTURE_INFO_ROW_HEIGHT = 32f
@@ -89,7 +94,7 @@ class ShipView(
     private val buttons: MutableList<ButtonBase<*>> = mutableListOf()
     private val groupTagScrollOffsets = initialTagScrollOffsets.toMutableMap()
     private val tagScrollRegions = mutableListOf<TagScrollRegion>()
-    private val presetStatusByGroup = initialPresetStatusMessages.toMutableMap()
+    private val pendingPresetActionByGroup = initialPendingPresetActions.toMutableMap()
     private var campaignScrollDirty = false
     private var observedTagSelectionVersion = TagButton.campaignTagSelectionVersion
 
@@ -135,7 +140,7 @@ class ShipView(
     }
 
     fun captureTagScrollOffsets(): Map<Int, Int> = groupTagScrollOffsets.toMap()
-    fun capturePresetStatusMessages(): Map<Int, String> = presetStatusByGroup.toMap()
+    fun capturePendingPresetActions(): Map<Int, PendingPresetAction> = pendingPresetActionByGroup.toMap()
 
     override fun processInput(events: MutableList<InputEventAPI>?) {
         if (tagScrollRegions.isEmpty()) return
@@ -167,11 +172,12 @@ class ShipView(
         panel: CustomPanelAPI,
         title: String,
         yOffset: Float = CampaignGuiStyle.PANEL_PADDING,
+        fillColor: java.awt.Color? = null,
     ) {
         val headerPanel = panel.createCustomPanel(
             panel.position.width - 2f * CampaignGuiStyle.PANEL_PADDING,
             SECTION_HEADER_HEIGHT,
-            CampaignPanelPlugin(CampaignContainerType.HEADER)
+            CampaignPanelPlugin(CampaignContainerType.HEADER, fillColor = fillColor)
         )
         panel.addComponent(headerPanel)
         headerPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, yOffset)
@@ -575,34 +581,22 @@ class ShipView(
         relativeGroupTopOffset: Float,
         contentHeight: Float,
     ) {
-        addSectionHeading(panel, "Group ${groupIndex + 1}")
+        addSectionHeading(panel, "Group ${groupIndex + 1}", fillColor = WEAPON_GROUP_HEADER_COLOR)
         val group = ship.variant.weaponGroups.getOrNull(groupIndex)
         val entries = group?.let { aggregateWeapons(it, ship) }.orEmpty()
         if (entries.isEmpty()) return
 
         val topContent = CampaignGuiStyle.PANEL_PADDING + SECTION_HEADER_HEIGHT
         val innerWidth = panel.position.width - 2f * CampaignGuiStyle.PANEL_PADDING
+        val presetPendingAction = pendingPresetActionByGroup[groupIndex]
+        val presetAreaTop = topContent
+        val presetAreaHeight = PRESET_BUTTON_HEIGHT + if (presetPendingAction != null) PRESET_BUTTON_GAP + PRESET_CONFIRM_HEIGHT else 0f
+        val weaponContainerTop = presetAreaTop + presetAreaHeight + WEAPON_TO_TAG_GAP
         val weaponContainerHeight =
             WEAPON_ROWS_VISIBLE * WEAPON_ENTRY_HEIGHT +
             WEAPON_OVERFLOW_ROW_HEIGHT
-        val presetAreaTop = topContent + weaponContainerHeight + WEAPON_TO_TAG_GAP
-        val presetStatus = presetStatusByGroup[groupIndex]
-        val presetStatusHeight = if (presetStatus.isNullOrBlank()) 0f else PRESET_STATUS_HEIGHT + PRESET_STATUS_GAP
-        val presetAreaHeight = PRESET_BUTTON_HEIGHT + PRESET_BUTTON_GAP + presetStatusHeight
-        val tagContainerTop = presetAreaTop + presetAreaHeight
+        val tagContainerTop = weaponContainerTop + weaponContainerHeight + WEAPON_TO_TAG_GAP
         val tagContainerHeight = max(36f, panel.position.height - tagContainerTop)
-
-        val weaponContainer = panel.createCustomPanel(
-            innerWidth,
-            weaponContainerHeight,
-            CampaignPanelPlugin(CampaignContainerType.WEAPON_LIST)
-        )
-        panel.addComponent(weaponContainer)
-        weaponContainer.position.inTL(CampaignGuiStyle.PANEL_PADDING, topContent)
-        buildWeaponContainer(weaponContainer, entries)
-        if (entries.isNotEmpty()) {
-            addWeaponTooltip(weaponContainer, entries)
-        }
 
         buildPresetButtons(
             panel = panel,
@@ -610,8 +604,20 @@ class ShipView(
             groupIndex = groupIndex,
             top = presetAreaTop,
             width = innerWidth,
-            statusMessage = presetStatus
+            pendingAction = presetPendingAction
         )
+
+        val weaponContainer = panel.createCustomPanel(
+            innerWidth,
+            weaponContainerHeight,
+            CampaignPanelPlugin(CampaignContainerType.WEAPON_LIST)
+        )
+        panel.addComponent(weaponContainer)
+        weaponContainer.position.inTL(CampaignGuiStyle.PANEL_PADDING, weaponContainerTop)
+        buildWeaponContainer(weaponContainer, entries)
+        if (entries.isNotEmpty()) {
+            addWeaponTooltip(weaponContainer, entries)
+        }
 
         val tagContainer = panel.createCustomPanel(
             innerWidth,
@@ -640,7 +646,7 @@ class ShipView(
         groupIndex: Int,
         top: Float,
         width: Float,
-        statusMessage: String?,
+        pendingAction: PendingPresetAction?,
     ) {
         val buttonWidth = (width - PRESET_BUTTON_HGAP) / 2f
 
@@ -673,14 +679,8 @@ class ShipView(
         )
         buttons.add(
             CampaignMomentaryButton(saveButton) {
-                val result = saveExternalWeaponCompositionPreset(ship, groupIndex, AGCGUI.storageIndex)
-                val message = when (result.status) {
-                    WeaponCompositionPresetSaveStatus.SAVED -> "Saved preset for this weapon combination."
-                    WeaponCompositionPresetSaveStatus.NO_WEAPON_GROUP_KEY -> "No weapons in this group."
-                    WeaponCompositionPresetSaveStatus.FAILED -> "Failed to save weapon-composition preset. See log."
-                }
-                presetStatusByGroup[groupIndex] = message
-                onPresetStatusUpdate?.invoke(groupIndex, message)
+                pendingPresetActionByGroup[groupIndex] = PendingPresetAction.SAVE
+                onPendingPresetActionUpdate?.invoke(groupIndex, PendingPresetAction.SAVE)
                 campaignScrollDirty = true
             }
         )
@@ -714,33 +714,116 @@ class ShipView(
         )
         buttons.add(
             CampaignMomentaryButton(loadButton) {
-                val result = loadExternalWeaponCompositionPreset(ship, groupIndex, AGCGUI.storageIndex)
-                val message = when (result.status) {
-                    WeaponCompositionPresetLoadStatus.LOADED -> {
-                        if (result.tags.isEmpty()) {
-                            "Loaded empty preset and cleared tags for this group."
-                        } else {
-                            "Loaded preset for this weapon combination."
-                        }
-                    }
-                    WeaponCompositionPresetLoadStatus.NO_PRESET_FOUND -> "No preset saved for this weapon combination."
-                    WeaponCompositionPresetLoadStatus.NO_WEAPON_GROUP_KEY -> "No weapons in this group."
-                    WeaponCompositionPresetLoadStatus.FAILED -> "Failed to load weapon-composition preset. See log."
-                }
-                presetStatusByGroup[groupIndex] = message
-                onPresetStatusUpdate?.invoke(groupIndex, message)
+                pendingPresetActionByGroup[groupIndex] = PendingPresetAction.LOAD
+                onPendingPresetActionUpdate?.invoke(groupIndex, PendingPresetAction.LOAD)
                 campaignScrollDirty = true
             }
         )
 
-        if (!statusMessage.isNullOrBlank()) {
-            val statusPanel = panel.createUIElement(width, PRESET_STATUS_HEIGHT, false)
-            statusPanel.addAgcText(statusMessage, 0f, CampaignGuiStyle.TOOLTIP_TEXT_COLOR)
-            panel.addUIElement(statusPanel).inTL(
-                CampaignGuiStyle.PANEL_PADDING,
-                top + PRESET_BUTTON_HEIGHT + PRESET_BUTTON_GAP
-            )
-        }
+        if (pendingAction == null) return
+
+        val confirmPanel = panel.createCustomPanel(
+            buttonWidth,
+            PRESET_CONFIRM_HEIGHT,
+            CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR)
+        )
+        panel.addComponent(confirmPanel)
+        confirmPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING, top + PRESET_BUTTON_HEIGHT + PRESET_BUTTON_GAP)
+        val confirmInner = confirmPanel.createUIElement(buttonWidth, PRESET_CONFIRM_HEIGHT, false)
+        val confirmButton = confirmInner.addAreaCheckbox(
+            "",
+            "preset_confirm_$groupIndex",
+            CampaignGuiStyle.ACTIVE_GREEN_BACKGROUND_COLOR,
+            CampaignGuiStyle.ACTIVE_GREEN_DARK_COLOR,
+            CampaignGuiStyle.ACTIVE_GREEN_BRIGHT_COLOR,
+            buttonWidth,
+            PRESET_CONFIRM_HEIGHT,
+            0f
+        )
+        confirmPanel.addUIElement(confirmInner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
+        renderTagLabel(
+            confirmPanel,
+            "Confirm",
+            buttonWidth - 2f * CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
+            PRESET_CONFIRM_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+            CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
+            CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+            textColor = CampaignGuiStyle.UNAVAILABLE_TAG_TEXT_COLOR
+        )
+        buttons.add(
+            CampaignMomentaryButton(confirmButton) {
+                when (pendingAction) {
+                    PendingPresetAction.SAVE -> {
+                        when (saveExternalWeaponCompositionPreset(ship, groupIndex, AGCGUI.storageIndex).status) {
+                            WeaponCompositionPresetSaveStatus.FAILED -> {
+                                log.warn("Failed to save weapon-composition preset. See log.")
+                            }
+                            WeaponCompositionPresetSaveStatus.NO_WEAPON_GROUP_KEY -> {
+                                log.info("No weapons in this group.")
+                            }
+                            WeaponCompositionPresetSaveStatus.SAVED -> {
+                                log.info("Saved preset for this weapon combination.")
+                            }
+                        }
+                    }
+                    PendingPresetAction.LOAD -> {
+                        when (loadExternalWeaponCompositionPreset(ship, groupIndex, AGCGUI.storageIndex).status) {
+                            WeaponCompositionPresetLoadStatus.FAILED -> {
+                                log.warn("Failed to load weapon-composition preset. See log.")
+                            }
+                            WeaponCompositionPresetLoadStatus.NO_WEAPON_GROUP_KEY -> {
+                                log.info("No weapons in this group.")
+                            }
+                            WeaponCompositionPresetLoadStatus.NO_PRESET_FOUND -> {
+                                log.info("No preset saved for this weapon combination.")
+                            }
+                            WeaponCompositionPresetLoadStatus.LOADED -> {
+                                log.info("Loaded preset for this weapon combination.")
+                            }
+                        }
+                    }
+                }
+                pendingPresetActionByGroup.remove(groupIndex)
+                onPendingPresetActionUpdate?.invoke(groupIndex, null)
+                campaignScrollDirty = true
+            }
+        )
+
+        val cancelPanel = panel.createCustomPanel(
+            buttonWidth,
+            PRESET_CONFIRM_HEIGHT,
+            CampaignPanelPlugin(CampaignContainerType.ITEM, fillColor = CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR)
+        )
+        panel.addComponent(cancelPanel)
+        cancelPanel.position.inTL(CampaignGuiStyle.PANEL_PADDING + buttonWidth + PRESET_BUTTON_HGAP, top + PRESET_BUTTON_HEIGHT + PRESET_BUTTON_GAP)
+        val cancelInner = cancelPanel.createUIElement(buttonWidth, PRESET_CONFIRM_HEIGHT, false)
+        val cancelButton = cancelInner.addAreaCheckbox(
+            "",
+            "preset_cancel_$groupIndex",
+            CampaignGuiStyle.UNAVAILABLE_TAG_BACKGROUND_COLOR,
+            CampaignGuiStyle.UNAVAILABLE_TAG_DARK_COLOR,
+            CampaignGuiStyle.UNAVAILABLE_TAG_BRIGHT_COLOR,
+            buttonWidth,
+            PRESET_CONFIRM_HEIGHT,
+            0f
+        )
+        cancelPanel.addUIElement(cancelInner).inTL(CampaignGuiStyle.ITEM_HIGHLIGHT_X_OFFSET, 0f)
+        renderTagLabel(
+            cancelPanel,
+            "Cancel",
+            buttonWidth - 2f * CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
+            PRESET_CONFIRM_HEIGHT - CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+            CampaignGuiStyle.ITEM_TEXT_HORIZONTAL_PADDING,
+            CampaignGuiStyle.ITEM_TEXT_TOP_PADDING,
+            textColor = CampaignGuiStyle.UNAVAILABLE_TAG_TEXT_COLOR
+        )
+        buttons.add(
+            CampaignMomentaryButton(cancelButton) {
+                pendingPresetActionByGroup.remove(groupIndex)
+                onPendingPresetActionUpdate?.invoke(groupIndex, null)
+                campaignScrollDirty = true
+            }
+        )
     }
 
     private fun buildWeaponGroupsContainer(panel: CustomPanelAPI, ship: FleetMemberAPI, contentHeight: Float, miscWidth: Float) {

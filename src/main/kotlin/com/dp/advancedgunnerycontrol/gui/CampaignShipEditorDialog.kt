@@ -95,7 +95,7 @@ class CampaignShipEditorPanelPlugin(
     private var contentPanel: CustomPanelAPI? = null
     private var shipView: ShipView? = null
     private var persistedTagScrollOffsets: Map<Int, Int> = emptyMap()
-    private var persistedPresetStatusMessages: Map<Int, String> = emptyMap()
+    private var persistedPendingPresetActions: Map<Int, ShipView.PendingPresetAction> = emptyMap()
 
     private var currentActions: List<GUIAction> = emptyList()
     private var currentOptionRows: List<CampaignOptionRow> = emptyList()
@@ -153,7 +153,7 @@ class CampaignShipEditorPanelPlugin(
         val root = panel ?: return
         try {
             persistedTagScrollOffsets = shipView?.captureTagScrollOffsets() ?: persistedTagScrollOffsets
-            persistedPresetStatusMessages = shipView?.capturePresetStatusMessages() ?: persistedPresetStatusMessages
+            persistedPendingPresetActions = shipView?.capturePendingPresetActions() ?: persistedPendingPresetActions
             contentPanel?.let(root::removeComponent)
             contentPanel = null
             shipView = null
@@ -179,11 +179,15 @@ class CampaignShipEditorPanelPlugin(
                     enableTagScroll = false,
                     drawFrame = false,
                     initialTagScrollOffsets = persistedTagScrollOffsets,
-                    initialPresetStatusMessages = persistedPresetStatusMessages,
-                    onPresetStatusUpdate = { groupIndex, message ->
-                        val updated = persistedPresetStatusMessages.toMutableMap()
-                        updated[groupIndex] = message
-                        persistedPresetStatusMessages = updated
+                    initialPendingPresetActions = persistedPendingPresetActions,
+                    onPendingPresetActionUpdate = { groupIndex, action ->
+                        val updated = persistedPendingPresetActions.toMutableMap()
+                        if (action == null) {
+                            updated.remove(groupIndex)
+                        } else {
+                            updated[groupIndex] = action
+                        }
+                        persistedPendingPresetActions = updated
                     }
                 )
             )
