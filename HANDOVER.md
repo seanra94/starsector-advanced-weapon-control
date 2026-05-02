@@ -110,12 +110,21 @@ C:\Games\Starsector\starsector-core\starsector.log
 - `NoPD(H<...)` and `NoPD(Waste>...)` fighter durability now share a cheap weapon-relative estimate: `hull + armorRating * armorPenalty + remainingShieldBuffer * shieldPenalty`. Bad damage matchups may make armor or shields count as tougher; strong matchups do not reduce durability below baseline. Missiles remain simple hitpoints. The preferred visible minor-PD suppression tag is `NoPD(Waste>...)`; `NoPD(H<...)` is retained for compatibility and simpler threshold use.
 - `PrioBig` is implemented as the priority-only companion to `PrioSmall`: larger ships get higher priority, but the tag should not restrict non-ship target validity.
 - Campaign tag scrolling should use the single forwarded `InputEventAPI` wheel path with explicit event consumption. Do not reintroduce direct LWJGL mouse polling unless coordinate logs prove it is needed.
-- Campaign selected tags are pinned at the top of each tag column, removed from the normal scroll slice while pinned, and use pale yellow selected backgrounds.
+- Campaign selected tags are pinned at the top of each tag column and removed from the normal scroll slice while pinned. Selected-state colors should follow the shared colored-button rules documented below rather than the old pale-yellow treatment.
 - Campaign/suggested tag labels currently render as plain single-label text. Avoid `addParaWithMarkup()`, highlighted `addPara(...)` overloads, or segmented text for tag cells because earlier attempts leaked literal markup, crashed on `%`, or clipped characters in-game.
-- Section headings such as `Ship`, `Options`, `Ship Modes`, and group headings should remain Starsector `addSectionHeading(...)` bars.
+- Current GUI heading policy: use the custom container-heading path for current and future campaign/suggested-tags container headings instead of Starsector `addSectionHeading(...)` bars. Default heading background is `Color(40, 40, 40, 225)`. Stale weapon-group headings use `Color(80, 80, 80, 225)`.
 - Empty weapon groups keep their seven-column layout footprint; recent behavior shows the group heading but leaves the rest blank.
 - Suggested-tags GUI mirrors campaign tag behavior: forwarded wheel scrolling, pinned selected tags, selected tags removed from normal rows, and colored tag-label segments.
 
+- Colored-button/tag semantics should follow two patterns unless a specific surface has an explicitly accepted exception.
+  - Toggleable buttons/tags: untoggled idle fill `Color(0, 0, 0, 225)`; untoggled hover fill `Color(0, 69, 92, 225)`; toggled idle fill `Color(0, 69, 92, 225)`; toggled hover fill `Color(0, 109, 145, 225)`.
+  - Untoggleable buttons: idle fill `Color(0, 69, 92, 225)`; hover fill `Color(0, 109, 145, 225)`.
+- Brightness language for future UI work should be interpreted consistently:
+  - "dark" means roughly the brightness of `Color(0, 69, 92, 225)`, `Color(95, 80, 14, 225)`, or `Color(62, 34, 82, 225)`
+  - "moderately bright" means roughly the brightness of `Color(0, 109, 145, 225)`, `Color(145, 125, 25, 225)`, or `Color(95, 55, 125, 225)`
+  - "bright" means roughly the brightness of `Color(205, 180, 70, 225)` or `Color(150, 105, 190, 225)`
+- Current accepted action-family color semantics: save-family buttons use dark-purple fills, load-family buttons use dark-yellow fills, and confirm/cancel remain green/red. Save/Load visible text should stay neutral rather than inheriting the family color.
+- Active weapon tags and ship modes are toggleable controls and should follow the shared toggleable-button blue-state rules above. Ship modes should match weapon tags in background fill, hover/highlight behavior, and overall selected-state treatment unless a specific future task intentionally changes both together.
 ## Sensitive areas
 
 - `assignShipModes()` and `shouldNotOverrideShipAI()` in `ShipModes.kt`.
